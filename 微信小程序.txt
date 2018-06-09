@@ -1,0 +1,2347 @@
+
+官方教程(小程序开发指南){
+	https://developers.weixin.qq.com/ebook?action=get_post_info&token=935589521&volumn=1&lang=zh_CN&book=miniprogram&docid=0008aeea9a8978ab0086a685851c0a
+	
+	app.json : 全局配置文件
+
+	一个页面是分三部分组成：界面、配置和逻辑。
+	界面由WXML文件和WXSS文件来负责描述，配置由JSON文件进行描述，页面逻辑则是由JS脚本文件负责。
+	一个页面的文件需要放置在同一个目录下，其中WXML文件和JS文件是必须存在的，JSON和WXSS文件是可选的。
+
+	.js   - 逻辑 - JavaScript(和浏览器那个不一样)
+	.json - 配置
+	.wxml - 框架 - 类似HTML，用来搭建页面框架的
+	.wxss - 样式 - 类似CSS
+
+	app.wxss - 项目公共样式
+
+	WXML 通过 {{变量名}} 来绑定 WXML 文件和对应的 JavaScript 文件中的 data 对象属性。
+
+	通过 {{ 变量名 }} 语法可以使得 WXML 拥有动态渲染的能力，除此外还可以在 {{ }} 内进行简单的逻辑运算。
+	如算术运算，和逻辑运算(大于小于等于等等...)，还可以放字符串，拼接字符串，数组等等
+
+	条件逻辑渲染{
+		WXML 中，使用 wx:if="{{condition}}" 来判断是否需要渲染该代码块
+		<view wx:if="{{condition}}"> True </view>
+		使用 wx:elif 和 wx:else 来添加一个 else 块：
+
+		<view wx:if="{{length > 5}}"> 1 </view>
+		<view wx:elif="{{length > 2}}"> 2 </view>
+		<view wx:else> 3 </view>
+		
+		因为 wx:if 是一个控制属性，需要将它添加到一个标签上。如果要一次性判断多个组件标签，可以使用一个 标签将多个组件包装起来，并在上边使用 wx:if 控制属性。
+
+		<block wx:if="{{true}}">
+		  <view> view1 </view>
+		  <view> view2 </view>
+		</block>
+	}
+
+	列表渲染{
+		在组件上使用 wx:for 控制属性绑定一个数组，即可使用数组中各项的数据重复渲染该组件。默认数组的当前项的下标变量名默认为 index，数组当前项的变量名默认为 item
+
+		代码清单2-13 列表渲染示例
+
+		<!-- array 是一个数组 -->
+		<view wx:for="{{array}}">
+		  {{index}}: {{item.message}}
+		</view>
+
+		<!-- 对应的脚本文件
+		Page({
+		  data: {
+			array: [{
+			  message: 'foo',
+			}, {
+			  message: 'bar'
+			}]
+		  }
+		})
+		-->
+		
+		
+		使用 wx:for-item 指定数组当前元素的变量名，使用 wx:for-index 指定数组当前下标的变量名：
+
+		<view wx:for="{{array}}" wx:for-index="idx" wx:for-item="itemName">
+		  {{idx}}: {{itemName.message}}
+		</view>
+		类似 block wx:if ，也可以将 wx:for 用在 <block/> 标签上，以渲染一个包含多节点的结构块。例如：
+
+		<block wx:for="{{[1, 2, 3]}}">
+		  <view> {{index}}: </view>
+		  <view> {{item}} </view>
+		</block>
+	}
+
+	模板{
+		 定义模板
+
+		<template name="msgItem">
+		  <view>
+			<text> {{index}}: {{msg}} </text>
+			<text> Time: {{time}} </text>
+		  </view>
+		</template>
+		使用 is 属性，声明需要的使用的模板，然后将模板所需要的 data 传入，如代码2-17所示。
+
+		模板使用示例：
+
+		<!--
+		{
+		  index: 0,
+		  msg: 'this is a template',
+		  time: '2016-06-18'
+		}
+		-->
+
+
+		<template name="msgItem">
+		  <view>
+			<text> {{index}}: {{msg}} </text>
+			<text> Time: {{time}} </text>
+		  </view>
+		</template>
+
+
+		<template is="msgItem" data="{{...item}}"/>
+
+		<!-- 输出
+		0: this is a template Time: 2016-06-18
+		-->
+		
+		
+		动态使用模板
+
+		<template name="odd">
+		  <view> odd </view>
+		</template>
+
+
+		<template name="even">
+		  <view> even </view>
+		</template>
+
+
+		<block wx:for="{{[1, 2, 3, 4, 5]}}">
+		  <template is="{{item % 2 == 0 ? 'even' : 'odd'}}"/>
+		</block>
+
+
+
+		<!-- 输出
+		odd
+		even
+		odd
+		even
+		odd
+		-->
+	}
+
+	引用 import和include {
+		WXML 提供两种文件引用方式import和include。
+		import 可以在该文件中使用目标文件定义的 template，如：
+
+		在 item.wxml 中定义了一个叫 item的 template ：
+
+		<!-- item.wxml -->
+		<template name="item">
+		  <text>{{text}}</text>
+		</template>
+		在 index.wxml 中引用了 item.wxml，就可以使用 item模板：
+
+		<import src="item.wxml"/>
+
+		<template is="item" data="{{text: 'forbar'}}"/>
+		需要注意的是 import 有作用域的概念，即只会 import 目标文件中定义的 template，而不会 import 目标文件中 import 的 template
+
+		
+		include 可以将目标文件中除了 <template/> <wxs/> 外的整个代码引入，相当于是拷贝到 include 位置
+	}
+
+	wxml 标签的共同属性{
+		属性名			类型			描述				注解
+		id				String			组件的唯一标识		整个页面唯一
+		class			String			组件的样式类		在对应的 WXSS 中定义的样式类
+		style			String			组件的内联样式		可以动态设置的内联样式
+		hidden			Boolean			组件是否显示		所有组件默认显示
+		data-*			Any				自定义属性			组件上触发的事件时，会发送给事件处理函数
+		bind*/catch*	EventHandler	组件的事件
+	}
+
+
+	WXSS引用样式{
+		@import './test_0.wxss'
+	}
+
+	WXSS内联样式及动态更新{
+		<!--内联样式-->
+		<view style="color: red; font-size: 48rpx"></view>
+		
+		<!--可动态变化的内联样式-->
+		<!--
+		{
+		  eleColor: 'red',
+		  eleFontsize: '48rpx'
+		}
+		-->
+		<view style="color: {{eleColor}}; font-size: {{eleFontsize}}"></view>
+	}
+
+
+	小程序WXSS支持的选择器{
+		类型			选择器		样例			样例描述
+		类选择器		.class		.intro			选择所有拥有 class="intro" 的组件
+		id选择器		#id			#firstname		选择拥有 id="firstname" 的组件
+		元素选择器		element		view checkbox	选择所有文档的 view 组件和所有的 checkbox 组件
+		伪元素选择器	::after		view::after		在 view 组件后边插入内容
+		伪元素选择器	::before	view::before	在 view 组件前边插入内容
+		
+		WXSS选择器优先级: 
+		!important > style > #id > .class > element 优先级越大，越不会被覆盖
+		
+		view{ // 权重为 1
+		  color: blue
+		}
+
+		.ele{ // 权重为 10
+		  olor: red
+		}
+
+		#ele{ // 权重为 100
+		  color: pink
+		}
+
+		view#ele{ // 权重为 1 + 100 = 101，优先级最高，元素颜色为orange
+		  color: orange
+		}
+
+		view.ele{ // 权重为 1 + 10 = 11
+		  color: green
+		}
+	}
+
+	官方样式库{
+		为了减轻开发者样式开发的工作量，我们提供了WeUI.wxss基础样式库。
+		WeUI是一套与微信原生视觉体验一致的基础样式库，由微信官方设计团队为微信内网页和微信小程序量身设计，
+		令用户的使用感知更加统一。包含button、cell、dialog、progress、toast、article、actionsheet、icon等各式原生。
+	}
+
+	JavaScript 脚本{
+		小程序的主要开发语言是 JavaScript ，开发者使用 JavaScript 来开发业务逻辑以及调用小程序的 API 来完成业务需求。
+		
+		JavaScript的模块化及引用{
+			小程序中可以将任何一个JavaScript 文件作为一个模块，通过module.exports 或者 exports 对外暴露接口。
+			请看是一个简单模块示例，B.js 引用模块A，并使用A暴露的multiplyBy2方法完成一个变量乘以 2 的操作。
+
+			代码清单2-26 模块示例
+
+			// moduleA.js
+			module.exports = function( value ){
+			  return value * 2;
+			}
+			代码清单2-27 引用模块A
+
+			// B.js
+
+			// 在B.js中引用模块A
+			var multiplyBy2 = require('./moduleA')
+			var result = multiplyBy2(4)
+		}
+		
+		JavaScript的执行顺序{
+			小程序的执行的入口文件是 app.js 。并且会根据其中 require 的模块顺序决定文件的运行顺序
+			当 app.js 执行结束后，小程序会按照开发者在 app.json 中定义的 pages 的顺序，逐一执行。如下所示。
+			{
+				"pages": [
+					"pages/index/index",
+					"pages/log/log",
+					"pages/result/result"
+				],
+				"window": {
+					"backgroundTextStyle":"light",
+					"navigationBarBackgroundColor": "#fff",
+					"navigationBarTitleText": "WeChat",
+					"navigationBarTextStyle":"black"
+				}
+			}
+			
+			即如果运行了app.js，会在app.js执行完成之后自动按顺序执行page中的各个页面的.js
+		}
+		
+		JavaScript变量的作用域{
+			在文件中声明的变量和函数只在该文件中有效，不同的文件中可以声明相同名字的变量和函数，不会互相影响。
+			当需要使用全局变量的时，通过使用全局函数 getApp() 获取全局的实例，并设置相关属性值，来达到设置全局变量的目的，如代码2-38、代码2-39所示。
+
+			代码清单2-38 在脚本 a.js 中设置全局变量
+
+			// a.js
+			// 获取全局变量
+			var global = getApp()
+			global.globalValue = 'globalValue'
+			代码清单2-39 在脚本 b.js 中访问 a.js 定义的全局变量
+
+			// b.js
+			// 访问全局变量
+			var global = getApp()
+			console.log(global.globalValue) // 输出 globalValue
+			需要注意的是，上述示例只有在 a.js 比 b.js 先执行才有效，
+			当需要保证全局的数据可以在任何文件中安全的被使用到，那么可以在 App() 中进行设置，如代码2-40、代码2-41、代码2-42所示。
+
+			代码清单2-40 定义全局变量
+			// app.js
+			App({
+			  globalData: 1
+			})
+		}
+		
+	}
+
+	渲染层和逻辑层{
+		WXML模板使用 view 标签，其子节点用 {{ }} 的语法绑定一个 msg 的变量，如代码清单3-1所示。
+		
+		代码清单3-1 渲染“Hello World”WXML代码
+		<view>{{ msg }}</view>
+		在 JS 脚本使用 this.setData 方法把 msg 字段设置成 “Hello World” ，如代码清单3-2所示。
+		
+		代码清单3-2 渲染“Hello World”JS脚本
+		Page({
+		  onLoad: function () {
+			this.setData({ msg: 'Hello World' })
+		  }
+		})
+		从这个例子我们可以看到3个点：
+		1.渲染层和数据相关。
+		2.逻辑层负责产生、处理数据。
+		3.逻辑层通过 Page 实例的 setData 方法传递数据到渲染层。
+	}
+
+	程序构造器App(){
+		宿主环境提供了 App() 构造器用来注册一个程序App，需要留意的是App() 构造器必须写在项目根目录的app.js里，
+		App实例是单例对象，在其他JS脚本中可以使用宿主环境提供的 getApp() 来获取程序实例。
+		
+		App() 的调用方式如代码清单3-4所示，
+		App构造器接受一个Object参数，参数说明如表3-1所示，其中onLaunch / onShow / onHide 三个回调是App实例的生命周期函数，
+		我们会在后文展开；onError我们暂时不在本章展开，我们会在第8章里详细讨论；App的其他参数我们也放在后文进行展开。
+		代码清单3-4 App构造器
+
+		App({
+		  onLaunch: function(options) {},
+		  onShow: function(options) {},
+		  onHide: function() {},
+		  onError: function(msg) {},
+		  globalData: 'I am global data'
+		})
+		
+		
+		表3-1 App构造器的参数
+
+		参数属性	类型		描述
+		onLaunch	Function	当小程序初始化完成时，会触发 onLaunch（全局只触发一次）
+		onShow		Function	当小程序启动，或从后台进入前台显示，会触发 onShow
+		onHide		Function	当小程序从前台进入后台，会触发 onHide
+		onError		Function	当小程序发生脚本错误，或者 API 调用失败时，会触发 onError 并带上错误信息
+		其他字段 　	任意		可以添加任意的函数或数据到 Object 参数中，在App实例回调用 this 可以访问
+	}
+
+	小程序的生命周期和打开场景{
+		初次进入小程序的时候，微信客户端初始化好宿主环境，同时从网络下载或者从本地缓存中拿到小程序的代码包，把它注入到宿主环境，
+		初始化完毕后，微信客户端就会给App实例派发onLaunch事件，App构造器参数所定义的onLaunch方法会被调用。
+		进入小程序之后，用户可以点击左上角的关闭，或者按手机设备的Home键离开小程序，此时小程序并没有被直接销毁，我们把这种情况称为“小程序进入后台状态”，App构造器参数所定义的onHide方法会被调用。
+		当再次回到微信或者再次打开小程序时，微信客户端会把“后台”的小程序唤醒，我们把这种情况称为“小程序进入前台状态”，App构造器参数所定义的onShow方法会被调用。
+		我们可以看到，App的生命周期是由微信客户端根据用户操作主动触发的。为了避免程序上的混乱，我们不应该从其他代码里主动调用App实例的生命周期函数。
+		在微信客户端中打开小程序有很多途径：从群聊会话里打开，从小程序列表中打开，通过微信扫一扫二维码打开，从另外一个小程序打开当前小程序等，针对不同途径的打开方式，
+		小程序有时需要做不同的业务处理，所以微信客户端会把打开方式带给onLaunch和onShow的调用参数options，
+		示例代码以及详细参数如代码清单3-5和表3-2所示。需要留意小程序的宿主环境在迭代更新过程会增加不少打开场景，
+		因此要获取最新的场景值说明请查看官方文档：https://mp.weixin.qq.com/debug/wxadoc/dev/framework/app-service/app.html。
+
+		代码清单3-5 onLaunch和onShow带参数
+
+		App({
+		  onLaunch: function(options) { console.log(options) },
+		  onShow: function(options) { console.log(options) }
+		})
+		
+		
+		表3-2 onLaunch,onShow参数
+
+		字段					类型			描述
+		path					String			打开小程序的页面路径
+		query					Object			打开小程序的页面参数query
+		scene					Number			打开小程序的场景值，详细场景值请参考小程序官方文档
+		shareTicket				String			shareTicket，详见小程序官方文档
+		referrerInfo			Object			当场景为由从另一个小程序或公众号或App打开时，返回此字段
+		referrerInfo.appId		String			来源小程序或公众号或App的 appId，详见下方说明
+		referrerInfo.extraData	Object			来源小程序传过来的数据，scene=1037或1038时支持
+		
+		
+		表3-3 以下场景支持返回 referrerInfo.appId
+
+		场景值	场景				appId信息含义
+		1020	公众号 profile		页相关小程序列表 返回来源公众号 appId
+		1035	公众号自定义菜单	返回来源公众号 appId
+		1036	App 分享消息卡片	返回来源应用 appId
+		1037	小程序打开小程序	返回来源小程序 appId
+		1038	从另一个小程序返回	返回来源小程序 appId
+		1043	公众号模板消息		返回来源公众号 appId
+	}
+
+	小程序页面的构成和路径{
+		一个页面是分三部分组成：界面、配置和逻辑。
+		界面由WXML文件和WXSS文件来负责描述，
+		配置由JSON文件进行描述，
+		页面逻辑则是由JS脚本文件负责。
+		一个页面的文件需要放置在同一个目录下，其中WXML文件和JS文件是必须存在的，JSON和WXSS文件是可选的。
+		页面路径需要在小程序代码根目录app.json中的pages字段声明，否则这个页面不会被注册到宿主环境中。
+		例如两个页面的文件的相对路径分别为 pages/index/page. 和 pages/other/other. (表示wxml/wxss/json/js四个文件)，
+		在app.json的pages字段的代码路径需要去除.后缀，如代码清单3-7所示，默认pages字段的第一个页面路径为小程序的首页。
+		
+		代码清单3-7 app.json声明页面路径
+		{
+		  "pages":[
+			"pages/index/page", // 第一项默认为首页
+			"pages/other/other"
+		  ]
+		}
+	}
+
+
+	页面的构造器{
+		宿主环境提供了 Page() 构造器用来注册一个小程序页面，Page()在页面脚本page.js中调用，Page() 的调用方式如代码清单3-8所示。
+		Page构造器接受一个Object参数，参数说明如表3-4所示，其中data属性是当前页面WXML模板中可以用来做数据绑定的初始数据，
+		我们会在后文展开讨论；onLoad / onReady / onShow / onHide /onUnload 5个回调是Page实例的生命周期函数，
+		我们会在后文展开讨论；onPullDownRefresh / onReachBottom / onShareAppMessage / onPageScroll 4个回调是页面的用户行为。
+		
+		代码清单3-8 Page构造器
+		Page({
+		  data: { text: "This is page data." },
+		  onLoad: function(options) { },
+		  onReady: function() { },
+		  onShow: function() { },
+		  onHide: function() { },
+		  onUnload: function() { },
+		  onPullDownRefresh: function() { },
+		  onReachBottom: function() { },
+		  onShareAppMessage: function () { },
+		  onPageScroll: function() { }
+		})
+		
+		
+		表3-4 Page构造器的参数
+
+		参数属性			类型		描述
+		data				Object		页面的初始数据
+		onLoad				Function	生命周期函数--监听页面加载，触发时机早于onShow和onReady，页面销毁前只会触发1次，可以获取当前页面所调用的打开参数option
+		onShow				Function	生命周期函数--监听页面显示，触发事件早于onReady，一般从别的页面返回到当前页面时，当前页的onShow方法都会被调用。
+		onReady				Function	生命周期函数--监听页面初次渲染完成，页面销毁前只会触发1次onReady触发时，表示页面已经准备妥当，在逻辑层就可以和视图层进行交互了。
+		onHide				Function	生命周期函数--监听页面隐藏，会在使用wx.naviagteTo切换到其他页面、底部tab切换时触发。
+		onUnload			Function	生命周期函数--监听页面卸载，使用wx.redirectTo或wx.navigateBack返回到其他页时，当前页面会被微信客户端销毁回收，此时Page构造器参数所定义的onUnload方法会被调用。
+		onPullDownRefresh	Function	页面相关事件处理函数--监听用户下拉动作
+		onReachBottom		Function	页面上拉触底事件的处理函数
+		onShareAppMessage	Function	用户点击右上角转发
+		onPageScroll		Function	页面滚动触发事件的处理函数
+		其他				Any			可以添加任意的函数或数据，在Page实例的其他函数中用 this 可以访问
+	}
+
+
+	页面的生命周期和打开参数{
+		onLoad(): 页面初次加载的时候，微信客户端就会给Page实例派发onLoad事件，Page构造器参数所定义的onLoad方法会被调用，onLoad在页面没被销毁之前只会触发1次，在onLoad的回调中，可以获取当前页面所调用的打开参数option，关于打开参数我们放在这一节的最后再展开阐述。
+		onShow(): 页面显示之后，Page构造器参数所定义的onShow方法会被调用，一般从别的页面返回到当前页面时，当前页的onShow方法都会被调用。
+		onReady():在页面初次渲染完成时，Page构造器参数所定义的onReady方法会被调用，onReady在页面没被销毁前只会触发1次，onReady触发时，表示页面已经准备妥当，在逻辑层就可以和视图层进行交互了。
+		以上三个事件触发的时机是onLoad早于 onShow，onShow早于onReady。
+		onHide(): 页面不可见时，Page构造器参数所定义的onHide方法会被调用，这种情况会在使用wx.naviagteTo切换到其他页面、底部tab切换时触发。
+		onUnload(): 当前页面使用wx.redirectTo或wx.navigateBack返回到其他页时，当前页面会被微信客户端销毁回收，此时Page构造器参数所定义的onUnload方法会被调用。
+		我们可以看到，Page的生命周期是由微信客户端根据用户操作主动触发的。为了避免程序上的混乱，我们不应该在其他代码中主动调用Page实例的生命周期函数。
+		
+		最后我们说一下页面的打开参数query，让我们来设想这样一个场景，我们实现一个购物商城的小程序，
+		我们需要完成一个商品列表页和商品详情页，点击商品列表页的商品就可以跳转到该商品的详情页，
+		当然我们不可能为每个商品单独去实现它的详情页。
+		我们只需要实现一个商品详情页的pages/detail/detail.(代表WXML/WXSS/JS/JSON文件)即可，
+		在列表页打开商品详情页时把商品的id传递过来，详情页通过刚刚说的onLoad回调的参数option就可以拿到商品id，
+		从而绘制出对应的商品，代码如代码清单3-9所示。
+
+		代码清单3-9 页面的打开参数Page构造器
+
+		// pages/list/list.js
+		// 列表页使用navigateTo跳转到详情页
+		wx.navigateTo({ url: 'pages/detail/detail?id=1&other=abc' })
+
+		// pages/detail/detail.js
+		Page({
+		  onLoad: function(option) {
+				console.log(option.id)
+				console.log(option.other)
+		  }
+		})
+		
+		小程序把页面的打开路径定义成页面URL，其组成格式和网页的URL类似，在页面路径后使用英文 ? 分隔path和query部分，
+		query部分的多个参数使用 & 进行分隔，参数的名字和值使用 key=value 的形式声明。
+		在页面Page构造器里onLoad的option可以拿到当前页面的打开参数，其类型是一个Object，其键值对与页面URL上query键值对一一对应。
+		和网页URL一样，页面URL上的value如果涉及特殊字符（例如：&字符、?字符、中文字符等，详情参考URI的RFC3986说明 ），
+		需要采用UrlEncode后再拼接到页面URL上。
+	}
+
+
+	页面的数据(数据的设置和页面更新){
+		3.1.4节讨论了小程序界面渲染的基本原理，我们知道小程序的页面结构由WXML进行描述，
+		WXML可以通过数据绑定的语法绑定从逻辑层传递过来的数据字段，这里所说的数据其实就是来自于页面Page构造器的data字段，
+		data参数是页面第一次渲染时从逻辑层传递到渲染层的数据。
+
+		代码清单3-10 Page构造器的data参数
+		<!-- page.wxml -->
+		<view>{{text}}</view>
+		<view>{{array[0].msg}}</view>
+
+		// page.js
+		Page({
+		  data: {
+			text: 'init data',
+			array: [{msg: '1'}, {msg: '2'}]
+		  }
+		})
+		
+		宿主环境所提供的Page实例的原型中有setData函数，我们可以在Page实例下的方法调用this.setData把数据传递给渲染层，从而达到更新界面的目的。
+		由于小程序的渲染层和逻辑层分别在两个线程中运行，所以setData传递数据实际是一个异步的过程，
+		所以setData的第二个参数是一个callback回调，在这次setData对界面渲染完毕后触发。
+		setData其一般调用格式是 setData(data, callback)，其中data是由多个key: value构成的Object对象。
+		
+		代码清单3-11 使用setData更新渲染层数据
+		// page.js
+		Page({
+		  onLoad: function(){
+			this.setData({
+			  text: 'change data'
+			}, function(){
+			  // 在这次setData对界面渲染完毕后触发
+			})
+		  }
+		})
+		
+		实际在开发的时候，页面的data数据会涉及相当多的字段，你并不需要每次都将整个data字段重新设置一遍，你只需要把改变的值进行设置即可，宿主环境会自动把新改动的字段合并到渲染层对应的字段中，
+		如下代码所示。data中的key还可以非常灵活，以数据路径的形式给出，例如 this.setData({"d[0]": 100}); this.setData({"d[1].text": 'Goodbye'}); 
+		我们只要保持一个原则就可以提高小程序的渲染性能：每次只设置需要改变的最小单位数据。
+		
+		代码清单3-12 使用setData更新渲染层数据
+		// page.js
+		Page({
+		  data: {
+			a: 1, b: 2, c: 3,
+			d: [1, {text: 'Hello'}, 3, 4]
+		  }
+		  onLoad: function(){
+			   // a需要变化时，只需要setData设置a字段即可
+			this.setData({a : 2})
+		  }
+		})
+		
+		此外需要注意以下3点：
+		直接修改 Page实例的this.data 而不调用 this.setData 是无法改变页面的状态的，还会造成数据不一致。
+		由于setData是需要两个线程的一些通信消耗，为了提高性能，每次设置的数据不应超过1024kB。
+		不要把data中的任意一项的value设为undefined，否则可能会有引起一些不可预料的bug。
+	}
+
+	页面的用户行为{
+		小程序宿主环境提供了四个和页面相关的用户行为回调：
+
+		1.下拉刷新 onPullDownRefresh
+		监听用户下拉刷新事件，需要在app.json的window选项中或页面配置page.json中设置enablePullDownRefresh为true。当处理完数据刷新后，wx.stopPullDownRefresh可以停止当前页面的下拉刷新。
+		2.上拉触底 onReachBottom
+		监听用户上拉触底事件。可以在app.json的window选项中或页面配置page.json中设置触发距离onReachBottomDistance。在触发距离内滑动期间，本事件只会被触发一次。
+		3.页面滚动 onPageScroll
+		监听用户滑动页面事件，参数为 Object，包含 scrollTop 字段，表示页面在垂直方向已滚动的距离（单位px）。
+		4.用户转发 onShareAppMessage
+		只有定义了此事件处理函数，右上角菜单才会显示“转发”按钮，在用户点击转发按钮的时候会调用，此事件需要return一个Object，包含title和path两个字段，用于自定义转发内容，如代码清单3-13所示。
+
+		如果在
+		
+		码清单3-13 使用onShareAppMessage自定义转发字段
+		// page.js
+		Page({
+		onShareAppMessage: function () {
+		 return {
+		   title: '自定义转发标题',
+		   path: '/page/user?id=123'
+		 }
+		}
+		})
+	}
+
+	页面跳转和路由{
+		一个小程序拥有多个页面，我们可以通过wx.navigateTo推入一个新的页面，如图3-6所示，在首页使用2次wx.navigateTo后（就是从首页打开一个页面，再从这个页面又打开一个新的页面），页面层级会有三层，我们把这样的一个页面层级称为页面栈。
+		后续为了表述方便，我们采用这样的方式进行描述页面栈：[ pageA, pageB, pageC ]，其中pageA在最底下，pageC在最顶上，也就是用户所看到的界面，
+		需要注意在本书编写的时候，小程序宿主环境限制了这个页面栈的最大层级为10层 ，也就是当页面栈到达10层之后就没有办法再推入新的页面了。我们下面来通过上边这个页面栈描述以下几个和导航相关的API。
+		使用 wx.navigateTo({ url: 'pageD' }) 可以往当前页面栈多推入一个 pageD，此时页面栈变成 [ pageA, pageB, pageC, pageD ]。
+		使用 wx.navigateBack() 可以退出当前页面栈的最顶上页面，此时页面栈变成 [ pageA, pageB, pageC ]。
+		使用wx.redirectTo({ url: 'pageE' }) 是替换当前页变成pageE，此时页面栈变成 [ pageA, pageB, pageE ]，当页面栈到达10层没法再新增的时候，往往就是使用redirectTo这个API进行页面跳转。
+		小程序提供了原生的Tabbar支持，我们可以在app.json声明tabBar字段来定义Tabbar页（注：更多详细参数见Tabbar官方文档 ）。
+		
+		代码清单3-14 app.json定义小程序底部tab
+
+		{
+		  "tabBar": {
+			"list": [
+			  { "text": "Tab1", "pagePath": "pageA" },
+			  { "text": "Tab1", "pagePath": "pageF" },
+			  { "text": "Tab1", "pagePath": "pageG" }
+			]
+		  }
+		}
+
+		我们可以在刚刚的例子所在的页面栈中使用wx.switchTab({ url: 'pageF' })，
+		此时原来的页面栈会被清空（除了已经声明为Tabbar页pageA外其他页面会被销毁），然后会切到pageF所在的tab页面，
+		页面栈变成 [ pageF ]，此时点击Tab1切回到pageA时，pageA不会再触发onLoad，因为pageA没有被销毁。
+		补充一下，wx.navigateTo和wx.redirectTo只能打开非TabBar页面，wx.switchTab只能打开Tabbar页面。
+		我们还可以使用 wx. reLaunch({ url: 'pageH' }) 重启小程序，并且打开pageH，此时页面栈为 [ pageH ]。
+		表3-5罗列了详细的页面路由触发方式及页面生命周期函数的对应关系。
+		
+		表3-5 页面路由触发方式及页面生命周期函数的对应关系
+		路由方式		触发时机				路由前页面生命周期	路由后页面生命周期
+		初始化			小程序打开的第一个页面						onLoad, onShow
+		打开新页面 调用	API wx.navigateTo		onHide				onLoad, onShow
+		页面重定向 调用	API wx.redirectTo		onUnload			onLoad, onShow
+		页面返回 调用	API wx.navigateBack		onUnload			onShow
+		Tab	切换 调用 	API wx.switchTab		请参考表3-6			请参考表3-6
+		重启动	调用 	API wx.reLaunch			onUnload			onLoad, onShow
+		
+		
+		Tab 切换对应的生命周期（以 A、B 页面为 Tabbar 页面，C 是从 A 页面打开的页面，D 页面是从 C 页面打开的页面为例）
+		如表3-6所示，注意Tabbar页面初始化之后不会被销毁。
+
+		表3-6 页面路由触发方式及页面生命周期函数的对应关系
+		当前页面		路由后页面		触发的生命周期（按顺序）
+		A				A				无
+		A				B				A.onHide(), B.onLoad(), B.onShow()
+		A				B(再次打开)		A.onHide(), B.onShow()
+		C				A				C.onUnload(), A.onShow()
+		C				B				C.onUnload(), B.onLoad(), B.onShow()
+		D				B				D.onUnload(), C.onUnload(), B.onLoad(), B.onShow()
+		D(从转发进入)	A				D.onUnload(), A.onLoad(), A.onShow()
+		D(从转发进入)	B				D.onUnload(), B.onLoad(), B.onShow()
+	}
+
+	组件{
+		组件是在WXML模板文件声明中使用的，WXML的语法和HTML语法相似，小程序使用标签名来引用一个组件，通常包含开始标签和结束标签，该标签的属性用来描述该组件。
+
+		代码清单3-15 在WXML使用组件示例
+		<!-- page.wxml -->
+		<image mode="scaleToFill" src="img.png"></image>
+		
+		需要注意，所有组件名和属性都是小写，多个单词会以英文横杠 "-" 进行连接。
+		对于一些容器组件，其内容可以声明在其开始标签和结束标签之间。
+		
+		代码清单3-16 容器组件嵌套其他组件
+		<!-- page.wxml -->
+		<view>
+		  <image mode="scaleToFill" src="img.png"></image>
+		  <view>
+			<view>1</view>
+			<view>2</view>
+			<view>3</view>
+		  </view>
+		</view>
+		
+		所有组件都拥有表3-7列举的属性，主要涉及样式和事件绑定，我们不在此处再做额外的说明，详细可以了解2.3节以及3.5节的相关内容。
+
+		表3-7 组件共有属性
+
+		属性名			类型			描述			其他说明
+		id				String			组件的唯一标示	保持整个页面唯一
+		class			String			组件的样式类	在对应的WXSS中定义的样式类
+		style			String			组件的内联样式	可以通过数据绑定进行动态设置的内联样式
+		hidden			Boolean			组件是否显示	所有组件默认显示
+		data-*			Any				自定义属性		组件上触发的事件时，会发送给事件处理函数
+		bind / catch	EventHandler	事件			详情见3.5节
+		
+		组件都拥有各自自定义的属性，可以对该组件的功能或者样式进行修饰，以image图片组件为例，其属性列表如表3-8所示。
+		表3-8 Image图片组件属性
+
+		属性名		类型		默认值			描述
+		src			String						图片资源地址
+		mode		String		'scaleToFill'	图片裁剪、缩放的模式
+		lazy-load	Boolean		false			图片懒加载。只针对page与scroll-view下的image有效 1.5.0
+		binderror	HandleEvent					当错误发生时触发事件，事件对象event.detail = {errMsg: 'something wrong'}
+		bindload	HandleEvent					当图片载入完毕时触发事件，事件对象event.detail = {height:'图片高度px', width:'图片宽度px'}
+		
+		为了不占篇幅，我们不在本书展开所有组件的属性说明，请在使用时前往官方文档进行查阅相关组件说明 https://mp.weixin.qq.com/debug/wxadoc/dev/component/。
+	}
+
+
+	API{
+		宿主环境提供了丰富的API，可以很方便调起微信提供的能力。
+		在前文的代码示例中可以看到，wx.navigateTo可以保留当前页面，然后跳转到新的页面。
+		这里的wx对象实际上就是小程序的宿主环境所提供的全局对象，
+		几乎所有小程序的API都挂载在wx对象底下（除了Page/App等特殊的构造器），所以本书谈到API概念时，通常指的是wx对象底下的方法。
+		小程序提供的API按照功能主要分为几大类：网络、媒体、文件、数据缓存、位置、设备、界面、界面节点信息还有一些特殊的开放接口，
+		
+		我们介绍一下API一般调用的约定：
+		1. wx.on* 开头的 API 是监听某个事件发生的API接口，接受一个 Callback 函数作为参数。当该事件触发时，会调用 Callback 函数。
+		2. 如未特殊约定，多数 API 接口为异步接口 ，都接受一个Object作为参数。
+		3. API的Object参数一般由success、fail、complete三个回调来接收接口调用结果，示例代码如代码清单3-17所示，详细说明如表3-9所示。
+		4. wx.get* 开头的API是获取宿主环境数据的接口。
+		5. wx.set* 开头的API是写入数据到宿主环境的接口。
+
+		码清单3-17 通过wx.request发起网络请求
+		wx.request({
+		url: 'test.php',
+		data: {},
+		header: { 'content-type': 'application/json' },
+		success: function(res) {
+		 // 收到https服务成功后返回
+		 console.log(res.data)
+		},
+		fail: function() {
+		 // 发生网络错误等情况触发
+		},
+		complete: function() {
+		 // 成功或者失败后触发
+		}
+		})
+		
+		代表3-9 API接口回调说明
+
+		参数名字	类型		必填	描述
+		success		Function	否		接口调用成功的回调函数
+		fail		Function	否		接口调用失败的回调函数
+		complete	Function	否		接口调用结束的回调函数（调用成功、失败都会执行）
+		
+		还有需要注意到API调用大多都是异步的，其次，有部分API会拉起微信的原生界面，此时会触发Page的onHide方法，
+		当用户从原生界面返回到小程序时，会触发Page的onShow方法。
+		API的数量非常多，而且随着宿主环境的迭代更新会持续新增API，在这里我们并不想一一展开叙述每一个API的含义，开发者只要了解一般调用API的技巧，再通过官方API文档 https://mp.weixin.qq.com/debug/wxadoc/dev/api/了解到对应的API参数细节即可。在第四章中我们还会通过各种应用场景来展示很多API的用法。
+	}
+
+	事件{
+		代码清单3-18 事件处理示例
+		<!-- page.wxml -->
+		<view id="tapTest" data-hi="WeChat" bindtap="tapName"> Click me! </view>
+
+		// page.js
+		   Page({
+		  tapName: function(event) {
+			console.log(event)
+		  }
+		})
+		
+		事件是通过bindtap这个属性绑定在组件上的，同时在当前页面的Page构造器中定义对应的事件处理函数tapName，
+		当用户点击该view区域时，达到触发条件生成事件tap，该事件处理函数tapName会被执行，同时还会收到一个事件对象event。
+
+		
+		事件类型和事件对象{
+			触发事件是由“用户在渲染层的行为反馈”以及“组件的部分状态反馈”引起的，由于不同组件的状态不一致，所以我们这里不讨论组件相关的事件（组件的事件可以参考其参数说明，详情见官方文档 https://mp.weixin.qq.com/debug/wxadoc/dev/component/ ）
+			常见的事件类型如表3-10所示。
+			
+			表3-10 常见的事件类型
+			类型				触发条件
+			touchstart			手指触摸动作开始
+			touchmove			手指触摸后移动
+			touchcancel			手指触摸动作被打断，如来电提醒，弹窗
+			touchend			手指触摸动作结束
+			tap					手指触摸后马上离开
+			longpress			手指触摸后，超过350ms再离开，如果指定了事件回调函数并触发了这个事件，tap事件将不被触发
+			longtap				手指触摸后，超过350ms再离开（推荐使用longpress事件代替）
+			transitionend		会在 WXSS transition 或 wx.createAnimation 动画结束后触发
+			animationstart		会在一个 WXSS animation 动画开始时触发
+			animationiteration	会在一个 WXSS animation 一次迭代结束时触发
+			animationend		会在一个 WXSS animation 动画完成时触发
+			
+			当事件回调触发的时候，会收到一个事件对象，对象的详细属性如下表所示。
+			表3-11 事件对象属性
+			属性			类型	说明
+			type			String	事件类型
+			timeStamp		Integer	页面打开到触发事件所经过的毫秒数
+			target			Object	触发事件的组件的一些属性值集合
+			currentTarget	Object	当前组件的一些属性值集合
+			detail			Object	额外的信息
+			touches			Array	触摸事件，当前停留在屏幕中的触摸点信息的数组
+			changedTouches	Array	触摸事件，当前变化的触摸点信息的数组
+			
+			这里需要注意的是target和currentTarget的区别，currentTarget为当前事件所绑定的组件，而target则是触发该事件的源头组件。
+
+			代码清单3-19 事件对象示例
+
+			<!-- page.wxml -->
+			<view id="outer" catchtap="handleTap">
+			  <view id="inner">点击我</view>
+			</view>
+			
+			// page.js
+			Page({
+			  handleTap: function(evt) {
+				   // 当点击inner节点时
+				// evt.target 是inner view组件
+				   // evt.currentTarget 是绑定了handleTap的outer view组件
+				   // evt.type == “tap”
+				   // evt.timeStamp == 1542
+				   // evt.detail == {x: 270, y: 63}
+				   // evt.touches == [{identifier: 0, pageX: 270, pageY: 63, clientX: 270, clientY: 63}]
+				   // evt.changedTouches == [{identifier: 0, pageX: 270, pageY: 63, clientX: 270, clientY: 63}]
+			  }
+			})
+			
+			关于target和currentTarget对象的详细参数如表3-12所示。
+			表3-12 target和currentTarget事件对象属性
+			属性	类型	说明
+			id		String	当前组件的id
+			tagName	String	当前组件的类型
+			dataset	Object	当前组件上由data-开头的自定义属性组成的集合
+			
+			关于touch和changedTouches对象的详细参数如表3-13所示。
+			表3-13 touch和changedTouches对象属性
+			属性				类型		说明
+			identifier			Number		触摸点的标识符
+			pageX, pageY		Number		距离文档左上角的距离，文档的左上角为原点 ，横向为X轴，纵向为Y轴
+			clientX, clientY	Number 		距离页面可显示区域（屏幕除去导航条）左上角距离，横向为X轴，纵向为Y轴
+		}
+		
+		事件绑定与冒泡捕获{
+			事件绑定的写法和组件属性一致，以key="value"的形式，其中：
+			key以bind或者catch开头，然后跟上事件的类型，如bindtap、catchtouchstart。自基础库版本1.5.0起，bind和catch后可以紧跟一个冒号，其含义不变，如bind:tap、catch:touchstart。同时bind和catch前还可以加上capture-来表示捕获阶段。
+			. value是一个字符串，需要在对应的页面Page构造器中定义同名的函数，否则触发事件时在控制台会有报错信息。
+			bind和capture-bind的含义分别代表事件的冒泡阶段和捕获阶段，其触发的顺序如图3-8所示。
+			以下示例中，点击 inner view 会先后调用handleTap1、handleTap2、handleTap3、handleTap4。
+
+			码清单3-20    使用capture-前缀阻止事件的冒泡和捕获
+			<view id="outer" bind:tap="handleTap4" capture-bind:tap="handleTap1">
+			  outer view
+			  <view id="inner" bind:tap="handleTap3" capture-bind:tap="handleTap2">
+				inner view
+			  </view>
+			</view>
+			
+			bind事件绑定不会阻止冒泡事件向上冒泡，catch事件绑定可以阻止冒泡事件向上冒泡。如果将以上代码的capture-bind:tap="handleTap1"改成capture-catch:tap="handleTap1"，点击inner view只会触发handleTap1(catch事件阻止了tap事件冒泡)。
+			代码清单3-21 事件的冒泡和捕获
+			<view id="outer" bind:tap="handleTap4" capture-catch:tap="handleTap1">
+			  outer view
+			  <view id="inner" bind:tap="handleTap3" capture-bind:tap="handleTap2">
+				inner view
+			  </view>
+			</view>
+			注意，除表3-10列举的事件类型之外的其他组件自定义事件，如无特殊声明都是非冒泡事件，
+			如<form/>的submit事件，<input/>的input事件，<scroll-view/>的scroll事件。
+		}
+	}
+
+	小程序的兼容{
+		小程序的宿主环境一直在迭代更新，提供更多的能力给开发者去完成更多的事情，所以你的小程序会运行在不同版本的宿主环境下。
+		为了让你的小程序在不同环境下都能提供相应的服务，我们需要来了解一下在小程序中如何实现兼容办法。
+		我们可能需要针对不同手机进行程序上的兼容，
+		此时可以使用 wx.getSystemInfo 或者 wx.getSystemInfoSync 来获取手机品牌、操作系统版本号、微信版本号以及小程序基础库版本号等，通过这个信息，我们可以针对不同平台做差异化的服务。
+		代码清单3-22 通过wx.getSystemInfoSync获取宿主环境信息
+
+		wx.getSystemInfoSync()
+		/*
+		  {
+			brand: "iPhone",      // 手机品牌
+			model: "iPhone 6",    // 手机型号
+			platform: "ios",      // 客户端平台
+			system: "iOS 9.3.4",  // 操作系统版本
+			version: "6.5.23",    // 微信版本号
+			SDKVersion: "1.7.0",  // 小程序基础库版本
+			language: "zh_CN",    // 微信设置的语言
+			pixelRatio: 2,        // 设备像素比
+			screenHeight: 667,    // 屏幕宽度
+			screenWidth: 375,     // 屏幕高度
+			windowHeight: 667,    // 可使用窗口宽度
+			windowWidth: 375,     // 可使用窗口高度
+			fontSizeSetting: 16   // 用户字体大小设置
+		  }
+		 */
+		 
+		随着宿主环境的更新，新版本的宿主环境会提供一些新的API，你可以通过判断此API是否存在来做程序上的兼容。
+		代码清单3-23 通过判断API是否存在做兼容
+		if (wx.openBluetoothAdapter) {
+		  wx.openBluetoothAdapter()
+		} else {
+		  // 如果希望用户在最新版本的客户端上体验您的小程序，可以这样子提示
+		  wx.showModal({
+			title: '提示',
+			content: '当前微信版本过低，无法使用该功能，请升级到最新微信版本后重试。'
+		  })
+		}
+		
+		小程序还提供了wx.canIUse这个API，用于判断接口或者组件在当前宿主环境是否可用，
+		其参数格式为: ${API}.${method}.${param}.${options}或者${component}.${attribute}.${option}
+		各个段的含义如下：
+
+		${API} 代表 API 名字
+		${method} 代表调用方式，有效值为return, success, object, callback
+		${param} 代表参数或者返回值
+		${options} 代表参数的可选值
+		${component} 代表组件名字
+		${attribute} 代表组件属性
+		${option} 代表组件属性的可选值
+		调用的示例代码如下。
+
+		码清单3-24 wx.canIUse调用示例
+
+		// 判断接口及其参数在宿主环境是否可用
+		wx.canIUse('openBluetoothAdapter')
+		wx.canIUse('getSystemInfoSync.return.screenWidth')
+		wx.canIUse('getSystemInfo.success.screenWidth')
+		wx.canIUse('showToast.object.image')
+		wx.canIUse('onCompassChange.callback.direction')
+		wx.canIUse('request.object.method.GET')
+
+		// 判断组件及其属性在宿主环境是否可用
+		wx.canIUse('contact-button')
+		wx.canIUse('text.selectable')
+		wx.canIUse('button.open-type.contact')
+		我们可以选择合适的判断方法来做小程序的向前兼容，以保证我们的小程序在旧版本的微信客户端也能工作正常。
+		在不得已的情况下（小程序强依赖某个新的API或者组件时），
+		还可以通过在小程序管理后台设置“基础库最低版本设置”来达到不向前兼容的目的。
+		例如你选择设置你的小程序只支持1.5.0版本以上的宿主环境，那么当运行着1.4.0版本宿主环境的微信用户打开你的小程序的时候，
+		微信客户端会显示当前小程序不可用，并且提示用户应该去升级微信客户端。
+	}
+
+	触摸反馈{
+		状态选择器{
+			小程序的view容器组件和button组件提供了hover-class属性，触摸时会往该组件加上对应的class改变组件的样式。触摸时候就会改变组件的样式
+
+			代码清单4-1 通过hover-class属性改变触摸时的样式
+			/*page.wxss */
+			.hover{
+			  background-color: gray;
+			}
+
+			<!--page.wxml -->
+			<button type="default" hover-class="hover"> 点击button </button>
+			<view hover-class="hover"> 点击view</view>
+		}
+		
+		loading等待旋转进度条{
+			代码清单4-2 设置button的loading属性
+			<!--page.wxml -->
+			<button loading="{{loading}}" bindtap="tap">操作</button>
+
+			//page.js
+			Page({
+			  data: { loading: false }
+			  tap: function() {
+				// 把按钮的loading状态显示出来
+				this.setData({
+				  loading: true
+				})
+
+				// 接着做耗时的操作
+			  }
+			})
+		}
+		
+		Toast提示对话框{
+			Toast提示默认1.5秒后自动消失。
+			小程序提供了显示隐藏Toast的接口，代码示例如下所示。
+			代码清单4-3 显示/隐藏Toast
+			Page({
+			  onLoad: function() {
+				wx.showToast({ // 显示Toast
+				  title: '已发送',
+				  icon: 'success',
+				  duration: 1500
+				})
+				// wx.hideToast() // 隐藏Toast
+			  }
+			})
+			
+			特别要注意，我们不应该把Toast用于错误提示，
+			因为错误提示需要明确告知用户具体原因，因此不适合用这种一闪而过的Toast弹出式提示。
+		}
+		
+		模态对话框，即弹出对话框(类似于dialog){
+			错误提示一般需要用户明确知晓操作结果状态的话，会使用模态对话框来提示，同时附带下一步操作的指引。
+			代码清单4-4 显示模态对话框
+
+			Page({
+			  onLoad: function() {
+				wx.showModal({
+				  title: '标题',
+				  content: '告知当前状态，信息和解决方法',
+				  confirmText: '主操作',
+				  cancelText: '次要操作',
+				  success: function(res) {
+					if (res.confirm) {
+					  console.log('用户点击主操作')
+					} else if (res.cancel) {
+					  console.log('用户点击次要操作')
+					}
+				  }
+				})
+			  }
+			})
+		}
+		
+		界面滚动{
+			
+			下拉刷新{
+				宿主环境提供了统一的下拉刷新交互，开发者只需要通过配置开启当前页面的下拉刷新，用户往下拉动界面触发下拉刷新操作时，Page构造器的onPullDownRefresh回调会被触发，此时开发者重新拉取新数据进行渲染，实例代码如下所示。
+				代码清单4-5 页面下拉刷新
+				//page.json
+				{"enablePullDownRefresh": true }
+
+				//page.js
+				Page({
+				  onPullDownRefresh: function() {
+					// 用户触发了下拉刷新操作
+					// 拉取新数据重新渲染界面
+					// wx.stopPullDownRefres() // 可以停止当前页面的下拉刷新。
+				  }
+				})
+			}
+			
+			上拉触底{
+				多数的购物小程序会在首页展示一个商品列表，用户滚动到底部的时候，会加载下一页的商品列表渲染到列表的下方，我们把这个交互操作叫为上拉触底。宿主环境提供了上拉的配置和操作触发的回调，如下代码所示。
+				代码清单4-6 页面上拉触底
+				//page.json
+				// 界面的下方距离页面底部距离小于onReachBottomDistance像素时触发onReachBottom回调
+				{"onReachBottomDistance": 100 }
+
+				//page.js
+				Page({
+				  onReachBottom: function() {
+					// 当界面的下方距离页面底部距离小于100像素时触发回调
+				  }
+				})
+				
+			}
+			
+			滚动控件ScrollView{
+				当然我们有些时候并不想整个页面进行滚动，而是页面中某一小块区域需要可滚动，
+				此时就要用到宿主环境所提供的scroll-view可滚动视图组件。
+				可以通过组件的scroll-x和scroll-y属性决定滚动区域是否可以横向或者纵向滚动，
+				scroll-view组件也提供了丰富的滚动回调触发事件，这部分我们就不再展开细节，
+				读者可以通过scroll-view组件的官方文档了解到细节[1]。
+			}
+		}
+	}
+
+
+	网络通信{
+		如果我们需要从 https://test.com/getinfo 接口拉取用户信息，其代码示例如下所示，详细参数如表4-1所示。
+		代码清单4-7 wx.request调用示例
+		wx.request({
+		  url: 'https://test.com/getinfo',
+		  success: function(res) {
+			console.log(res)// 服务器回包信息
+		  }
+		})
+		
+		表4-1 wx.request详细参数
+		参数名		类型			必填	默认值	描述
+		url			String			是				开发者服务器接口地址
+		data		Object/String	否				请求的参数
+		header		Object			否				设置请求的header，header 中不能设置 Referer，默认header['content-type'] = 'application/json'
+		method		String			否		GET		（需大写）有效值：OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT
+		dataType	String			否		json	回包的内容格式，如果设为json，会尝试对返回的数据做一次 JSON解析
+		success		Function		否				收到开发者服务成功返回的回调函数，其参数是一个Object，见表4-2。
+		fail		Function		否				接口调用失败的回调函数
+		complete	Function		否				接口调用结束的回调函数（调用成功、失败都会执行）
+		
+		
+		服务器接口{
+			url参数是当前发起请求的服务器接口地址，小程序宿主环境要求request发起的网络请求必须是https协议请求，
+			因此开发者服务器必须提供HTTPS服务的接口，同时为了保证小程序不乱用任意域名的服务，wx.request请求的域名需要在小程序管理平台进行配置[2]，
+			如果小程序正式版使用wx.request请求未配置的域名，在控制台会有相应的报错。
+			
+			数据兼容性问题：
+			由于我们一直在迭代更新小程序，那么就会有一个问题：在新版小程序发布时的某段时间内，会有部分用户使用旧版本的小程序[4]。
+			如果接口需要支持新的特性需要修改返回的数据格式，那接口的参数和返回字段至少向前兼容一个版本。
+			据个例子，假设前边的https://test.com/getinfo接口返回的JSON数据为：{ "username": "zhangsan","sex": "man" }，
+			在新版本中，我们需要把sex字段的值改成用0, 1来表示性别男女。为了保持接口向前兼容，我们不应该直接改sex字段值的类型，
+			而是返回的JSON数据中再定义多一个字段sexNumber，这样旧版本通过这个接口拿到的数据格式依旧是能够正常工作的。
+		}
+
+		请求参数{
+			通过wx.request这个API，有两种方法把数据传递到服务器：通过url上的参数以及通过data参数。举个例子：我们需要向服务器拿id为1的用户的信息，同时我们把当前小程序的版本带给服务器，让服务器可以做新旧版逻辑兼容，两种方法的代码示例如代码4-8所示。
+			代码清单4-8 wx.request调用示例
+			// 通过url参数传递数据
+			wx.request({
+			  url:'https://test.com/getinfo?id=1&version=1.0.0',
+			  success: function(res) {
+				console.log(res)// 服务器回包信息
+			  }
+			})
+
+			// 通过data参数传递数据
+			wx.request({
+			  url: 'https://test.com/getinfo',
+				 data: { id:1, version:'1.0.0' },
+			  success: function(res) {
+				console.log(res)// 服务器回包信息
+			  }
+			})
+			
+			两种实现方式在HTTP GET请求的情况下表现几乎是一样的，需要留意的是url是有长度限制的，其最大长度是1024字节，
+			同时url上的参数需要拼接到字符串里，参数的值还需要做一次urlEncode。
+			向服务端发送的数据超过1024字节时，就要采用HTTPPOST的形式，此时传递的数据就必须要使用data参数，
+			基于这个情况，一般建议需要传递数据时，使用data参数来传递。
+
+			我们再来单独看看POST请求的情况，并不是所有请求都是按照键值对key=value的形式传递到后台服务器，
+			有时候需要传一些比较复杂的数据结构到后台的时候，用JSON格式会更加合适。
+			此时我们可以在wx.request的header参数设置content-type头部为application/json，
+			小程序发起的请求的包体内容就是data参数对应的JSON字符串，代码示例如下。
+			代码清单4-9 wx.request发起POST请求包体使用json格式
+
+			// 请求的包体为 {"a":{"b":[1,2,3],"c":{"d":"test"}}}
+			wx.request({
+			  url: 'https://test.com/postdata',
+			  method: 'POST',
+			  header: { 'content-type': 'application/json'},
+			  data: {
+				a: {
+				  b: [1, 2, 3],
+				  c: { d: "test" }
+				}
+			  },
+			  success: function(res) {
+				console.log(res)// 服务器回包信息
+			  }
+			})
+		}
+
+		请求之后，收到回包{
+			通过wx.request发送请求后，服务器处理请求并返回HTTP包，小程序端收到回包后会触发success回调，同时回调会带上一个Object信息，详细参数表4-2所示。
+
+			表4-2 wx.request的success返回参数
+
+			参数名		类型			描述
+			data		Object/String	开发者服务器返回的数据
+			statusCode	Number			开发者服务器返回的 HTTP 状态码
+			header		Object			开发者服务器返回的 HTTP Response Header
+			
+			尤其注意，只要成功收到服务器返回，无论HTTP状态码是多少都会进入success回调。
+			因此开发者自己通过对回包的返回码进行判断后再执行后续的业务逻辑。
+
+			success回调的参数data字段类型是根据header['content-type']决定的，
+			默认header['content-type']是'application/json'，在触发success回调前，小程序宿主环境会对data字段的值做JSON解析，
+			如果解析成功，那么data字段的值会被设置成解析后的Object对象，其他情况data字段都是String类型，其值为HTTP回包包体。
+		}
+
+		设置网络请求超时时间{
+			小程序request默认超时时间是60秒，一般来说，我们不需要这么长的一个等待时间才收到回包，可能在等待3秒后还没收到回包就需要给用户一个明确的服务不可用的提示。在小程序项目根目录里边的app.json可以指定request的超时时间。
+			代码清单4-10 app.json指定wx.requset超时时间为3000毫秒
+			{
+			  "networkTimeout"： {
+				"request"： 3000
+			  }
+			}
+		}
+
+		请求前后状态逻辑处理的范例{
+			大部分场景可能是这样的，用户点击一个按钮，界面出现“加载中...”的Loading界面，然后发送一个请求到后台，
+			后台返回成功直接进入下一个业务逻辑处理，后台返回失败或者网络异常等情况则显示一个“系统错误”的Toast，
+			同时一开始的Loading界面会消失。我们给出一个常见的wx.request的示例代码，如下所示。
+			代码清单4-11 wx.request常见的示例代码
+			
+			varhasClick = false;
+			
+			Page({
+			  tap: function() {
+				if (hasClick) {
+				  return
+				}
+				hasClick = true
+				wx.showLoading() //使用代码显示加载等待环形进度条
+				
+				wx.request({
+				  url: 'https://test.com/getinfo',
+				  method: 'POST',
+				  header: { 'content-type':'application/json' },
+				  data: { },
+				  
+				  success: function (res) {
+					if (res.statusCode === 200) {
+					  console.log(res.data)// 服务器回包内容
+					}
+				  },
+				  fail: function (res) {
+					wx.showToast({ title: '系统错误' }) //使用代码弹出一个Toast
+				  },
+				  complete: function (res) {
+					wx.hideLoading()
+					hasClick = false
+				  }
+				})
+			  }
+			})
+			
+			为了防止用户极快速度触发两次tap回调，我们还加了一个hasClick的“锁”，
+			在开始请求前检查是否已经发起过请求，如果没有才发起这次请求，等到请求返回之后再把锁的状态恢复回去。
+		}
+
+		网络请求异常的可能(排查的方法){
+			在使用wx.request接口我们会经常遇到无法发起请求或者服务器无法收到请求的情况，我们罗列排查这个问题的一般方法：
+
+			检查手机网络状态以及wifi连接点是否工作正常。
+			检查小程序是否为开发版或者体验版，因为开发版和体验版的小程序不会校验域名。
+			检查对应请求的HTTPS证书是否有效，同时TLS的版本必须支持1.2及以上版本，可以在开发者工具的console面板输入showRequestInfo()查看相关信息。
+			域名不要使用IP地址或者localhost，并且不能带端口号，同时域名需要经过ICP备案。
+			检查app.json配置的超时时间配置是否太短，超时时间太短会导致还没收到回报就触发fail回调。
+			检查发出去的请求是否302到其他域名的接口，这种302的情况会被视为请求别的域名接口导致无法发起请求。
+		}
+	}
+
+	使用微信登录小程序{
+		使用微信登录小程序后，小程序的后台就相当于通过微信在小程序里注册了，小程序的后台就有了这用户的信息。
+		发送code(即微信登录凭证)到开发者服务器{
+			在wx.login的success回调中拿到微信登录凭证，紧接着会通过wx.request把code传到开发者服务器，
+			为了后续可以换取微信用户身份id。如果当前微信用户还没有绑定当前小程序业务的用户身份，
+			那在这次请求应该顺便把用户输入的帐号密码[7]一起传到后台，
+			然后开发者服务器就可以校验账号密码之后再和微信用户id进行绑定，小程序端的示例代码如下所示。
+			
+			代码清单4-12 wx.login获取code后
+			Page({
+			  tapLogin: function() {
+				wx.login({
+				  success: function(res) {
+					if (res.code) {
+					
+						wx.request({
+						url: 'https://test.com/login',
+						data: {
+						  username: 'zhangsan', // 用户输入的账号
+						  password: 'pwd123456', // 用户输入的密码
+						  code: res.code
+						},
+
+						success: function(res) {
+						  // 登录成功
+						  if (res.statusCode === 200) {
+						   console.log(res.data.sessionId)// 服务器回包内容
+						  }
+						}
+					  })
+					} else {
+					  console.log('获取用户登录态失败！' + res.errMsg)
+					}
+				  }
+				});
+			  }
+			})
+		}
+		
+		小程序的服务器向微信服务器换取微信用户身份id{
+			到了第3步，开发者的后台就拿到了前边wx.login()所生成的微信登录凭证code，
+			此时就可以拿这个code到微信服务器换取微信用户身份。
+			微信服务器为了确保拿code过来换取身份信息的人就是刚刚对应的小程序开发者，
+			到微信服务器的请求要同时带上AppId和AppSecret，这两个信息在小程序管理平台的开发设置界面[8]可以看到，
+			由此可以看出，AppId和AppSecret是微信鉴别开发者身份的重要信息，AppId是公开信息，泄露AppId不会带来安全风险，
+			但是AppSecret是开发者的隐私数据不应该泄露，如果发现泄露需要到小程序管理平台进行重置AppSecret，
+			而code在成功换取一次信息之后也会立即失效，即便凭证code生成时间还没过期。
+			
+			开发者服务器和微信服务器通信也是通过HTTPS协议，微信服务器提供的接口地址是：
+			https://api.weixin.qq.com/sns/jscode2session?appid=<AppId>&secret=<AppSecret>&js_code=<code>&grant_type=authorization_code
+			URL的query部分的参数中 <AppId>, <AppSecret>, <code> 就是前文所提到的三个信息，请求参数合法的话，接口会返回以下字段。
+			
+			表4-3 jscode2session接口返回字段
+
+			字段		描述
+			openid		微信用户的唯一标识
+			session_key	会话密钥
+			unionid		用户在微信开放平台的唯一标识符。本字段在满足一定条件的情况下才返回。
+			
+			我们暂时只要关注前两个字段即可，openid就是前文一直提到的微信用户id，可以用这个id来区分不同的微信用户。
+			session_key则是微信服务器给开发者服务器颁发的身份凭证，
+			开发者可以用session_key请求微信服务器其他接口来获取一些其他信息，
+			由此可以看到，session_key不应该泄露或者下发到小程序前端。
+
+			可能我们会好奇为什么要设计session_key，
+			如果我们每次都通过小程序前端wx.login()生成微信登录凭证code去微信服务器请求信息，
+			步骤太多造成整体耗时比较严重，因此对于一个比较可信的服务端，
+			给开发者服务器颁发一个时效性更长的会话密钥就显得很有必要了。
+			session_key也存在过期时间，因为篇幅关系，我们不在此展开，可以参考小程序的官方文档关于session_key的相关介绍。
+		}
+		
+		业务登录凭证SessionId{
+			4.5.3节已经说到微信侧返回的session_key是开发者服务器和微信服务器的会话密钥，
+			同样道理，开发者服务器和开发者的小程序应该也有会话密钥，在本书中我们就把它称之为SessionId。
+			用户登录成功之后，开发者服务器需要生成会话密钥SessionId，在服务端保持SessionId对应的用户身份信息，
+			同时把SessionId返回给小程序。小程序后续发起的请求中携带上SessionId，
+			开发者服务器就可以通过服务器端的Session信息查询到当前登录用户的身份，这样我们就不需要每次都重新获取code，省去了很多通信消耗。
+			我们在4.6.4还会提到如何利用本地数据缓存的能力把SessionId存储起来，以便在它还没过期的时候能重复利用，以提高通信的性能。
+		}
+	}
+
+	本地数据缓存{
+
+		程序提供了读写本地数据缓存的接口，通过wx.getStorage/wx.getStorageSync读取本地缓存，
+		通过wx.setStorage/wx.setStorageSync写数据到缓存，其中Sync后缀的接口表示是同步接口[9]，
+		执行完毕之后会立马返回，示例代码和参数说明如下所示。
+		
+		读取本地缓存{
+			代码清单4-13 wx.getStorage/wx.getStorageSync读取本地数据缓存
+			wx.getStorage({
+			  key: 'key1',
+			  success: function(res) {
+				// 异步接口在success回调才能拿到返回值
+				var value1 = res.data
+			  },
+			  fail: function() {
+				console.log('读取key1发生错误')
+			  }
+			})
+
+			try{
+			  // 同步接口立即返回值
+			  var value2 = wx.getStorageSync('key2')
+			}catch (e) {
+			  console.log('读取key2发生错误')
+			}
+
+			表4-4 wx.getStorage/wx.getStorageSync详细参数
+			参数名		类型		必填	描述
+			key			String		是		本地缓存中指定的 key
+			success		Function	否		异步接口调用成功的回调函数，回调参数格式: {data: key对应的内容}
+			fail		Function	否		异步接口调用失败的回调函数
+			complete	Function	否		异步接口调用结束的回调函数（调用成功、失败都会执行）
+		}
+		
+		写入本地缓存{
+			代码清单4-14 wx.setStorage/wx.setStorageSync写入本地数据缓存
+			// 异步接口在success/fail回调才知道写入成功与否
+			wx.setStorage({
+			  key:"key",
+			  data:"value1"
+			  success: function() {
+				console.log('写入value1成功')
+			  },
+			  fail: function() {
+				console.log('写入value1发生错误')
+			  }
+			})
+
+			try{
+			  // 同步接口立即写入
+			  wx.setStorageSync('key', 'value2')
+			  console.log('写入value2成功')
+			}catch (e) {
+			  console.log('写入value2发生错误')
+			}
+
+			表4-5 wx.setStorage/wx.setStorageSync详细参数
+
+			参数名	类型	必填	描述
+			key	String	是	本地缓存中指定的 key
+			data	Object/String	是	需要存储的内容
+			success	Function	否	异步接口调用成功的回调函数
+			fail	Function	否	异步接口调用失败的回调函数
+			complete	Function	否	异步接口调用结束的回调函数（调用成功、失败都会执行）
+		}
+		
+		缓存限制和隔离{
+			每个小程序的缓存空间上限为10MB，如果当前缓存已经达到10MB，再通过wx.setStorage写入缓存会触发fail回调。
+			小程序的本地缓存不仅仅通过小程序这个维度来隔离空间，考虑到同一个设备可以登录不同微信用户，
+			宿主环境还对不同用户的缓存进行了隔离，避免用户间的数据隐私泄露。
+			由于本地缓存是存放在当前设备，用户换设备之后无法从另一个设备读取到当前设备数据，
+			因此用户的关键信息不建议只存在本地缓存，应该把数据放到服务器端进行持久化存储。
+		}
+		
+		利用本地缓存提前渲染界面{
+			讨论一个需求：我们要实现了一个购物商城的小程序，首页是展示一堆商品的列表。一般的实现方法就是在页面onLoad回调之后通过wx.request向服务器发起一个请求去拉取首页的商品列表数据，等待wx.request的success回调之后把数据通过setData渲染到界面上，如下代码所示。
+			代码清单4-15 page.js拉取商品列表数据展示在界面上
+			Page({
+			  onLoad: function() {
+				var that = this
+				wx.request({
+				  url: 'https://test.com/getproductlist',
+				  success: function (res) {
+					if (res.statusCode === 200) {
+					  that.setData({
+						list: res.data.list
+					  })
+					}
+				  }
+				})
+			  }
+			})
+			设想一下当用户退出小程序再进来，界面仍然会有白屏现象，因为我们需要等待拉取商品列表的请求回来才能渲染商品列表。当然我们还可以再做一些体验上的优化，例如在发请求前，可能我们会在界面上显示一个Loading提示用户在加载中，但是并没有解决这个延迟渲染的现象，这个时候我们可以利用本地缓存来提前渲染界面。
+			我们在拉取商品列表后把列表存在本地缓存里，在onLoad发起请求前，先检查是否有缓存过列表，如果有的话直接渲染界面，然后等到wx.request的success回调之后再覆盖本地缓存重新渲染新的列表，如下代码所示。
+			代码清单4-16 page.js利用本地缓存提前渲染界面
+			Page({
+			  onLoad: function() {
+				var that = this
+				var list =wx.getStorageSync("list")
+
+				if (list) { // 本地如果有缓存列表，先使用旧数据渲染
+				  that.setData({
+					list: list
+				  })
+				}
+				
+				wx.request({
+				  url: 'https://test.com/getproductlist',
+				  success: function (res) {
+					if (res.statusCode === 200) {
+					  list = res.data.list
+					  that.setData({ // 再次渲染列表
+						list: list
+					  })
+					  wx.setStorageSync("list",list) // 覆盖缓存数据
+					}
+				  }
+				})
+			  }
+			})
+			
+			这种做法可以让用户体验你的小程序时感觉加载非常快，但是你还要留意这个做法的缺点，
+			如果小程序对渲染的数据实时性要求非常高的话，用户看到一个旧数据的界面会非常困惑。
+			因此一般在对数据实时性/一致性要求不高的页面采用这个方法来做提前渲染，用以优化小程序体验。
+		}
+		
+		缓存用户登录态SessionId{
+			在4.4节我们说到处理用户登录态的一般方法，通常用户在没有主动退出登录前，用户的登录态会一直保持一段时间[10]，就无需用户频繁地输入账号密码。如果我们把SessionId记录在Javascript中某个内存变量，当用户关闭小程序再进来小程序时，之前内存的SessionId已经丢失，此时我们就需要利用本地缓存的能力来持久化存储SessionId。
+			代码清单4-17 利用本地缓存持久存储用户登录态SessionId
+			//page.js
+			varapp = getApp()
+			Page({
+			  onLoad: function() {
+				// 调用wx.login获取微信登录凭证
+				wx.login({
+				  success: function(res) {
+					// 拿到微信登录凭证之后去自己服务器换取自己的登录凭证
+					wx.request({
+					  url: 'https://test.com/login',
+					  data: { code: res.code },
+					  success: function(res) {
+						var data = res.data
+						// 把 SessionId 和过期时间放在内存中的全局对象和本地缓存里边
+						app.globalData.sessionId =data.sessionId
+						wx.setStorageSync('SESSIONID',data.sessionId)
+
+						// 假设登录态保持1天
+						var expiredTime = +new Date() +1*24*60*60*1000
+						app.globalData.expiredTime =expiredTime
+						wx.setStorageSync('EXPIREDTIME',expiredTime)
+					  }
+					})
+				  }
+				})
+			  }
+			})
+
+			在重新打开小程序的时候，我们把上一次存储的SessionId内容取出来，恢复到内存。
+			代码清单4-18 利用本地缓存恢复用户登录态SessionId
+
+			//app.js
+			App({
+			  onLaunch: function(options) {
+				var sessionId =wx.getStorageSync('SESSIONID')
+				var expiredTime =wx.getStorageSync('EXPIREDTIME')
+				var now = +new Date()
+
+				if (now - expiredTime <=1*24*60*60*1000) {
+				  this.globalData.sessionId = sessionId
+				  this.globalData.expiredTime = expiredTime
+				}
+			  },
+			  globalData: {
+				sessionId: null,
+				expiredTime: 0
+			  }
+			})
+		}
+		
+	}
+
+	实现扫码(扫二维码){
+		为了让用户减少输入，我们可以把复杂的信息编码成一个二维码，利用宿主环境wx.scanCode这个API调起微信扫一扫，用户扫码之后，wx.scanCode的success回调会收到这个二维码所对应的字符串信息。
+		例如餐厅点餐的小程序，我们给餐厅中每个餐桌编号1-100号，把这个数字编码到二维码中[11]，扫码获得编号之后，就可以知道是哪一桌点的菜，大大提高点餐体验和效率。
+		代码清单4-19 利用wx.scanCode获取二维码的数据
+		//page.js
+		Page({
+		  // 点击“扫码订餐”的按钮，触发tapScan回调
+		  tapScan: function() {
+			// 调用wx.login获取微信登录凭证
+			wx.scanCode({
+			  success: function(res) {
+				var num = res.result // 获取到的num就是餐桌的编号
+			  }
+			})
+		  }
+		})
+		还有很多场景可以结合微信扫码能力做到很好的体验，
+		例如通过扫商品上的一维码做一个商品展示的小程序；通过扫共享单车上的二维码去开启单车。
+		我们可以多思考如何利用这个扫码能力去替代一些繁琐的输入操作，让我们的小程序变得更加便捷。
+	}
+
+	获取手机的网络状态{
+		手机连接到互联网有几种方式：Wifi、2G、3G、4G，包括很快到来的5G。
+		代码清单4-20 利用wx.getNetworkType获取网络状态
+		//page.js
+		Page({
+		  // 点击“预览文档”的按钮，触发tap回调
+		  tap: function() {
+			wx.getNetworkType({
+			  success: function(res) {
+				// networkType字段的有效值：
+				// wifi/2g/3g/4g/unknown(Android下不常见的网络类型)/none(无网络)
+				if (res.networkType == 'wifi') {
+				  // 从网络上下载pdf文档(下载文件)
+				  wx.downloadFile({
+					url:'http://test.com/somefile.pdf',
+					success: function (res) {
+					  // 下载成功之后进行预览文档(打开文件)
+					  wx.openDocument({
+						filePath: res.tempFilePath
+					  })
+					}
+				  })
+				} else {
+				  wx.showToast({ title: '当前为非Wifi环境' })
+				}
+			  }
+			}
+		  }
+		})
+		
+		有时我们的手机连接到网络的方式会动态变化，例如手机设备连接到一个信号不稳定的Wifi热点，导致手机会经常从Wifi切换到移动数据网络。
+		小程序宿主环境也提供了一个可以动态监听网络状态变化的接口wx.onNetworkStatusChange，让开发者可以及时根据网络状况去调整小程序的体验，wx.onNetworkStatusChange这个接口的使用场景留给读者来思考。
+	}
+
+	用户体验审视(界面与逻辑设计规范){
+		1. 导航清晰
+			导航是确保用户在网页中浏览跳转时不迷路的最关键因素。
+			导航需要告诉用户，当前在哪，可以去哪，如何回去等问题。
+			开发者在小程序的设计中，应确保各个页面之间层级清晰明确。
+			每个界面的导航，都指向清晰，有路可退
+		2. 流程明确
+			为了让用户能够顺畅地使用小程序，用户进行操作时，应确定当前页面只设置了单一任务，且不出现目标流程之外的内容（例如广告）。
+			此举有利于让用户明确当前操作的目的，从而集中精力聚焦当前任务，并通过简单操作达到结果。
+		3. 重点突出
+			每个页面都应有明确的重点，以便于用户每进入一个新页面的时候都能快速理解页面内容。
+			在确定过了重点的前提下，应尽量避免页面上出现其它与用户的决策和操作无关的干扰因素。
+			图5-6以搜索功能作为案例说明，突出的搜索入口以达到重点突出，操作明确。
+			图5-7对比了有主次之分的按钮排列与平级按钮排列的效果，有主次之分的视觉展示能让操作决策更快速。
+		4. 符合预期
+			对用户友好的产品，需要在其设计阶段便将自身信息架构和模型与用户的心理模型匹配，
+			以便于用户能够依据以往的使用经验或其他生活经验，降低使用的理解和学习成本，从而快速达成使用目的。
+		5. 等待与反馈
+			在用户使用产品时，往往页面过长时间的等待会引起不良情绪。在不得不需要用户以一定的加载等待时间作为代价时，我们需要用明确的等待状态告知用户，以舒缓用户在等待时期的不良情绪。
+			在设计加载等待状态时，应注意以下事项：
+			1. 若载入等待时间较长，应提供取消操作，并使用进度条显示载入的进度；
+			2. 载入过程中，应保持动画效果；无动画效果的加载很容易让人产生该界面已经卡死的错觉；
+			3. 不要在同一个页面同时使用超过1个加载动画。
+			此外，对于用户的操作结果，小程序也需要给出明确的结果反馈，以增强用户的操作信心和控制感。
+			开发者可以根据实际情况，选择不同的反馈样式。例如，对于页面局部的操作，可在操作区域予直接反馈。
+			对于页面级别的操作结果，可使用弹出式提示、模态对话框或结果页面展示。具体示例如图5-9所示。
+		6. 异常处理
+			在设计任务和流程时，往往用户会因为各种原因导致操作失败。
+			此类异常场景往往是用户最为沮丧和需要帮助的时候，
+			因此，要注意在异常状态下的设计。在出现异常的时候需要给予用户清晰的状态提示，并告知解决方案，使其有路可退。
+			上文提到的模态对话框和结果页面都可以作为异常状态的提醒方式。
+			除此之外，在表单项较多的页面中，应明确指出出错项目(项目文字变红)，以便用户修改，如图5-10所示。
+		7. 内容和文案准确友好
+			在产品通过文案或者页面表达内容时，需要斟酌使用的内容和文案。使用的语言应当简洁，礼貌并容易被用户理解。
+			此外，还要注意专业术语需要被清楚解释，特有词汇全局需用统一的特定表达，重要内容能够被快速获取，
+			且页面不存在无关文案干扰用户决策。
+
+		8. 和谐统一
+			小程序内的设计风格应该是统一、和谐且具有延续性的，这样才能确保用户建立完整的产品品牌认知，更好地辨析不同的小程序。
+
+		9. 平台适配
+			在小程序的设计过程中，应该充分考虑iOS与Android平台不同的设计规范，对设计进行适当调整以适应不同平台上的用户使用习惯。
+			设计文档内容将不断进行修改、完善并更新，可以查看线上资讯[4]获取最新小程序信息。
+	}
+
+	小程序的发布{
+		发布前最后的检查，否则可能无法正常使用{
+			开发者在发布前常常遗漏的点：
+			1.如果小程序使用到Flex布局，并且需要兼容iOS8以下系统时，请检查上传小程序包时，
+			开发者工具是否已经开启“上传代码时样式自动补全”。
+			2.小程序使用的服务器接口应该走HTTPS协议，并且对应的网络域名确保已经在小程序管理平台配置好。
+			3.在测试阶段不要打开小程序的调试模式进行测试，因为在调试模式下，微信不会校验域名合法性，
+			容易导致开发者误以为测试通过，导致正式版小程序因为遇到非法域名无法正常工作。
+			4.发布前请检查小程序使用到的网络接口已经在现网部署好，并且评估好服务器的机器负载情况。
+			
+			当体验版进行充分的检查和测试后达到发布状态，项目管理者可以在小程序平台进行提交审核的操作，
+			提交审核后，微信审核团队会根据相关的运营规范进行提审小程序的审核。审核通过之后，管理者可以随时发布自己的小程序。
+		}
+		
+		发布模式{
+			小程序提供了两种发布模式：全量发布和分阶段发布。
+			
+			全量发布是指当点击发布之后，所有用户访问小程序时都会使用当前最新的发布版本。
+			分阶段发布是指分不同时间段来控制部分用户使用最新的发布版本，分阶段发布我们也称为灰度发布。
+			一般来说，普通小程序发布时采用全量发布即可，当小程序承载的功能越来越多，使用的用户数越来越多时，采用分阶段发布是一个非常好的控制风险的办法。
+			
+			还需要留意一点，并非全量发布之后，用户就会立即使用到最新版的小程序，这是因为微信客户端存有旧版本小程序包缓存。
+			用户在使用小程序时会优先打开本地的小程序包，微信客户端在某些特定的时机异步去更新最新的小程序包。
+			一般我们认为全量发布的24小时后，所有用户才会真正使用到最新版的小程序。
+		}
+		
+		小程序码(小程序的入口二维码){
+			在发布小程序之后，小程序管理平台会提供对应的小程序码的预览和下载，开发者可以自行下载用于线上和线下的小程序服务推广。
+		}
+	}
+
+
+	小程序的底层框架{
+		双线程模型{
+			一般来说，渲染界面的技术有三种：
+			1. 用纯客户端原生技术来渲染(固定的，在安装APP的时候的包里装的代码)
+			2. 用纯 Web 技术来渲染(在 Web 技术中，UI渲染跟 JavaScript 的脚本执行都在一个单线程中执行，这就容易导致一些逻辑任务抢占UI渲染的资源)
+			3. 用客户端原生技术与 Web 技术结合的混合技术（下称 Hybrid 技术）来渲染( Hybrid 技术在业界过去几年里演化过数种技术方案，典型的如早期的PhoneGap[1]，还有近两年流行的React Native[2]（下称 RN），还有像微信网页里的 JS-SDK[3] 这种轻量级的应用)
+			
+			从渲染底层来看，PhoneGap与微信 JS-SDK 是类似的，它们最终都还是使用浏览器内核来渲染界面。
+			而 RN 则不同，虽然是用 Web 相关技术来编写，同样是利用了 JavaScript 解释执行的特性，
+			但 RN 在渲染底层是用客户端原生渲染的。
+			
+			我们选择类似于微信 JSSDK 这样的 Hybrid 技术，即界面主要由成熟的 Web 技术渲染，辅之以大量的接口提供丰富的客户端原生能力。
+		}
+		
+		组件{
+			基于Exparser框架，内置了一套组件，提供了视图容器类、表单类、导航类、媒体类、开放类等几十种组件。有了这么丰富的组件，再配合WXSS，我们可以搭建出任何效果的界面。在功能层面上，也满足绝大部分需求。
+			
+			组件的运行原理{
+				在使用自定义组件的小程序页面中，Exparser将接管所有的自定义组件注册与实例化。
+				从外部接口上看，小程序基础库提供有Page和Component两个构造器。
+				以Component为例，在小程序启动时，构造器会将开发者设置的properties、data、methods等定义段，
+				写入Exparser的组件注册表中。这个组件在被其它组件引用时，就可以根据这些注册信息来创建自定义组件的实例。
+				Page构造器的大体运行流程与之相仿，只是参数形式不一样。这样每个页面就有一个与之对应的组件，称为“页面根组件”。
+
+				在初始化页面时，Exparser会创建出页面根组件的一个实例，用到的其他组件也会响应创建组件实例（这是一个递归的过程）。
+				
+				组件创建的过程大致有以下几个要点：
+				1.根据组件注册信息，从组件原型上创建出组件节点的JS对象，即组件的this；
+				2.将组件注册信息中的data 复制一份，作为组件数据，即this.data；
+				3.将这份数据结合组件WXML，据此创建出Shadow Tree，由于Shadow Tree中可能引用有其他组件，因而这会递归触发其他组件创建过程；
+				4.将ShadowTree拼接到Composed Tree上，并生成一些缓存数据用于优化组件更新性能；
+				5.触发组件的created生命周期函数；
+				6.如果不是页面根组件，需要根据组件节点上的属性定义，来设置组件的属性值；
+				7.当组件实例被展示在页面上时，触发组件的attached 生命周期函数，如果Shadw Tree中有其他组件，也逐个触发它们的生命周期函数。
+			}
+			
+			组件间通信{
+				不同组件实例间的通信有WXML属性值传递、事件系统、selectComponent和relations等方式。
+				其中，WXML属性值传递是从父组件向子组件的基本通信方式，而事件系统是从子组件向父组件的基本通信方式。
+				在通常的理解中，事件可以分为冒泡事件和非冒泡事件，
+				但在ShadowDOM体系中，冒泡事件还可以划分为在Shadow Tree上冒泡的事件和在Composed Tree上冒泡的事件。
+				如果在Shadow Tree上冒泡，则冒泡只会经过这个组件Shadow Tree上的节点，这样可以有效控制事件冒泡经过的范围。
+				
+				用上面的例子来说，当在 button 上触发一个事件时：
+				1. 如果事件是非冒泡的，那只能在 button 上监听到事件；
+				2. 如果事件是在 Shadow Tree 上冒泡的，那 button 、 input-with-label 、view 可以依次监听到事件；
+				3. 如果事件是在 Composed Tree 上冒泡的，那 button 、 slot 、label 、 input-with-label 、 view 可以依次监听到事件。
+				在自定义组件中使用triggerEvent触发事件时，可以指定事件的bubbles、composed和capturePhase属性，用于标注事件的冒泡性质。
+				
+				代码清单6-7 triggerEvent事例
+				Component({
+				  methods: {
+					helloEvent: function() {
+					  this.triggerEvent('hello', {}, {
+						bubbles: true,      // 这是一个冒泡事件
+						composed: true,     // 这个事件在Composed Tree 上冒泡
+						capturePhase: false // 这个事件没有捕获阶段
+					  })
+					}
+				  }
+				})
+				小程序基础库自身也会通过这套事件系统提供一些用户事件，如tap、touchstart和form组件的submit等。
+				其中，tap等用户触摸引发的事件是在ComposedTree上的冒泡事件，其他事件大多是非冒泡事件。
+			}
+		}
+		
+		原生组件{
+			在内置组件中，有一些组件较为特殊，它们并不完全在Exparser的渲染体系下，而是由客户端原生参与组件的渲染，这类组件我们称为“原生组件”,这也是小程序Hybrid技术的一个应用。
+			要介绍原生组件的运行机制，我们需要从一行代码看起。
+			
+			代码清单6-8 展示一个地图组件
+			<map latitude="39.92" longtitude="116.46"></map>
+			在原生组件内部，其节点树非常简单，基本上可以认为只有一个div元素。
+			
+			上面这行代码在渲染层开始运行时，会经历以下几个步聚：
+			1.组件被创建，包括组件属性会依次赋值。
+			2.组件被插入到DOM树里，浏览器内核会立即计算布局，此时我们可以读取出组件相对页面的位置（x, y坐标）、宽高。
+			3.组件通知客户端，客户端在相同的位置上，根据宽高插入一块原生区域，之后客户端就在这块区域渲染界面
+			4.当位置或宽高发生变化时，组件会通知客户端做相应的调整
+			
+			我们可以看出，原生组件在WebView这一层的渲染任务是很简单，只需要渲染一个占位元素，
+			之后客户端在这块占位元素之上叠了一层原生界面。因此，原生组件的层级会比所有在WebView层渲染的普通组件要高。
+			
+			引入原生组件主要有3个好处：
+
+			扩展Web的能力。比如像输入框组件（input, textarea）有更好地控制键盘的能力。
+			体验更好，同时也减轻WebView的渲染工作。
+			比如像地图组件（map）这类较复杂的组件，其渲染工作不占用WebView线程，而交给更高效的客户端原生处理。
+			绕过setData、数据通信和重渲染流程，使渲染性能更好。比如像画布组件（canvas）可直接用一套丰富的绘图接口进行绘制。
+			
+			表6-1 常用的几个原生组件
+
+			组件名	名称			是否有**context**	描述
+			video	视频			是					播放视频
+			map		地图			是					展示地图
+			canvas	画布			是					提供一个可以自由绘图的区域
+			picker	弹出式选择器	否					初始时没有界面，点击时弹出选择器
+			
+			交互比较复杂的原生组件都会提供“context”，用于直接操作组件。
+			以canvas为例，小程序提供了wx.createCanvasContext方法来创建canvas的context。
+			这是一个可以用于操作canvas的对象，对象下提供了很多绘图的方法，如“setFillStyle”方法可以设置填充样式，
+			“fillRect”方法用于绘制矩形（这些方法与HTML DOM Canvas兼容）。
+
+			代码清单6-9 canvas组件context对象示例（WXML代码）
+
+			<canvas canvas-id="myCanvas"></canvas>
+			代码清单6-10 canvas组件context对象示例（JS代码）
+
+			const ctx = wx.createCanvasContext('myCanvas')
+			ctx.setFillStyle('red')
+			ctx.fillRect(10, 10, 150, 75)
+			ctx.draw()
+			
+			这段代码可以创建WXML中对应canvas节点的context，通过调用context中的方法，在画布上绘制一个矩形。
+			类似于canvas，video、map等原生组件都可以创建context，context中提供的方法非常丰富，这里就不一一列举了。
+			
+			原生组件渲染限制(局限性/缺点){
+				原生组件脱离在WebView渲染流程外，这带来了一些限制。最主要的限制是一些CSS样式无法应用于原生组件，
+				例如，不能在父级节点使用overflow:hidden来裁剪原生组件的显示区域；不能使用transformrotate让原生组件产生旋转等。
+				开发者最为常见的问题是，原生组件会浮于页面其他组件之上（相当于拥有正无穷大的z-index值）使其它组件不能覆盖在原生组件上展示。
+				想要解决这个问题，可以考虑使用cover-view和cover-image组件。这两个组件也是原生组件，同样是脱离WebView的渲染流程外，而原生组件之间的层级就可以按照一定的规则控制。
+			}
+		}
+	}
+
+	性能优化{
+		启动的过程{
+			在小程序启动时，微信会为小程序展示一个固定的启动界面，界面内包含小程序的图标、名称和加载提示图标。
+			此时，微信会在背后完成几项工作：下载小程序代码包、加载小程序代码包、初始化小程序首页。
+		}
+		
+		优化代码包的大小{
+			下载到的小程序代码包不是小程序的源代码，而是编译、压缩、打包之后的代码包。
+			代码包大小可以在开发者工具的“详情”栏中找到。
+			从开发者的角度看，控制代码包大小有助于减少小程序的启动时间。对低于1MB的代码包，其下载时间可以控制在929ms（iOS）、1500ms（Android）内。
+
+			以下是一些常规的控制代码包大小的方法。
+				1.精简代码，去掉不必要的WXML结构和未使用的WXSS定义。
+				2.减少在代码包中直接嵌入的资源文件。
+				3.压缩图片，使用适当的图片格式。
+
+			如果小程序比较复杂，优化后的代码总量可能仍然比较大，此时可以采用分包加载的方式进行优化。
+		}
+		
+		分包{
+			一般情况下，小程序的代码将打包在一起，在小程序启动时一次性下载完成。
+			采用分包时，小程序的代码包可以被划分为几个：一个是“主包”，包含小程序启动时会马上打开的页面代码和相关资源；
+			其余是“分包”，包含其余的代码和资源。这样，小程序启动时，只需要先将主包下载完成，就可以立刻启动小程序。
+			这样就可以显著降低小程序代码包的下载时间。
+			
+			代码清单7-1 使用分包时app.json示例
+			{
+			  "pages":[
+				"pages/index",
+				"pages/logs"
+			  ],
+			  "subPackages": [
+				{
+				  "root": "packageA",
+				  "pages": [
+					"pages/cat",
+					"pages/dog"
+				  ]
+				}, {
+				  "root": "packageB",
+				  "pages": [
+					"pages/apple",
+					"pages/banana"
+				  ]
+				}
+			  ]
+			}
+			
+			一个支持分包的小程序目录结构可以组织成上图的形式。
+			代码根目录下有“packageA”和“packageB”两个子目录（它们的名字需要在app.json中声明），这两个子目录就构成了两个分包，
+			每个分包下都可以有自己的页面代码和资源文件。而除掉这两个目录的部分就是小程序的主包。
+			在小程序启动时，“packageA”和“packageB”两个子目录的内容不会马上被下载下来，只有主包的内容才会被下载。利用这个特性就可以显著降低初始启动时的下载时间。
+			使用分包时需要注意代码和资源文件目录的划分。启动时需要访问的页面及其依赖的资源文件应放在主包中。
+		}
+		
+		代码包的加载{
+			小程序的代码包被下载（或从缓存中读取）完成后，小程序的代码会被加载到适当的线程中执行。
+			此时，所有app.js、页面所在的JS文件和所有其他被require的JS文件会被自动执行一次，小程序基础库会完成所有页面的注册。
+			在小程序代码调用Page构造器的时候，小程序基础库会记录页面的基础信息，如初始数据（data）、方法等。
+			需要注意的是，如果一个页面被多次创建，并不会使得这个页面所在的JS文件被执行多次，而仅仅是根据初始数据多生成了一个页面实例（this），在页面JS文件中直接定义的变量，在所有这个页面的实例间是共享的。
+			
+			例如，若从页面A使用wx.navigateTo跳转到页面B，再使用wx.navigateTo跳转到页面A，此时页面栈中有三个页面：A、B、A。这时两个A页面的实例将共享它的JS文件中Page构造器以外直接定义的变量。
+			代码清单7-2 小程序代码包加载期间执行的代码示例
+			console.log('加载 page.js')
+			var count = 0
+			Page({
+			  onLoad: function() {
+				count += 1
+				console.log('第 ' + count + ' 次启动这个页面')
+			  }
+			})
+			
+			如果在page.js中加入这段代码，则在小程序代码包加载阶段就会在控制台中输出一段提示语，
+			并在每次页面被创建后输出这是这个页面第几次被创建。
+			在小程序代码包加载完毕后，小程序基础库会根据启动路径选择一个页面来启动。
+		}
+		
+		页面层级{
+			在视图层内，小程序的每一个页面都独立运行在一个页面层级上。
+			小程序启动时仅有一个页面层级，每次调用wx.navigateTo，都会创建一个新的页面层级；相对地，wx.navigateBack会销毁一个页面层级。
+			
+			页面层级的准备工作有三个阶段：
+			第一阶段是启动一个WebView，在iOS和Android系统上，操作系统启动WebView都需要一小段时间。
+			第二阶段是在WebView中初始化基础库，此时还会进行一些基础库内部优化，以提升页面渲染性能。
+			第三阶段是注入小程序WXML结构和WXSS样式，使小程序能在接收到页面初始数据之后马上开始渲染页面（这一阶段无法在小程序启动前执行）。
+			对于wx.redirectTo，这个调用不会打开一个新的页面层级，而是将当前页面层级重新初始化：重新传入页面的初始数据、路径等，视图层清空当前页面层级的渲染结果然后重新渲染页面。
+		}
+		
+		数据通讯(逻辑层和视图之间的关系){
+			页面初始数据通信{
+				在小程序启动或一个新的页面被打开时，页面的初始数据（data）和路径等相关信息会从逻辑层发送给视图层，用于视图层的初始渲染。
+				Native层会将这些数据直接传递给视图层，同时向用户展示一个新的页面层级，视图层在这个页面层级上进行界面绘制。
+				视图层接收到相关数据后，根据页面路径来选择合适的WXML结构，WXML结构与初始数据相结合，得到页面的第一次渲染结果。
+			}
+			
+			界面更新时的数据通信{
+				初始渲染完毕后，视图层可以在开发者调用setData后执行界面更新。
+				在数据传输时，逻辑层会执行一次JSON.stringify来去除掉setData数据中不可传输的部分，之后将数据发送给视图层。
+				同时，逻辑层还会将setData所设置的数据字段与data合并，使开发者可以用this.data读取到变更后的数据。
+				因此，为了提升数据更新的性能，开发者在执行setData调用时，最好遵循以下原则：
+				1.不要过于频繁调用setData，应考虑将多次setData合并成一次setData调用；
+				2.数据通信的性能与数据量正相关，因而如果有一些数据字段不在界面中展示且数据结构比较复杂或包含长字符串，则不应使用setData来设置这些数据；
+				3.与界面渲染无关的数据最好不要设置在data中，可以考虑设置在page对象的其他字段下。
+
+				代码清单7-3 提升数据更新性能方式的代码示例
+
+				Page({
+				  onShow: function() {
+
+					// 不要频繁调用setData
+					this.setData({ a: 1 })
+					this.setData({ b: 2 })
+					// 绝大多数时候可优化为
+					this.setData({ a: 1, b: 2 })
+
+					// 不要设置不在界面渲染时使用的数据，并将界面无关的数据放在data外
+					this.setData({
+					  myData: {
+						a: '这个字符串在WXML中用到了',
+						b: '这个字符串未在WXML中用到，而且它很长…………………………'
+					  }
+					})
+					// 可以优化为
+					this.setData({
+					  'myData.a': '这个字符串在WXML中用到了'
+					})
+					this._myData = {
+					  b: '这个字符串未在WXML中用到，而且它很长…………………………'
+					}
+
+				  }
+				})
+			}
+			
+			用户事件通信{
+				视图层会接受用户事件，如点击事件、触摸事件等。
+				用户事件的通信比较简单：当一个用户事件被触发且有相关的事件监听器需要被触发时，视图层会将信息反馈给逻辑层。
+				如果一个事件没有绑定事件回调函数，则这个事件不会被反馈给逻辑层。视图层中有一套高效的事件处理体系，可以快速完成事件生成、冒泡、捕获等过程。
+				视图层将事件反馈给逻辑层时，同样需要一个通信过程，通信的方向是从视图层到逻辑层。
+				因为这个通信过程是异步的，会产生一定的延迟，延迟时间同样与传输的数据量正相关，数据量小于64KB时在30ms内。
+				降低延迟时间的方法主要有两个：
+				1.去掉不必要的事件绑定（WXML中的bind和catch），从而减少通信的数据量和次数；
+				2.事件绑定时需要传输target和currentTarget的dataset，因而不要在节点的data前缀属性中放置过大的数据。
+			}
+		}
+		
+		视图层渲染{
+			视图层在接收到初始数据（data）和更新数据（setData数据）时，需要进行视图层渲染。在一个页面的生命周期中，视图层会收到一份初始数据和多份更新数据。
+			收到初始数据时需要执行初始渲染，每次收到更新数据时需要执行重渲染。
+			
+			初始渲染{
+				初始渲染发生在页面刚刚创建时。初始渲染时，将初始数据套用在对应的WXML片段上生成节点树。节点树也就是在开发者工具WXML面板中看到的页面树结构，它包含页面内所有组件节点的名称、属性值和事件回调函数等信息。
+				最后根据节点树包含的各个节点，在界面上依次创建出各个组件。
+				在这整个流程中，时间开销大体上与节点树中节点的总量成正比例关系。因而减少WXML中节点的数量可以有效降低初始渲染和重渲染的时间开销，提升渲染性能。
+				代码清单7-4 简化WXML代码的例子
+
+				<view data-my-data="{{myData}}"> <!-- 这个 view 和下一行的 view 可以合并 -->
+				  <view class="my-class" data-my-data="{{myData}}" bindtap="onTap">
+					<text> <!-- 这个 text 通常是没必要的 -->
+					  {{myText}}
+					</text>
+				  </view>
+				</view>
+
+				<!-- 可以简化为 -->
+				<view class="my-class" data-my-data="{{myData}}" bindtap="onTap">
+				  {{myText}}
+				</view>
+			}
+			
+			重新渲染{
+				初始渲染完毕后，视图层可以多次应用setData的数据。每次应用setData数据时，都会执行重渲染来更新界面。
+				初始渲染中得到的data和当前节点树会保留下来用于重渲染。
+				每次重渲染时，将data和setData数据套用在WXML片段上，得到一个新节点树。
+				然后将新节点树与当前节点树进行比较，这样可以得到哪些节点的哪些属性需要更新、哪些节点需要添加或移除。
+				最后，将setData数据合并到data中，并用新节点树替换旧节点树，用于下一次重渲染。
+				在进行当前节点树与新节点树的比较时，会着重比较setData数据影响到的节点属性。
+				因而，去掉不必要设置的数据、减少setData的数据量也有助于提升这一个步骤的性能。
+			}
+		}
+	}
+
+	基础库{
+		基础库的版本号{
+			小程序基础库版本号使用 semver 规范，格式为 Major.Minor.Patch，
+			其中Major、Minor、Patch均为整数，1.9.901、2.44.322、10.32.44 都是符合 semver 风格的版本号。
+			通常我们月度发布版本会把Minor提升一位，例如从1.9.x升级到1.10.x，如果是修正版本，会把Patch提升一位，
+			例如1.10.0升级到 1.10.1。Major位则是重大特性发布时才会被提升一位。
+			
+			在小程序中，可以通过wx.getSystemInfo()或者wx.getSystemInfoSync()方法获取小程序版本号，如代码8-2所示。
+			代码清单8-2 获取小程序版本号
+			var info = wx.getSystemInfoSync()
+			console.log("小程序基础库版本号为：" + info.SDKVersion)
+			
+			禁止使用字符串比较版本号。(会出现错误)
+			
+			代码8-4给出了正确的比较版本号的方法，后续小程序基础库会内置版本比较的API，建议查阅小程序官方文档使用该方法。
+
+			代码清单8-4 正确比较版本号的方法
+
+			function compareVersion(v1, v2) {
+			  v1 = v1.split('.')
+			  v2 = v2.split('.')
+			  var len = Math.max(v1.length, v2.length)
+
+			  while (v1.length < len) {
+				v1.push('0')
+			  }
+			  while (v2.length < len) {
+				v2.push('0')
+			  }
+
+			  for (var i = 0; i < len; i++) {
+				var num1 = parseInt(v1[i])
+				var num2 = parseInt(v2[i])
+
+				if (num1 > num2) {
+				  return 1
+				} else if (num1 < num2) {
+				  return -1
+				}
+			  }
+			  return 0
+			}
+
+			compareVersion('1.11.0', '1.9.9') // => 1 // 1表示 1.11.0比1.9.9要新
+			compareVersion('1.11.0', '1.11.0') // => 0 // 0表示1.11.0和1.11.0是同一个版本
+			compareVersion('1.11.0', '1.99.0') // => -1 // -1表示1.11.0比 1.99.0要老
+		}
+		
+		异常的捕获与处理{
+			在WebView层有两种方法可以捕捉JS异常：
+
+			1. try, catch方案。你可以针对某个代码块使用try,catch包装，这个代码块运行时出错时能在catch块里边捕捉到。
+			2. .window.onerror方案。也可以通过window.addEventListener("error", function(evt){})，
+				这个方法能捕捉到语法错误跟运行时错误，同时还能知道出错的信息，以及出错的文件，行号，列号。
+				
+			对比window.onerror的方案，try-catch的方案有个缺点：没法捕捉到全局的错误事件，也即是只有try,catch的块里边代码运行出错才会被捕捉到。
+			逻辑层不存在window对象，因此逻辑层AppService测无法通过window.onerror来捕捉异常。
+			所以小程序基础库在WebView侧使用window.onerror方案进行捕捉异常，
+			在逻辑层AppService侧通过把App实例和Page实例的各个声明周期等方法包裹在try-catch里进行捕捉异常。
+			同时在App构造器里提供了onError的回调，当业务代码运行时产生异常时，这个回调被触发，同时能够拿到异常的具体信息，开发者自己根据业务情况处理对应的容错逻辑。
+		}
+	}
+}
+
+页面的跳转{
+	在微信小程序里面跳转的方法主要有下面三种： 
+	- wx.navigateTo() 
+	- wx.redirectTo() 
+	- wx.switchTab()
+	
+	第三种比较特别，这种跳转是专门跳转到带有tabBar 的页面，并关闭其他所有非tabBar 页面，使用上面两种跳转方式是无效的。
+	从tabBar 的页面跳转到非tabBar 的页面，可以使用上面的两种方式。
+
+	wx.switchTab({
+	  url: '/index'
+	})
+	
+	路径可得注意写对，区分绝对路径和相对路径：
+	绝对路径：一般在前面加上/，表示从根目录开始往下寻找 
+	相对路径：相对于当前页面来说，每次使用../就是往上跳出一层
+}
+
+轮播组件swiper{
+	swiper通常是配合着swiper-item来使用的，前者是整个轮播图的容器，后者是单一轮播子项目容器，
+	仅在前者内部使用，宽高默认为swiper 的宽高，只是一个容器，没有其他作用，但是缺少又不行。
+	所以对于swiper-item都应该作用在swiper父节点上面。
+
+	<swiper catchtap='onSwiperTab' indicator-dots='true' autoplay='true' interval='5000'>
+	<swiper-item>
+		<image src='/images/post/bl.png' ></image>
+	</swiper-item>
+	<swiper-item>
+		<image src='/images/post/xiaolong.jpg'></image>
+	</swiper-item>
+	<swiper-item>
+		<image src='/images/post/vr.png' ></image>
+	</swiper-item>
+	</swiper>
+
+	swiper-item里面可以放入其他的一些东西，比如文本；实现一些其他的业务，比如弹幕轮播。
+	通过设置vertical='true'设置轮播滚动的方向，indicator-dots='true'指示器的显示
+	在轮播图里面，实际控制图片的大小是依靠image标签，默认有宽高。
+}
+
+事件的绑定{
+	事件一般分两种：
+	1.冒泡事件：点击了子节点，父节点上面的事件也会执行；但是点击父节点上面的事件，子节点上面的事件不会执行。bind开头：表示冒泡，后面接事件名
+	2.非冒泡事件：当一个组件上的事件被触发后，该事件不会向父节点传递。一般在子节点上面添加。catch开头：表示非冒泡，后面接事件名
+	
+	<view bindtap='onbind'>
+	我是事件2
+	
+	<view bindtap='onBind'>我是事件1</view>
+	
+	</view>
+
+	 onBind: function (event) {
+		console.log("事件1执行了")
+	  },
+	  onbind: function (event) {
+		console.log("事件2执行了")
+	  }
+	在我点击了事件1没有点击事件2的时候，事件2也会被触发，这就是冒泡；
+	但是把方法改为catchtap，点击事件1的时候，只是事件1的函数触发，事件2函数不会被执行。
+	还有一种catch:tap的声明事件的方法。
+}
+
+tabBar页面配置{
+	tabBar是在全局app.json里面配置，跟项目页面都需要在全局app.json里面注册一样，tabBar也是里面的一个属性，其中的list数组最上至少配置2个，最多5个，按照其在数组里面的顺序排布。
+	 "tabBar": {
+		"position":"top", // 按钮的位置，默认为bottom，设置为top的时候，icon设置无效
+		"borderStyle": "white",   // tabBar的颜色
+		"list": [
+		  {
+			"pagePath": "pages/posts/post",  // 页面路径，必须先在pages属性中定义
+			"text": "阅读",
+			"iconPath": "images/tab/yuedu.png",    // 未选中的图片
+			"selectedIconPath": "images/tab/yuedu_hl.png"     // 选中的图片
+		  },
+		  {
+			"pagePath": "pages/movies/movies",
+			"text": "电影",
+			"iconPath": "images/tab/dianying.png",
+			"selectedIconPath": "images/tab/dianying_hl.png"
+		  }
+		]
+	  }
+	在全局的app.json里面配置好了，那么项目启动的时候就默认在最底部出现栏位的切换； 
+	tabBar页面，默认出现在底部当然也可以改变其位置，使其出现在顶部，但出现在顶部的时候，按钮的图片会失效：
+}
+
+数据的绑定{
+	<view>
+	  <view  src='{{author_img}}' catch:tap='onBind'>{{date}}</view>
+	</view>
+
+	Page({
+	 // 页面的初始数据
+	  data: {
+		date:"我是事件1"
+	  }
+	}
+	
+	上面这种就是数据绑定的方式，
+	在对应页面JS文件中的page()的data属性里面，填写页面需要的数据，以键值对的形式，然后在页面对应的位置使用{{key}}，绑定数据。
+	当然可以在一个位置绑定多个数据，只需要这样{{key1}}{{key2}}。在标签的属性上面绑定数据的时候，需要使用"{{key}}"
+	
+	<view>
+	  <view catch:tap='onBind'>{{date}}{{title}}</view>
+	</view>
+
+	Page({
+	   data: { 
+		 date:'stp 17',
+		 title:' hi icessun'
+	   },
+	  onLoad: function (options) {
+		 var dates={
+		   date:'stp 18',
+		   title:'icessun'
+		 }
+		 this.setData(dates)
+	  }
+	}
+	
+	数据绑定，都是借用data这个属性作为一个中转地，服务器上面获取的数据，经过处理，
+	使用this.setData()方法绑定到data属性中的一个变量，在通过这个变量绑定到页面上面。
+}
+
+标签/控件的显示和隐藏{
+	wx:if='{{date}} '，才是控制标签显示和隐藏的关键。
+	如果date是真，那么wx:if='{{date}} '结果为真，就会显示轮播组件。
+	如果date是假，那么wx:if='{{date}} '结果为假，就会隐藏轮播组件。
+}
+
+数据/标签的循环{
+	通常编写页面的时候，想把相同的区域呈现多次，又不想编写冗余的代码，小程序里面通过一个属性：wx:for='{{数据源}}'
+	
+	<view wx:for='{{datesArry}}' wx:for-item='item' wx:for-index='idx'>
+	  <view catch:tap='onBind'>{{item.date}}</view>
+	  <view catch:tap='onBind'>{{item.title}}</view>
+	  <view catch:tap='onBind'>{{item.content}}</view>
+	</view>
+
+	// Page页面中的数据源
+		onLoad: function (options) {
+		var datasArr = [{
+		  date: '2018/2/3',
+		  title: '神盾局特工1',
+		  content: '神盾局特工这个礼拜六停播，说好的不冬歇的呢？'
+		}, {
+		  date: '2018/2/3',
+		  title: '神盾局特工2',
+		  content: '神盾局特工科学组CP要结婚啦!'
+		}]
+		this.setData({ datesArry: datasArr })
+		// this.setData(datasArr)   setData 方法接收的是一个对象，而不是数组
+	  }
+	  
+	我们把要呈现多次的区块，用一个标签包裹view / block，然后在其上面作用于wx:for属性，接收一个数组或者集合的数据，
+	datesArry就是要循环的数据数组，wx:for-item='item' wx:for-index='idx'中的item是被循环的子对象，
+	idx是对应子对象在数据数组里面的索引位置；这两个值都默认是有的，即使不写。
+	前面也说道过，this.setData()方法是把里面接收到的数据，绑定到Page下面的data属性里面，然后在展示在页面中，
+	小程序的数据绑定，都是从Page中的data属性中读取数据去完成数据绑定。这个读取data属性中的数据去绑定到页面的动作是发生在onLoad事件之后的。
+
+	既然这么说的话，那么可不可以直接给data对象身上直接添加属性，并且直接赋值：this.data.datesArry=datasArr，
+	这样是绑定不了数据到页面上，虽然不会报错，小程序的前期版本里面是可以这样绑定数据的。
+	所以都建议使用this.setData()方法去主动更新数据。
+}
+
+不同文件夹下的数据传输/数据共享{
+	要是数据是存放在其他的文件夹下面，应该怎么样读取呢？在数据文件中，通过抛出一个数据出口，来通过其他文件进行访问：
+	module.exports = {
+		postList: dataBase  // 数据数组的名字  
+	}
+	
+	在要使用数据的js文件下，引入要使用数据的路径，应该在page外面引入：
+	var postsData = require('数据文件所在的路径');
+	
+	注意这个require中的路径名是相对路径，不能是绝对路径。
+}
+
+Template模版{
+	模版代码的编写{
+		<template name='postItem'>
+		  <view class='box'>
+			<view class='title-box'>
+			  <text class='title'>{{item.title}}</text>
+			  <text class='date'>{{item.date}}</text>
+			</view>
+			<image src='{{item.imgUrl}}' class='cont-image'></image>
+			<text class='content'>{{item.content}}</text>
+		  </view>
+		</template>
+		
+		为了方便管理我们的模版文件，可以在pages文件夹下面，新建一个模版文件，里面存放编写的模版；
+		我们要使用标签template来包裹代码，并且要给其加一个name属性，当然也要编写对应的样式，和正常写样式的方法没有区别。
+		新建的模版文件里面只能存放模版的wxml和wxss文件。
+		template标签只是一种占位符，告诉编译器这个地方是加载模版代码的，当页面编译完成，这个标签就消失，
+		所以要对与模版文件响应事件，我们就需要在加载模版文件的区域，使用一个可以添加事件的标签把其模版文件包裹起来，比如：view / block
+		<view bindtap=” ....”> template模版代码 </view>
+	}
+	
+	模板代码的使用{
+		编写好了模版代码，怎么样在需要加载模版代码的地方使用呢？
+		首先，模版代码是在其他文件夹中，使用它，就必然要引入该模版文件， 
+		一般在对应要引入模版文件的文件开头部分引入：
+
+		// 在对应的wxml文件中开头引入
+		<import  src = '模版wxml文件路径' />
+
+		// 在对应的wxss文件中开头引入，注意末尾的分号
+		@import '模版wxss文件路径';
+		
+		然后在引入模版文件的wxml文件，适当位置使用:
+		  <template  is = '模版的名字'   data="{{要绑定到模版的数据}}"
+		  
+		到此，简单的模版引入和模版数据的绑定就完成，当我们要循环模版的时候，只需要如下，在外面加一层标签即可：
+
+		// bolck标签的作用是作用事件到template模版上面
+		<block wx:for=" 服务器获取的数据集"  wx:for-item='item' wx:for-index='index' >
+			<template  is = '模版的名字'   data="{{要绑定到模版的数据，一般是服务器获取的一个数据对象item}}"
+		</block>
+	}
+	
+	模板的循环{
+		前一篇文章说了一下数据的循环，借用属性wx:for=' '，通过默认得到的item / index可以知道对应的子对象数据和其索引值；
+		但是我们发现，每一个模版绑定的数据项前面都要使用item.属性值(子对象的属性值)来绑定数据，item是多余的，有没有办法去简化？当然有！
+
+		<view wx:for='{{datesArry}}' wx:for-item='item' wx:for-index='idx'>
+		// 在对应的item的前面加上 ... 三个点
+		  <template is='postItem' data='{{...item}}'  />  
+		  // <view>{{idx}}</view>
+		</view>
+		
+		在循环的子对象item前面加上...三个点，就行。简单的一行代码就实现了下图的页面。
+		前面加三个小点的作用：相当于把子对象给平铺，直接展开了里面的属性值，就可以直接在模版里面绑定这些属性值，不需要在模版里面指定其数据源（这就是...的作用） 
+	}
+}
+
+自定义(标签)属性{
+	自定义属性一般说来都是使用data-开头，绑定一些我们需要存储的信息，传递到其他地方，比如点击的页面文章索引。
+	设置自定义属性很简单，但是要注意一点的是，在操作模版的时候，一定要在其外面包裹一层view，才能进行操作；原因是template标签只是一个占位符，编译后就消失。
+	<view wx:for='{{datesArry}}' wx:for-item='item' data-postId='{{item.postId}} wx:for-index='idx' catchtap='onPostTap' '>
+	  <template is='postItem' data='{{...item}}' />
+	</view>
+	item.postId是从服务器上面获取的，是数据源中的一个属性。
+	
+	获取自定义属性，当然是通过事件去获取
+	onPostTap:function(event){
+		var postId=event.currentTarget.dataset.postid;
+		var postIdData = event.currentTarget.dataset;
+		console.log(postId);   // 1 
+		console.log(postIdData);
+	}
+	
+	event.currentTarget.dataset.postid：获取的自定义属性值
+	event事件对象
+	event.currentTarget：当前点击的目标元素
+	event.currentTarget.dataset：目标元素上面的自定义属性集合
+	
+	通过获取到的自定义属性，可以作为一个参数绑定一个链接上面，达到不同栏位的点击跳转到不同的页面：
+
+	onPostTap:function(event){
+		var postId=event.currentTarget.dataset.postid;
+		wx.navigateTo({
+		url: 'xxxx?id='+postId,
+		})
+	}
+	
+	上面只是说明了在同一个页面之间获取自定义属性，要是在不同页面之间怎么获取自定义属性，达到传递值的作用呢？
+
+	wx.navigateTo({
+		url: 'xxxx?id='+postId,
+	})
+	
+	通过上面的方法把参数postId，传递出去，然后在要接收的页面中使用options.id来获取
+	onLoad: function (options) {
+		var postId = options.id;
+		console.log(options);
+	}
+	
+	options.id就是通过wx.navigateTo传递过去的postId
+}
+
+缓存{
+	设置缓存{
+		wx.setStorageSync('key','value')：同步 
+		wx.setStorage({key:'key',data:'value'})：异步
+
+		wx.setStorageSync('icessun','2018/2/14')   // 同步设置缓存
+		wx.setStorage({key:'跳一跳',data:'666'})   // 异步设置缓存
+		
+		缓存值可以为一个字符串，也可以为一个对象，当第一个参数值相同的时候，后面的会覆盖前面的。
+		wx.setStorageSync('key',{
+		  game: "跳一跳",
+		  gold: "666"
+		})
+	}
+	
+	获取缓存{
+		获取缓存的方法很简单，把对应设置缓存的set变为get就行。 
+		wx.getStorageSync('key')：同步 直接返回获取到的值 
+		wx.getStorage({key:'key',callback})：异步 通过回调函数返回获取的值
+		
+		wx.setStorageSync('key', {
+		  game: "跳一跳",
+		  gold: "666"
+		})
+
+		var a=wx.getStorageSync('key');
+		console.log(a);   //     {game: "跳一跳", gold: "666" }
+		
+		上面是同步获取缓存值的方法，直接通过变量去接收获取到的缓存值，
+		如果是异步的方法获取缓存值，那么需要在回调函数里面取得缓存值；
+		同步和异步两种方法中的`key`是必须要传入的，否者不知道获取的具体缓存值。
+		
+		 wx.setStorage({
+		  key: "跳一跳",
+		  data: "666"
+		})
+
+		var a = wx.getStorage({
+		  key:'跳一跳',
+		  success: function (res) {
+			console.log(res.data);
+			console.log(res);
+		  }
+		});
+		
+		清除缓存{
+			清除缓存的方法有两种，clearStorage和removeStorage，每一种都有同步和异步之分：
+			// 从本地缓存中异步移除指定 key 
+			wx.removeStorage({
+				key: 'key',
+				success: function(res) {
+				console.log(res.data)
+				} 
+			})
+
+			// 同步移除指定 key 
+			try {
+				wx.removeStorageSync('key')
+			} catch (e) {
+				// Do something when catch error
+			}
+
+			//清理本地数据缓存
+			wx.clearStorage()
+
+			// 同步清理本地数据缓存
+			try {
+				wx.clearStorageSync()
+			} catch(e) {
+				// Do something when catch error
+			}
+			
+			缓存是一直存在的，只能通过调用这个方法去清除缓存。
+		}
+	}
+}
+
+定时循环执行{
+	定时每100毫秒循环执行 move()方法
+	var timer = setInterval(this.move,100);
+	
+	如果要停止循环执行：clearInterval(timer);
+}
+
+时间/日期的格式化{
+	//将时间戳格式化为日期
+	function formatDate(timestamp) {
+		var date = new Date(timestamp * 1000);
+		return date.getMonth()+1 + "月" + date.getDate() + "日 " + formatWeekday(timestamp);
+	}
+
+	//将时间戳格式化为时间
+	function formatTime(timestamp) {
+		var date = new Date(timestamp * 1000);
+		return date.getHours() + ":" + date.getMinutes();
+	}
+
+	//中文形式的每周日期
+	function formatWeekday(timestamp) {
+		var date = new Date(timestamp * 1000);
+		var weekday = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+		var index = date.getDay();
+		return weekday[index];
+	}
+}
+
+宽度高度占满屏幕/比例适配{
+	当使用100%不好使时，可以使用vh，vm单位。
+	100vm代表手机宽度，100vh代表手机高度。
+}
+
+flex居中样式{
+	align-items:center;/*垂直居中*/
+	justify-content: center;/*水平居中*/
+}
+
+flex权重的设置{flex-grow:2}
+
+输入框{
+	限制输入长度和输入类型：
+	<input maxlength='5' type='number' placeholder="请输入总播放时间"></input>
+}

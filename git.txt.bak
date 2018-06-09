@@ -1,0 +1,362 @@
+1.创建版本库: 使用 git init,或者右键选择git create repository here
+
+2.将文件添加到暂存区:git add file.java / 添加当前项目的所有文件:git add . 
+	添加到暂存区 ( git add )
+	git add . ：他会监控工作区的状态树，使用它会把工作时的所有变化提交到暂存区，包括文件内容修改(modified)以及新文件(new)，但不包括被删除的文件。
+	git add -u ：他仅监控已经被add的文件（即tracked file），他会将被修改的文件提交到暂存区。add -u 不会提交新文件（untracked file）。（git add --update的缩写）
+	git add -A ：是上面两个功能的合集, 也就是说包括删除的文件也会被提交（git add --all的缩写）
+
+3.查看文件的状态：git status/git status -s （如果加上 -s 参数，可以获得简短的结果输出。）
+	添加了之后是这样的：
+	A  file.java
+	A  hello.php
+	
+	如果添加了之后文件README又有改动，则再次查询状态就会变成：
+	AM  file.java
+	A  hello.php
+	
+	此时再执行一次git add file.java,再次把这文件添加到缓存中(暂存区)即可
+	
+4.查看改动(git diff)/查看缓存改动：git diff --cached
+	git status 显示你上次提交更新后的更改或者写入缓存的改动， 而 git diff 一行一行地显示这些改动具体是什么。
+	
+5.向仓库提交代码(git commit)
+	使用 git add 命令将想要快照的内容写入缓存区， 而执行 git commit 将缓存区内容添加到仓库中。
+	git commit -m '初始化项目' → 向仓库提交代码， -m 选项以在命令行中提供提交注释，(文件变动的)注释就是"初始化项目"
+	如果你觉得 git add 提交缓存的流程太过繁琐，Git 也允许你用 -a 选项跳过这一步。命令格式如下：
+	git commit -am '修改hello 新增微课介绍'
+
+6.取消已缓存的内容(git reset HEAD)(两个文件修改后，都提交到了缓存区，我们现在要取消其中一个的缓存)
+	git reset HEAD -- hello.php 
+	执行 git commit，只会将 README 文件的改动提交，而 hello.php 是没有的
+	如果想要提交，使用：git commit -am '修改 hello 文件'
+	
+7.删除文件 ( git rm )
+	从版本库中删除文件语法如下:
+	git rm <file>
+	
+	如果删除之前修改过并且已经放到暂存区域的话，则必须要用强制删除选项 -f
+	git rm -f <file>
+	
+	如果把文件从暂存区域移除，但仍然希望保留在当前工作目录中，换句话说，仅是从跟踪清单中删除，使用 --cached 选项即可
+	git rm --cached <file>
+	
+	如果只是简单地从工作区中手工删除文件，运行 git status 时就会在 Changes not staged for commit 的提示。
+	这时你有两个选择，一是确实要从版本库中删除该文件，那就用命令 git rm 删掉，并且 git commit ：
+	$ git rm <file>
+	$ git commit -m "单行注释"
+	
+	恢复文件：另一种情况是删错了，因为版本库里还有呢，所以可以很轻松地把误删的文件恢复到最新版本
+	$ git checkout -- <file>
+	git checkout -- <file> 其实是用版本库里的版本替换工作区的版本，无论工作区是修改还是删除，都可以“一键还原”。
+	
+	当我们需要删除暂存区或分支上的文件, 但本地又需要使用, 只是不希望这个文件被版本控制, 可以使用:
+	$ git rm --cached README 
+	
+	递归删除：
+	 -r 参数进行递归删除, 即如果后面跟的是一个目录做为参数，则会递归删除整个目录中的所有子目录和文件：
+	git rm –r test 
+	以上命令会删除 test 目录下的所有文件和子目录。
+8.移动/重命名：git mv 命令用于移动或重命名一个文件、目录、软连接。
+	git mv hello.java hello2.java
+9.添加/关联远程仓库/把本地仓库的内容推送到 GitHub 仓库
+	git remote add origin https://github.com/lucoo01/gitlearn.git
+	注意: 以上的 lucoo01 为 GitHub 账户名, 要替换成自己的
+	
+	把本地库的所有内容推送到远程库上:git push -u origin master
+	由于远程库是空的，我们第一次推送master分支时，加上了-u参数
+	然后输入Github的账号密码即可
+	
+	Git 不但会把本地的master分支内容推送的远程新的master分支，还会把本地的master分支和远程的master分支关联起来，在以后的推送或者拉取时就可以简化命令。 
+	git push -u origin master 如果当前分支与多个主机存在追踪关系, 
+	使用 -u 参数指定一个默认主机，这样后面就可以不加任何参数使用 git push
+10.克隆操作(git clone)
+	使用 git clone 拷贝一个 Git 仓库到本地，让自己能够查看该项目，或者进行修改。
+	如果你需要与他人合作一个项目，或者想要复制一个项目，看看代码，你就可以克隆那个项目。 
+	执行命令：git clone [url]
+	例如：git clone https://github.com/lucoo01/w3cschool.git
+11.更新数据 ( git fetch )
+	git fetch：从远程获取最新版本到本地，不会自动 merge
+	
+	$ git checkout issue12
+	$ git fetch origin issue12
+	$ git log -p issue12..origin/issue12
+	$ git merge origin/issue12
+	解析:
+	(1).切换到issue12分支
+	(2).从远程的origin的issue12主分支下载最新的版本到origin/issue12分支上
+	(3).比较本地的issue12分支和origin/issue12分支的差别  ( git log 常用 -p 选项展开显示每次提交的内容差异 )
+	(4).将origin/issue12分支合并到issue12
+	
+	更新数据 ( git pull  )
+	git pull：相当于是从远程获取最新版本并merge到本地
+
+	$ git checkout issue13
+	$ git pull origin issue13
+	上述 git pull 命令,  相当于 git fetch 和 git merge
+
+12.分支基础命令
+	创建分支命令：
+	git branch (branchname)
+	切换分支命令:
+	git checkout (branchname)
+	当你切换分支的时候，Git 会用该分支的最后提交的快照替换你的工作目录的内容， 所以多个分支不需要多个目录。
+	合并分支命令:
+	git merge 
+	你可以多次合并到统一分支， 也可以选择在合并之后直接删除被并入的分支。
+13.列出分支(git branch)
+	列出分支基本命令：
+	git branch
+	没有参数时，git branch 会列出你在本地的分支。
+	$ git branch
+	* master
+	此例的意思就是，我们有一个叫做 "master" 的分支，并且该分支是当前分支。前面有星号的就是当前分支
+	如：$ git branch
+		  master
+		* newtest
+		  dev
+	则当前分支是newtest
+	当你执行 git init 的时候，缺省情况下 Git 就会为你创建 "master" 分支。
+14.创建新分支(git branch name)
+	例如：$ git branch dev
+	当你以此方式在上次提交更新之后创建了新分支，如果后来又有更新提交， 
+	然后又切换到了 "dev" 分支，Git 将还原你的工作目录到你创建分支时候的样子
+	接下来我们将演示如何切换分支，我们用 git checkout (branch) 切换到我们要修改的分支。
+	1.$ git checkout dev
+		Switched to branch 'dev'
+	2.$ echo '# 随时随地学编程,妈妈再也不用担心我找不到工作啦' > test.md
+	3.$ git add .
+	4.$ git commit -m "新增test.md文件"
+		[dev 37f4d35] 新增test.md文件
+		 1 file changed, 1 insertion(+)
+		 create mode 100644 test.md
+	5.$ ls
+		hello.php  README  test.md
+	6.$ git checkout master
+		Switched to branch 'master'
+	7.$ ls
+		hello.php  README
+
+	以上使用 echo 输出字符串 '# 随时随地学编程,妈妈再也不用担心我找不到工作啦' 并使用 > 重定向到 test.md文件中
+	当我们切换到"master"分支的时候，我们添加的新文件test.md不见了。切换回"master"分支的时候，新文件test.md再次出现。
+	8.$ git checkout dev
+		Switched to branch 'dev'
+	9.$ ls
+		hello.php  README  test.md
+	
+	以上的操作就是：
+	1.切换到dev分支
+	2.创建一个文件，文件里写入'# 随时随地学编程,妈妈再也不用担心我找不到工作啦'
+	3.将文件添加到git暂存中
+	4.将文件提交到仓库
+	5.现在当前有hello.php  README  test.md三个文件
+	6.切换到master分支
+	7.master分支当前就只有hello.php  README两个文件，就相当于还原成了没改变之前
+	
+	
+	创建一个新分支 feature 并切换到该分支：
+	$ git branch feature
+	$ git checkout feature
+	
+	创建一个分支，并自动切换到那个分支
+	git checkout -b (branchname) 
+15.分支合并(git merge)
+	使用以下命令将任何分支合并到当前分支中去：
+	git merge (branchname)
+	
+	我们创建并切换到 dev3 分支中, 在 dev3 中新增文件 loen.md
+	$ git checkout -b dev3
+	 Switched to a new branch 'dev3'
+	$ touch loen.md
+	$ git add .
+	$ git commit -m "新增loen.md"
+	[dev3 7f03049] 新增loen.md
+	 1 file changed, 0 insertions(+), 0 deletions(-)
+	 create mode 100644 loen.md
+	 
+	切回 master 分支并执行合并操作
+	$ git checkout master
+	 Switched to branch 'master'
+	$ ls
+	 hello.php  README
+	$ git merge dev3
+	Updating 9400478..7f03049
+	Fast-forward
+	 loen.md | 0
+	 1 file changed, 0 insertions(+), 0 deletions(-)
+	 create mode 100644 loen.md
+	$ ls
+	hello.php  loen.md  README
+	
+	我们发现合并后 master 中新增了 loen.md 文件
+	
+16.删除分支 (git branch -d name)
+	例如我们要删除"dev"分支：
+	$ git branch
+	* master
+	  newtest
+	  dev
+	$ git branch -d dev
+	Deleted branch dev(was 1037bce).
+	$ git branch
+	* master
+	  newtest
+  
+	Git 鼓励大量使用分支。分支命令：  
+    查看分支：git branch  
+    创建分支：git branch <name>  
+    切换分支：git checkout <name>  
+    创建+切换分支：git checkout -b <name>  
+    合并某分支到当前分支：git merge <name>  
+    删除分支：git branch -d <name>
+
+17.解决冲突
+	比如, 在两个分支中修改了同一个文件的同一行代码,在合并的时候就会发生冲突
+	例如：合并 dev1 
+	$ git merge dev1
+	Auto-merging test.php
+	CONFLICT (content): Merge conflict in test.php
+	Automatic merge failed; fix conflicts and then commit the result.
+	提示我们 test.php 有合并冲突,必须手动解决冲突
+
+	使用 git status 也可以告诉我们存在冲突文件和文件名:
+	$ git status
+	打开冲突的文件，到冲突的行数，看看要保留哪一行，然后提交即可:
+	$ git add .
+	$ git commit -m "conflict fixed"
+	[master 8ae5258] conflict fixed
+
+18.分支管理策略
+	通常 Git 在合并分支的时候会用 Fast forward 模式, 这样删除分支后, 也会丢掉分支信息.
+	我们在合并分支时可以使用 --on-ff 参数,强制禁用 Fastforward 模式, 这样 Git 在合并时会生成一个新的 commit(提交), 
+	然后我们就可以在历史分支上看出分支信息.
+	
+	使用 git merge --no-ff 合并分支:
+	git merge --no-ff -m "merge with no-ff" dev2
+	
+	因为我们禁用 Fast forward 模式, 所以本次合并会创建一个新的 commit(提交), 我们用 -m 给这次 commit 加上描述
+	然后我们用 git log 查看下分支历史：
+	$ git log --graph --pretty=oneline --abbrev-commit
+	*   73dcd5d merge with no-ff
+	|\  
+	| * 523fc69 add Line Loen can fly
+	|/  
+	*   8ae5258 conflict fixed
+	...
+	
+19.查看远程库信息
+	当我们从远程仓库克隆时，实际上 Git 自动把本地的master分支和远程的master分支对应起来了(远程仓库默认名字是 origin) 
+	可以用 git remote 查看远程库的信息
+
+	$ git remote
+	origin
+	加参数 -v 可以显示更详细的信息:
+
+	git remote -v
+	origin	https://github.com/lucoo01/gitlearn.git (fetch)
+	origin	https://github.com/lucoo01/gitlearn.git (push)
+	上面显示了可以抓取和推送的origin的地址。如果没有推送权限，就看不到push的地址。 
+	
+20.推送分支
+	我们想将本地分支推送到远程库,可以使用 git push 命令,在推送时,要指定本地分支, 这样，Git 就会把该分支推送到远程库对应的远程分支上：
+	$ git push origin master
+	如果要推送其他分支, 比如 dev2 :
+	$ git push origin dev2
+21.多人协作
+	在实际项目开发中,往往是多人协作开发的, 大家通常会往远程的 master 或者 dev 分支上推送各自的修改.
+	假设你在 dev 分支上对 入口文件(比如:index.php) 进行修改, 而你的队友恰巧也改了这个文件,并且在你前面推送到远程 dev 分支上.
+	这时你直接向 dev 推送修改,就会失败, Git 会提示我们先用git pull把最新的提交从origin/dev抓下来，
+	然后，在本地合并，解决冲突(如果有冲突的话)，再推送：
+
+	$ git pull
+	如果你没有指定关联 dev 分支与远程 origin/dev 分支的链接, git pull 会失败,这时要先设置下dev和origin/dev的链接：
+
+	$ git branch --set-upstream dev origin/dev
+	Branch dev set up to track remote branch dev from origin.
+	然后再 git pull 就可以了
+	如果 pull 下来,提示有冲突可以参照之前的课程解决冲突,提交,再 push 就可以了
+
+	多人协作的工作模式通常是这样：
+	首先，用 git pull 看有没有人在远程提交代码有的话将其合并到本地;
+	如果合并有冲突，则解决冲突，并在本地提交；
+	没有冲突或者解决掉冲突后，再用 git push origin branchname 推送就能成功！
+22.撤销修改 ( git checkout -- file)
+	命令git checkout -- 文件意思就是，把 该文件 在工作区的修改全部撤销 
+	语法:
+	$ git checkout -- <file>
+	如果 文件 修改后还没有被放到暂存区，现在，撤销修改就是用版本库的版本覆盖当前的文件。
+	如果 文件 已经添加到暂存区后，又作了修改，现在，撤销修改就是将暂存区中的文件版本覆盖当前的文件。
+	总之，就是让这个文件回到最近一次git commit或git add时的状态。 
+	
+	git checkout -- file 命令中的 -- 很重要，没有 --，就变成了 “切换到另一个分支” 的命令
+23.历史记录 (git log)
+	Git 可以使用 git log 命令告诉我们历史记录
+	git log命令显示从最近到最远的提交日志 
+	
+	如果嫌 git log 输出信息太多，看得眼花缭乱，可以加上--pretty=oneline参数: 
+	$ git log --pretty=oneline
+	a9c230a8beacdb0909a43 Loen is a boy
+	ab1ca2bd7a94daaa6a546 Loen's feature
+	e871a660e6d03d67e69e0 Loen's sex
+	38255dee7eeb3d58edf0d rm test.txt
+	f3476aacd297ded5f89d5 init test.txt
+	15492c1f1abedfb5db8ec create test.php
+	你看到的一大串类似a9c230a...909a43的是commit id（版本号）,因为多人协作如果直接用123..容易产生冲突
+24.版本回退(git reset)
+	使用 git reset 回退到上一个版本:
+	git reset --hard HEAD^
+	在 Git 中，用 HEAD 表示当前版本，上一个版本就是 HEAD^，
+	上上一个版本就是 HEAD^^，当然往上100个版本写100个^比较容易数不过来，所以写成HEAD~100 
+	
+	如果回退失误,想要改回原来的 Loen is a boy 版本, 就必须找到 Loen is a boy 的 coommit id .
+	Git 提供了一个命令git reflog用来记录你的每一次命令：
+	$ git reflog
+	ab1ca2b HEAD@{0}: reset: moving to HEAD^
+	a9c230a HEAD@{1}: commit: Loen is a boy
+	
+	我们可以看到  Loen is a boy 的 commit id 为  a9c230a
+
+	$ git reset --hard a9c230a
+	HEAD is now at a9c230a Loen is a boy
+	$ git log --pretty=oneline
+	a9c230a8be2d3cacdb0909a43 Loen is a boy
+	
+	git reset --hard 后也可以指定 commit id 切到指定版本
+	git reflog: 显示整个本地仓储的 commit, 包括所有 branch 的 commit, 甚至包括已经撤销的 commit, 只要 HEAD 发生了变化, 就会在 reflog 里面看得到. 
+25.创建标签(git tag <name>)	
+	创建标签,只需切换到要打标签的分支上，然后使用 git tag <name> 就可以创建一个新标签:
+	$ git tag v1.0
+	
+	我们可以使用 git tag 查看所有的标签:
+	$ git tag
+	v1.0
+	标签是默认打在最新提交的 commit id 上的.
+	
+	我们也可以直接再某个 commit id 上打标签
+	
+	通过 git log 先找到 历史版本的 commit id
+	git log --pretty=oneline --abbrev-commit
+	a9c230a Loen is a boy
+	ab1ca2b Loen's feature
+	e871a66 Loen's sex
+	
+	现在我们给 Loen's sex 版本打上 v0.8 的标签
+	git tag v0.8 e871a66
+	
+	查看当前标签列表
+	git tag
+	v0.8
+	v1.0
+
+
+
+
+
+
+
+
+
+
+
+	
+取消git：右键小乌龟TortoiesGit → Delete and add to ignore list → 完成

@@ -1,0 +1,34 @@
+python笔记
+
+pyqt5{
+	测试安装是否成功。写下面的代码，运行看运行是否正确{
+		if __name__ == '__main__':  
+		app = QtWidgets.QApplication(sys.argv)
+		MainWindow = QtWidgets.QMainWindow()
+		ui = Ui_MainWindow()
+
+		ui.setupUi(MainWindow) 
+		MainWindow.show()
+		sys.exit(app.exec_())
+	}
+	
+	生成的ui文件转成py文件以后，在此py文件后面加下面代码即可运行{
+		if __name__ == '__main__':  
+		app = QtWidgets.QApplication(sys.argv)
+		MainWindow = QtWidgets.QMainWindow()
+		ui = Ui_MainWindow()
+
+		ui.setupUi(MainWindow) 
+		MainWindow.show()
+		sys.exit(app.exec_()) 
+	}
+}
+
+打开pip{
+	pip在安装目录的Script文件夹下，在此文件夹打开命令行即可。如果安装了多个Python版本，
+	没有配置在环境变量的那个python要打开pip需要使用命令(例如我装了27版本的)：python27 -m pip 这里可以写命令。
+	否则会报错：failed to create process.有此错误的方法都可以用这方式解决
+	
+	列出已经安装的模块使用：pip list
+	要删除则使用pip uninstall 模块名
+}

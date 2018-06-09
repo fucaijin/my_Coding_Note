@@ -1,0 +1,321 @@
+html + css{
+
+	单选按钮{
+		<label>
+			<input type="radio" name="indoor-outdoor">
+			outdoor
+		</label>
+	}
+	
+	复选按钮checkbox{
+		<label>
+			<input type="checkbox" name="personality">
+		</label>
+	}
+	
+	默认选中的Radio/checkbox{
+		<label><input type="radio" name="indoor-outdoor" checked> Indoor</label>
+		<label><input type="checkbox" name="personality" checked> Loving</label>
+	}
+	
+	给标签添加id，建议每个id都是唯一的{
+		<form action="/submit-cat-photo" id="cat-photo-form">
+	}
+	
+	给指定id添加样式{
+		在style标签内，使用#id {属性：值；}		例如：#cat-photo-form {background-color: green;}
+	}
+	
+	样式里面有以下属性{
+		.yellow-box {
+			background-color: yellow;
+
+			border-style: solid;//边框的类型
+			border-color: black;//边框颜色
+			border-width: 5px;//边框的宽度
+			text-align: center;//文字在控件中的布局,文字在控件中居中显示
+			font-family: Monospace;//设置字体
+			
+			padding: 10px;
+			padding-top: 40px;
+			padding-right: 20px;
+			padding-bottom: 20px;
+			padding-left: 40px;
+			padding: 10px 20px 10px 20px;//分别是上右下左
+			
+			margin:10px;
+			margin: 10px;
+			margin-top: 40px;
+			margin-right: 20px;
+			margin-bottom: 20px;
+			margin-left: 40px;
+			margin: 10px 20px 10px 20px;//分别是上右下左
+		}
+	}
+	
+	样式style的继承与覆盖{
+		在style里面，body标签内的都会继承body的所有样式，但如果指定了某个标签使用其他class,则会覆盖父类(body)的样式，如果在
+		style里面定义的样式在后面，同时使用多个样式的时候，会使用后面的样式，一个标签只能有一个class属性，如果需要写多几个，就用空格隔开即可
+		浏览器是从上到下读取CSS。这意味着，如果发生冲突，浏览器将使用最后的任何CSS声明。
+		
+		<style>
+			body {
+			background-color: black;
+			font-family: Monospace;
+			color: green;
+			}
+			.pink-text {
+			color: pink;
+			}
+
+			.blue-text {
+				color: blue;
+			}
+		</style>
+		<h1 class="pink-text blue-text">Hello World!</h1>
+	}
+	
+	内联样式，即直接声明在标签里的样式style,它将会覆盖所有父类的样式，例如覆盖class里所有的style{
+		<h1 id="orange-text" class="pink-text blue-text" style="color: white">Hello World!</h1>
+	}
+	
+	设定不被覆盖，在某某添加关键字，就保证了一定会使用此样式{
+	.pink-text {color: pink !important;}
+	}
+	
+	使用十六进制表示颜色,或者RGB设置颜色{
+		<style>
+			body {
+			background-color: #000000;
+			}
+		</style>
+		
+		<style>
+		body {
+		background-color: rgb(0,0,0);
+		}
+		</style>
+	
+	}
+}
+
+javascript{
+
+	转义字符{
+		\'	单引号
+		\"	双引号
+		\\	反斜杠符
+		\n	换行符
+		\r	回车符
+		\t	制表符
+		\b	退格符
+		\f	换页符
+	}
+	
+	获取字符串最后一个字符{
+		str[str.length - 1]
+	}
+	
+	数组中可以有不同类型,例如：{
+		var array = ["John", 23];
+	}
+	
+	多维数组的索引{
+		// Setup
+		var myArray = [[1,2,3], [4,5,6], [7,8,9], [[10,11,12], 13, 14]];
+
+		// Only change code below this line.
+		var myData = myArray[2][1];
+		结果：myData = 8;
+	}
+	
+	数组长度{
+		arr.length;
+	}
+	
+	移除/添加数组中的值，数组的修改 增删{
+		移除最后的值：
+		[1, 4, 6].pop();其会返回被抛出的值
+		var oneDown = [1, 4, 6].pop();
+		现在 oneDown 的值为 6 ，数组变成了 [1, 4]。
+		
+		移除最前面的值：
+		使用.shift()，用法同.pop()，也是会返回被移除的值
+		
+		添加值到数组最前：
+		myArray.unshift(["Paul", 35]);
+		
+		添加值到数组后面：
+		var arr = [1,2,3];
+		arr.push(4);
+		// 现在arr的值为 [1,2,3,4]
+		
+		案例：在数组中添加一个值，然后再删除数组中的第一个值。注意：其操作的返回值是被删除值，而不是修改后的数组
+		arr.push(item);
+		arr.shift();
+	}
+	
+	方法/函数的定义{
+		function 自定义函数名() {
+		console.log("Hello World");//打印日志到工作台
+		}
+	}
+	
+	全等于和等于的比较区别{
+		全等（===）是相对于相等操作符（==）的一种操作符。与相等操作符不同的是全等比较严格，它会同时比较元素的值和 数据类型。
+		3 === 3 // true
+		3 === '3' // false
+	}
+	
+	不全等于和不等于的区别{
+		不全等运算符（!==）与全等运算符是相反的。这意味着“不全等”并返回 false 的地方，用全等运算会返回 true，反之亦然。全等运算符不会转换值的数据类型。
+		除非两个类型相等的，否则返回true
+		只要两个类型或值不相等,就是true
+		3 !== 3 // false
+		3 !== '3' // true
+		4 !== 3 // true
+	}
+	
+	javaScript的switch语句可以判断字符串
+	
+	对象{
+		以下是一个JavaScript的对象：
+		var myDog = {
+		"name": "longmao",
+		"legs": 4,
+		"tails": 1,
+		"friends": ["a", "b", "c"]
+		};
+		
+		
+		对象的读取/访问 增删查改{
+			访问对象方式1：
+			var testObj = {
+			"hat": "ballcap",
+			"shirt": "jersey",
+			"shoes": "cleats"
+			};
+
+			var hatValue = testObj.hat;// Change this line
+			var shirtValue = testObj.shirt;// Change this line
+			
+			访问对象方式2：
+			第二种访问对象的方式就是中括号操作符([])，如果你想访问的属性的名称有一个空格，这时你只能使用中括号操作符([])。
+			这是一个使用中括号操作符([])读取对象属性的例子：
+			var myObj = {
+			"Space Name": "Kirk",
+			"More Space": "Spock"
+			};
+			myObj["Space Name"]; // Kirk
+			myObj['More Space']; // Spock
+			提示：属性名称中如果有空格，必须把属性名称用单引号或双引号包裹起来。
+			
+			var testObj = {
+			12: "Namath",
+			16: "Montana",
+			19: "Unitas"
+			};
+
+			var playerNumber = 16; // Change this Line
+			var player = testObj[playerNumber]; // Change this Line
+			
+			对象类似于字典，可以实现查找功能
+			lookup = {
+			"alpha": "Adams", 
+			"bravo": "Boston", 
+			"charlie": "Chicago", 
+			"delta": "Denver", 
+			"echo": "Easy", 
+			"foxtrot": "Frank"
+			}
+
+			result = lookup[val];
+			
+			
+			修改对象的属性：
+			案例：
+			var ourDog = {
+			"name": "Camper",
+			"legs": 4,
+			"tails": 1,
+			"friends": ["everything!"]
+			};
+			
+			让我们更改它的名称为 "Happy Camper"，这有两种方式来更新对象的name属性：
+			ourDog.name = "Happy Camper";
+			ourDog["name"] = "Happy Camper";
+			
+			给对象增加属性：
+			var ourDog = {
+			"name": "Camper",
+			"legs": 4,
+			"tails": 1,
+			"friends": ["everything!"]
+			};
+			有以下两种方式
+			ourDog.bark = "bow-wow";
+			ourDog["bark"] = "bow-wow";
+			
+			删除对象的属性：
+			delete ourDog.bark;
+			
+			查询对象中是否有某个属性：
+			对象.hasOwnProperty(propname)方法来检查对象是否有该属性。如果有返回true，反之返回 false。
+		}
+	}
+	
+	随机数和向下取整{
+		Math.floor(Math.random()*10);获取随机的0-9的整数
+		
+		获取一定范围内的随机数{
+			Math.floor(Math.random() * (max - min + 1)) + min；
+		}
+	}
+	
+	正则表达式{
+		例如：如果我们想要找到字符串The dog chased the cat中单词 the，我们可以使用下面的正则表达式: /the/gi
+
+		我们可以把这个正则表达式分成几段：
+
+		/ 是这个正则表达式的头部
+
+		the 是我们想要匹配的模式
+
+		/ 是这个正则表达式的尾部
+
+		g 代表着 global(全局)，意味着返回所有的匹配而不仅仅是第一个。
+
+		i 代表着忽略大小写，意思是当我们寻找匹配的字符串的时候忽略掉字母的大小写。
+		
+		
+		示范：
+		var testString = "Ada Lovelace and Charles Babbage designed the first computer and the software that would have run on it.";
+
+		// 举例 找出testString里software的个数
+		var expressionToGetSoftware = /software/gi;
+		var softwareCount = testString.match(expressionToGetSoftware).length;
+
+		// 举例 找出testString里sand的个数
+		var expression = /and/gi;// Change this Line
+		var andCount = testString.match(expression).length;
+		
+		
+		特殊选择器中的一种就是数字选择器\d，意思是被用来获取一个字符串的数字。
+		在JavaScript中, 数字选择器类似于: /\d/g。
+		在选择器后面添加一个加号标记(+)，例如：/\d+/g，它允许这个正则表达式匹配一个或更多数字。
+		尾部的g是'global'的简写，意思是允许这个正则表达式 找到所有的匹配而不是仅仅找到第一个匹配。
+		示范：用 \d 选择器来选取字符串中的所有数字，允许一个或多个数字的可能性。
+		var testString = "There are 3 cats but 4 dogs.";
+		var expression = /\d+/g;// Change this line
+		var digitCount = testString.match(expression).length;
+		
+		
+		我们也可以使用正则表达式选择器 \s 来查找一个字符串中的空白。
+		空白字符有 " " (空格符)、\r (回车符)、\n (换行符)、\t (制表符) 和 \f (换页符)。
+		空白正则表达式类似于：
+		/\s+/g
+		
+		你可以用正则表达式选择器的大写版本来反转任何匹配（相反意思）。
+		例如：\s 匹配任何空白字符，\S 匹配任何非空白字符。
+	}
+}

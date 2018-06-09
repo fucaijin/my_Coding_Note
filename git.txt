@@ -425,6 +425,13 @@
 	
 	.gitignore 文件中忽略 mp4 文件的写法是?
 	*.mp4
+	
+32.删除
+	删除远程useless 文件夹,本地保留
+	一定要注意，删除文件夹要使用-r 参数
+	git rm --cached -r useless
+	git commit -m "remove directory from remote repository"
+	git push
 
 
 	

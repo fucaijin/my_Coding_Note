@@ -1,0 +1,135 @@
+黑马74期
+	使用的类/框架/工具
+		SlidingMenu --- 用来做侧滑面板的
+		viewpagerIndicator --- 用来做viewpager类的滑动的效果，带有指示器的，多种效果
+		Gson/JsonObject --- 用来解析Json的
+		WebView --- 用来加载网页，完美加载文本的，可以带空格缩进的
+		shareSDK --- 用来分享（网页或者其他的）到别的平台，可以是安装的APP或者是没安装的QQ空间什么的
+		友盟 --- 用来统计APP的使用情况
+		zxing --- 扫描二维码
+		DT阿凡达数据 - http://www.avatardata.cn/ --- 彩票等多种类的API免费接口网站 http://www.avatardata.cn/
+		Volley --- APP请求类库和图片加载类库的合集，类似XUtils
+		ViewDragHelper --- 主要用于ViewGroup中对子View拖拽的处理
+		TypeEvaluator --- Android自带的计算器类，可用来计算百分比
+		ViewPropertyAmimator --- 动画类。可以做缩放、移动、透明的动画
+		ButterKnife--- 注解类库，代替findViewById、onClick等
+		XMLUtils(xstream.jar) --- 用来解析xml格式的工具类
+		andrpid-async-http(AsyncHttpClient类) --- 第三方网络请求类库
+		网络http请求类库
+			andrpid原生
+				HttpURLConnection
+				HttpClient
+			第三方
+				XUtil
+				AsyncHttpClient
+				Volley (谷歌官方人写的)
+				Afinal (和XUtil一样)
+				OKHttp (非常优秀，JackWorthon参与维护，被谷歌作为官方请求引擎)
+		图片加载类库
+			XUtil
+			Afinal (和XUtil一样)
+			Volley
+			ImageLoader
+			Picsso
+		filddler --- 抓包工具
+		photoView --- 图片缩放类库，用来看图的，可对图片进行缩放、旋转、裁剪
+		waveLayout --- 点击水波纹效果的第三方类库(应用场景：陌陌、探探)
+	软件
+		截屏/屏幕录制/录屏/屏幕取色/屏幕标尺 --- FastStone Capture 已经安装绿色版，非常好用
+		屏幕录制/录屏/视频编辑 --- Camtasia studio汉化版|Camtasia studio       中的Camtasia Recorder
+		手机上屏幕取色软件 --- Pixolor  -> APK
+		思维导图软件 --- Mindjet MindManager
+		PC思维导图软件 --- XMind
+		屏幕取色 colorspy
+		午安浏览器 --- 免费翻墙的浏览器，可以上google
+	英语词汇
+		全局 global
+		回收 recycled
+		间距 spacing
+		剩余 surplus
+		线程池 ThreadPool
+		当前(现在) current
+		视差 parallax
+		滑动 swipe
+	ERRO
+		代码报错
+			abstract方法 有抽象方法的类，其类也必须声明为抽象的，否则会报错
+		运行时报错
+	常用
+		换行 /n
+		制表符 /t
+		转义符 \
+		状态选择器selector的命名 按下以pressed结尾 正常以normal结尾
+	控件
+		布局控件
+			LinearLayout
+			RelativeLayout
+			FrameLayout
+		子控件
+			TextView
+				文本控件
+			ImageView
+				图片控件
+			Button
+				按钮
+			ImageButtom
+				图片按钮
+			ProgressBar
+				进度条
+			EditText
+				文本输入框
+			RatingBar
+				星星等级星级评分控件
+			RadioButton
+				单选或多选按钮
+			SwipeRefreshLayout
+				具有下拉刷新功能的控件
+	快捷键
+		eclipse
+			局部变量生成成员变量
+				点住局部变量，右键选择Convert local variable to field
+			生成父类构造方法
+				Alt +Shift + S -> C
+			复制类的完整路径
+				单击类，并右键，选择copy qualified name
+			抽取方法 Extract Method
+				Alt +Shift + M
+			查看某个接口/类的实现类(子类)
+				Ctrl + T
+		android studio
+			生成对象/抽取对象
+				Shift+Alt+L
+			重写父类方法
+				Ctrl+O
+			折叠代码
+				局部代码块折叠/展开
+					ctrl+ / ctrl-
+				全部代码块折叠/展开
+					ctrl+* / ctrl+shift+/
+	需要复习的
+		序列化
+		MD5
+		属性动画
+	面试
+		序列化
+		MD5
+		属性动画
+	常用功能
+		如何实现惯性滑动
+		放大缩小移动等
+		点击有水波效果，例如:陌陌
+		数学计算
+			绝对值Math.abs(value)返回的就是绝对值
+	网站
+		stackoverflow.com
+			Android问答类平台，偏的难的问题都可以来这问
+		easyicon.net
+			图标搜索网站
+		www.materialpalette.com
+			APP主题风格颜色的搭配设计网站
+		极光
+			极光推送，大数据统计等
+	名人
+		jackwarton
+		chrisbanes
+			google的android开发人员：android-pullToRefresh下拉刷新第三方库很强大(当前已过时)

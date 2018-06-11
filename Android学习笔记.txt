@@ -1,0 +1,2431 @@
+通过正则表达式搜索   关键字.*?关键字     例如：     TextView.*?图片
+分割线  分隔线
+
+上下文Context:
+getContext     getApplicationContext     this
+
+使用的框架 工具等：
+框架：
+SlidingMenu 								用来做侧滑面板的
+viewpagerIndicator							用来做viewpager累的滑动的效果
+Gson										用来解析Json的
+WebView 									用来加载网页，完美加载文本的，可以带空格缩进的
+shareSDK									用来分享（网页或者其他的）到别的平台，可以是安装的APP或者是没安装的QQ空间什么的
+友盟										用来统计APP的使用情况
+zxing类库									扫描二维码
+DT阿凡达数据 - http://www.avatardata.cn/	彩票等多种类的API免费接口网站 http://www.avatardata.cn/
+
+软件：
+截屏/屏幕录制/录屏/屏幕取色/屏幕标尺        FastStone Capture 已经安装绿色版，非常好用
+屏幕录制/录屏/视频编辑                      Camtasia studio汉化版|Camtasia studio       中的Camtasia Recorder
+手机上屏幕取色软件                          Pixolor  -> APK
+思维导图软件         						Mindjet MindManager
+
+
+android:layout_above=”@id/xxx” 			–将控件置于给定ID控件之上 
+android:layout_below=”@id/xxx” 			–将控件置于给定ID控件之下
+
+android:layout_toLeftOf=”@id/xxx” 		–将控件的右边缘和给定ID控件的左边缘对齐 
+android:layout_toRightOf=”@id/xxx” 		–将控件的左边缘和给定ID控件的右边缘对齐
+
+android:layout_alignLeft=”@id/xxx” 		–控件左侧和指定控件左侧对齐 
+android:layout_alignTop=”@id/xxx” 		–控件上侧和指定控件上侧对齐
+android:layout_alignRight=”@id/xxx” 	–控件右侧和指定控件左侧对齐
+android:layout_alignBottom=”@id/xxx” 	–控件底侧和指定控件底侧对齐
+
+android:layout_alignParentLeft=”true” 	–控件左侧贴近 父控件左侧 
+android:layout_alignParentTop=”true” 	–控件上侧贴近 父控件上侧 
+android:layout_alignParentRight=”true” 	–控件右侧贴近 父控件右侧 
+android:layout_alignParentBottom=”true” –控件底侧贴近 父控件底侧 
+
+android:layout_centerInParent=”true” 	–将控件置于父控件的中心位置 
+android:layout_centerHorizontal=”true” 	–将控件置于水平方向的中心位置 
+android:layout_centerVertical=”true” 	–将控件置于垂直方向的中心位置
+
+
+android:layout_marginLeft=” ” 			–控件与父控件左侧的距离
+
+android:gravity="center_horizontal"		-文字相对于控件的位置,这表示文字在控件中的水平居中位置
+
+android:layout_gravity=" "				-控件相对于父控件的位置
+
+LinearLayout
+让线性布局里的控件居中对齐:
+给线性布局设置属性android:layout_gravity=" "，里面的子控件就以什么样的方式摆放  android:layout_gravity="center_horizontal"
+
+子控件的排列方向:android:orientation="vertical"
+
+相对布局下，让子控件相对于父控件居中，可以给子控件设置以下属性
+android:layout_centerVertical="true"
+
+
+
+获取屏幕尺寸:http://www.jb51.net/article/122684.htm
+在开发中我们会遇到各种需要获得屏幕参数的场景，当中也有不少坑，所以现在就记录一下这些参数的获取方式。以免再入坑。
+物理屏幕宽高
+一、底部没有虚拟按键
+这里获取到的宽高，就是你眼睛能看到的，屏幕亮着的地方的宽高。
+  /**
+   * 获取屏幕的宽
+   *
+   * @param context
+   * @return
+   */
+  public static int getScreenWidth(Context context) {
+    WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    DisplayMetrics dm = new DisplayMetrics();
+    wm.getDefaultDisplay().getMetrics(dm);
+    return dm.widthPixels;
+  }
+
+  /**
+   * 获取屏幕的高度
+   *
+   * @param context
+   * @return
+   */
+  public static int getScreenHeight(Context context) {
+    WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    DisplayMetrics dm = new DisplayMetrics();
+    wm.getDefaultDisplay().getMetrics(dm);
+    return dm.heightPixels;
+  }
+
+二、底部有虚拟按键
+华为手机底部都会有一个黑色的虚拟按键(NavigationBar)，通过上面这个方式得到的屏幕高度是屏幕真是高度-虚拟按键的高度。所以有虚拟按键的情况获取屏幕的高度就是另一种方法了。
+  public static int getRealHeight(Context context) {
+    WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    Display display = wm.getDefaultDisplay();
+    int screenHeight = 0;
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+      DisplayMetrics dm = new DisplayMetrics();
+      display.getRealMetrics(dm);
+      screenHeight = dm.heightPixels;
+
+      //或者也可以使用getRealSize方法
+//      Point size = new Point();
+//      display.getRealSize(size);
+//      screenHeight = size.y;
+    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+      try {
+        screenHeight = (Integer) Display.class.getMethod("getRawHeight").invoke(display);
+      } catch (Exception e) {
+        DisplayMetrics dm = new DisplayMetrics();
+        display.getMetrics(dm);
+        screenHeight = dm.heightPixels;
+      }
+    }
+    return screenHeight;
+  }
+
+虚拟按键高度
+虚拟按键(NavigationBar)高度可以通过读取定义在Android系统尺寸资源中的 navigation_bar_height 获得。
+所以不管虚拟按键是显示还是隐藏，得到的结果都是一样的。
+  public static int getNavigationBarHeight(Context context) {
+    int navigationBarHeight = -1;
+    Resources resources = context.getResources();
+    int resourceId = resources.getIdentifier("navigation_bar_height","dimen", "android");
+    if (resourceId > 0) {
+      navigationBarHeight = resources.getDimensionPixelSize(resourceId);
+    }
+    return navigationBarHeight;
+  }
+
+状态栏高度
+状态栏就是屏幕顶部显示时间，电池，wifi 等信息的栏目。
+方法一：系统提供了一个Resource类，通过这个类可以获取资源文件，借此可以获取 到status_bar_height 。
+  public int getStatusBarHeight() {
+    int result = 0;
+    int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+    if (resourceId > 0) {
+      result = getResources().getDimensionPixelSize(resourceId);
+    }
+    return result;
+  }
+方法2： 通过放射
+Android的所有资源都会有惟一标识在R类中作为引用。我们也可以通过反射获取R类的实例域，然后找 status_bar_height。
+  public void getStatusBarHeightByReflect() {
+    int statusBarHeight2 = -1;
+    try {
+      Class<?> clazz = Class.forName("com.android.internal.R$dimen");
+      Object object = clazz.newInstance();
+      int height = Integer.parseInt(clazz.getField("status_bar_height")
+          .get(object).toString());
+      statusBarHeight2 = getResources().getDimensionPixelSize(height);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    Log.e(TAG, "状态栏高度-反射方式：" + statusBarHeight2);
+  }
+借助应用区 top 属性。
+状态栏位于屏幕的最顶端，坐标从 (0,0) 开始，所以应用区的顶部的位置就是状态栏的高度。
+  /**
+   * 应用区的顶端位置即状态栏的高度
+   * *注意*该方法不能在初始化的时候用
+   * */
+  public void getStatusBarHeightByTop() {
+    
+    Rect rectangle = new Rect();
+    getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
+    Log.e(TAG, "状态栏高度-应用区顶部:" + rectangle.top);
+  }
+应用区域高度
+除去状态栏剩下的都时应用区。由此可知屏幕的高度 - 状态栏高度 = 应用区的高度。
+/**
+   * 不能在 onCreate 方法中使用。
+   * 因为这种方法依赖于WMS（窗口管理服务的回调）。正是因为窗口回调机制，所以在Activity初始化时执行此方法得到的高度是0。
+   * 这个方法推荐在回调方法onWindowFocusChanged()中执行，才能得到预期结果。
+   */
+  public void getAppViewHeight(){
+    //屏幕
+    DisplayMetrics dm = new DisplayMetrics();
+    getWindowManager().getDefaultDisplay().getMetrics(dm);
+    //应用区域
+    Rect outRect1 = new Rect();
+    getWindow().getDecorView().getWindowVisibleDisplayFrame(outRect1);
+    int statusBar = dm.heightPixels - outRect1.height(); //状态栏高度=屏幕高度-应用区域高度
+    Log.e(TAG, "应用区高度:" + statusBar);
+  }
+
+setContentView 高度，view 显示的高度
+需要在见面创建后才能获取到。
+public static int getContentViewHeight(Activity activity) {
+    Rect rectangle= new Rect();
+    activity.getWindow().findViewById(Window.ID_ANDROID_CONTENT).getDrawingRect(rectangle);
+    return rectangle.height();
+  }
+标题栏高度
+标题栏高度 = 应用区高度 - view 显示高度
+  public static void getTitleBarHeight(Activity activity) {
+    Rect outRect1 = new Rect();
+    activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(outRect1);
+
+    int viewTop = activity.getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();  //要用这种方法
+    int titleBarH = viewTop - outRect1.top;
+
+    Log.e(TAG, "标题栏高度-计算:" + titleBarH);
+  }
+以上就是本文的全部内容，希望对大家的学习有所帮助，也希望大家多多支持脚本之家。
+
+
+
+
+
+在application节点中使用：即可取消标题栏
+android:theme="@style/Theme.AppCompat.NoActionBar"
+
+
+沉浸式状态栏:{
+	在Activity的Oncread()里加入以下代码即可实现。最后一行是设置颜色的
+	if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
+			Window window = this.getWindow();
+			window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+			window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+			window.setStatusBarColor(0xff333333);
+			
+	设置沉浸式状态栏无效的可能原因：
+	1.重写的是Activity的onCreate(),然后是在这地方做的状态栏颜色设置,而没有重写AppcompatActivity的onCreate()
+    }
+}
+
+
+		
+		
+用代码给文字设置颜色的几种方式{
+	方式一：<.......android:color="#FFFFFF"/> 
+
+	方式二：tv.setTextColor(0xFFFFFF);
+
+	方式三：tv.setTextColor(Color.GRAY); 
+	方式四：tv.setTextColor(Color.rgb(255, 255, 255)); 
+
+	方式五：tv.setTextColor(Color.parseColor("#FF0000")); 
+
+	方式六：tv.setTextColor(getResources().getColor(R.color.colorPrimary));
+}
+
+
+
+相对布局(居中)对齐方式 --- android:layout_centerVertical="true"
+layout_centerInParent
+
+线性布局(居中)对齐方式 --- android:layout_gravity="Center_Vertical"
+
+
+权限都是在Application标签之外的之前添加
+
+
+alt + shift + M  Android Studio 抽取方法
+
+限定小数点后面几位数，小数点后几位
+String.format("%.2f",double值)
+
+fragment 滑动 模仿微信 https://segmentfault.com/a/1190000008119377
+
+
+
+
+
+EditText输入框{
+	修改输入框EditText的下划线样式颜色：
+	设置属性：android:background="@null"   取消默认样式，即取消下划线
+	
+	设置修改下划线{
+		android:drawableBottom:@drawable/edittext_background_green_line
+		drawable可以用图片，也可以用xml的shape 画出来
+	}
+	
+	取消/禁止输入框EditText自动获取焦点/禁止自动弹出键盘{
+		给EditText的父布局设置可获得焦点的属性即可：
+		android:focusable="true"
+		android:focusableInTouchMode="true"
+		
+		㈠.android:focusableInTouchMode：顾名思义，让activity能获取用户焦点
+		㈡.android:focusable：获取用户焦点
+
+		使用这两个属性，是为了防止启动APP后立即弹出输入法。这里的解决思路就是让其他不能弹出输入法的焦点获取焦点，这样就不会启动时弹出输入法了。
+	}
+	
+	修改输入框EditText光标的样式{
+		android:textCursorDrawable="@drawable/edit_text_cursor_img"
+		<?xml version="1.0" encoding="utf-8"?>
+		<shape xmlns:android="http://schemas.android.com/apk/res/android"
+			android:shape="rectangle">
+			<size android:width="1px"/>
+			<solid android:color="#000000"/>
+		</shape>
+	}
+	
+	输入框的高度动态自增高{
+		android:maxHeight="111dp"
+    android:minHeight="47dp"
+	}
+		
+	设置单行：设置行数android:lines="1"（singleLine属性已过时）
+	
+	输入框EditText限制输入字数：android:maxLength="6"
+	
+	监听输入框EditText内容的变化：editText.addTextChangedListener(new TextWatcher(){})
+	
+	清空输入框EditText的标准做法：edit_text.getText().clear();
+	
+	EditText自动获取焦点并弹出键盘{
+		InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+		inputMethodManager.showSoftInput(editText, 0);
+	}
+	
+	收起键盘{
+		View view = getWindow().peekDecorView();
+        if (view != null) {
+            InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+	}
+	
+	限制输入框EditText输入的类型{
+		只要在字符串内的才能打进去
+		android:digits="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		颜色取值时，限制输入框只能输入数字或一定范围的字母{
+			android:digits="0123456789abcdefABCDEF"
+		}
+	}
+	
+	多个Edittext相互监听，引发的栈溢出java.lang.StackOverflowError；
+	应用场景有多个Edittext相互监听:例如单价,总价,数量三者关系,知道其中两个,计算出另一个,且实时随着编辑框的输入变化着：{
+		
+		private boolean flag = true;//创建成员变量,//标记edittext不会死循环 
+
+		//在重写监听接口TextWatcher的方法的时候，加入判断即可
+		public void afterTextChanged(Editable s) { 
+			if(flag){ 
+				return; 
+			} 
+				flag=true; 
+				//功能实现部分 
+				flag=false; 
+			} 
+		}
+	}
+	
+	监听EditText是否获取焦点{
+		et_account.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View view, boolean getFocus) {
+				if(getFocus){
+				//获取焦点
+				}else {
+				//失去焦点
+				}
+			}
+		});
+	}
+	
+	EditText输入框的模式：{
+		java代码中{
+			//输入类型为没有指定明确的类型的特殊内容类型
+			editText.setInputType(InputType.TYPE_NULL);
+
+			//输入类型为普通文本
+			editText.setInputType(InputType.TYPE_CLASS_TEXT);
+
+			//输入类型为数字文本
+			editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+			//输入类型为电话号码
+			editText.setInputType(InputType.TYPE_CLASS_PHONE);
+
+			//输入类型为日期和时间
+			editText.setInputType(InputType.TYPE_CLASS_DATETIME);
+
+			//输入类型为{@link#TYPE_CLASS_DATETIME}的缺省变化值，允许输入日期和时间。
+			editText.setInputType(InputType.TYPE_DATETIME_VARIATION_NORMAL);
+
+			//输入类型为{@link#TYPE_CLASS_DATETIME}的缺省变化值，只允许输入一个日期。
+			editText.setInputType(InputType.TYPE_DATETIME_VARIATION_DATE);
+
+			//输入类型为{@link#TYPE_CLASS_DATETIME}的缺省变化值，只允许输入一个时间。
+			editText.setInputType(InputType.TYPE_DATETIME_VARIATION_TIME);
+
+			//输入类型为决定所给文本整体类的位掩码
+			editText.setInputType(InputType.TYPE_MASK_CLASS);
+
+			//输入类型为提供附加标志位选项的位掩码
+			editText.setInputType(InputType.TYPE_MASK_FLAGS);
+
+			//输入类型为决定基类内容变化的位掩码
+			editText.setInputType(InputType.TYPE_MASK_VARIATION);
+
+			//输入类型为小数数字，允许十进制小数点提供分数值。
+			editText.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+			//输入类型为数字是带符号的，允许在开头带正号或者负号
+			editText.setInputType(InputType.TYPE_NUMBER_FLAG_SIGNED);
+
+			//输入类型为{@link#TYPE_CLASS_NUMBER}的缺省变化值：为纯普通数字文本
+			editText.setInputType(InputType.TYPE_NUMBER_VARIATION_NORMAL);
+
+			//输入类型为{@link#TYPE_CLASS_NUMBER}的缺省变化值：为数字密码
+			editText.setInputType(InputType.TYPE_NUMBER_VARIATION_PASSWORD);
+
+			//输入类型为自动完成文本类型
+			editText.setInputType(InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE);
+
+			//输入类型为自动纠正文本类型
+			editText.setInputType(InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
+
+			//输入类型为所有字符大写
+			editText.setInputType(InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
+
+			//输入类型为每句的第一个字符大写
+			editText.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+
+			//输入类型为每个单词的第一个字母大写
+			editText.setInputType(InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+
+			//输入多行文本
+			editText.setInputType(InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE);
+
+			//进行输入时，输入法无提示
+			editText.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+
+			//输入一个短的，可能是非正式的消息，如即时消息或短信。
+			editText.setInputType(InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE);
+
+			//输入长内容，可能是正式的消息内容，比如电子邮件的主体
+			editText.setInputType(InputType.TYPE_TEXT_VARIATION_LONG_MESSAGE);
+
+			//输入文本以过滤列表等内容
+			editText.setInputType(InputType.TYPE_TEXT_VARIATION_FILTER);
+
+			//输入一个电子邮件地址
+			editText.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+
+			//输入电子邮件主题行
+			editText.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_SUBJECT);
+
+			//输入一个密码
+			editText.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+			//输入老式的普通文本
+			editText.setInputType(InputType.TYPE_TEXT_VARIATION_NORMAL);
+
+			//输入人名
+			editText.setInputType(InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
+
+			//输入邮寄地址
+			editText.setInputType(InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS);
+
+			//输入语音发音输入文本，如联系人拼音名称字段
+			editText.setInputType(InputType.TYPE_TEXT_VARIATION_PHONETIC);
+
+			//输入URI
+			editText.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
+
+			//输入对用户可见的密码
+			editText.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+
+			//输入网页表单中的文本
+			editText.setInputType(InputType.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT);
+
+			//输入网页表单中的邮件地址
+			editText.setInputType(InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS);
+
+			//输入网页表单中的密码
+			editText.setInputType(InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD);
+		}
+
+		xml布局文件中{
+			//文本类型，多为大写、小写和数字符号,(数字符号)
+			android:inputType="none"//输入普通字符(英语)
+			android:inputType="text"//输入普通字符(汉字)
+			android:inputType="textCapCharacters"//输入普通字符
+			android:inputType="textCapWords"//单词首字母大小
+			android:inputType="textCapSentences"//仅第一个字母大小
+			android:inputType="textAutoCorrect"//前两个自动完成
+			android:inputType="textAutoComplete"//前两个自动完成
+			android:inputType="textMultiLine"//多行输入
+			android:inputType="textImeMultiLine"//输入法多行（不一定支持）
+			android:inputType="textNoSuggestions"//不提示
+			android:inputType="textUri"//URI格式
+			android:inputType="textEmailAddress"//电子邮件地址格式
+			android:inputType="textEmailSubject"//邮件主题格式
+			android:inputType="textShortMessage"//短消息格式
+			android:inputType="textLongMessage"//长消息格式
+			android:inputType="textPersonName"//人名格式
+			android:inputType="textPostalAddress"//邮政格式
+			android:inputType="textPassword"//密码格式
+			android:inputType="textVisiblePassword"//密码可见格式
+			android:inputType="textWebEditText"//作为网页表单的文本格式
+			android:inputType="textFilter"//文本筛选格式
+			android:inputType="textPhonetic"//拼音输入格式
+			//数值类型
+			android:inputType="number"//数字格式
+			android:inputType="numberSigned"//有符号数字格式
+			android:inputType="numberDecimal"//可以带小数点的浮点格式
+			android:inputType="phone"//拨号键盘
+			android:inputType="datetime"//日期+时间格式
+			android:inputType="date"//日期键盘
+			android:inputType="time"//时间键盘
+		}
+
+		密码框的显示和隐藏,密码显示模式切换{
+			if(sign_up_et_password.getInputType() == 128){//如果现在是显示密码模式
+				sign_up_et_password.setInputType(129);//设置为隐藏密码
+			}else {
+				sign_up_et_password.setInputType(128);//设置为显示密码
+			}
+			sign_up_et_password.setSelection(sign_up_et_password.getText().length());//设置光标的位置到末尾
+		}
+		
+	}
+}
+
+
+
+
+
+如果布局里不想要背景，就设置background=“@null”
+
+
+看源码方法：黑马74期-第四部分（自定义控件）-day1-视频05-轮播图广告的实现-第5分钟的时候
+屏幕色彩取色软件，和尺寸测量，为color.exe   size.exe
+
+颜色如果是八位数的话，前面两位代表透明度，例如#33000000，代表浅灰色
+
+
+
+
+java 创建数组：
+int name = new int[]{1,2,3,4...}
+
+xml画圆形
+shape→形状选择：oval   ring是环形    line是线型
+
+Integer.MAX_VALUE   获取Integer int 的最大值
+
+子线程更新UI，1.用Handler        2.在子线程new runOnUiThread(new Runnable{   run(    可以在重写的run方法里面更新UI)})
+
+看popupWindow使用方法：黑马74期-第四部分（自定义控件）-day1-视频08-下拉选择框-第10分钟的时候  （包含用代码创建ListView  ListView的使用方法（第12分钟）    用代码获取控件的属性，宽度等等，EditText.getwith()等）
+
+
+线型布局才可用权重weith,
+
+在母空间里设置属性gravity （是用于控制子控件的位置的）→ 则子控件就会以什么样的方式在母空间中对齐
+
+设置ListView的分割线和背景图在黑马74期-第四部分（自定义控件）-day1-视频09-下拉选择框，ListView获取焦点-第1分钟30秒的时候
+
+布局被Button等自带点击事件等空间抢焦点时，在父控件设置属性descendantFocusability="blocksDescendants"   设置子控件在各自的位置获取焦点，即按哪个控件就哪个控件获取焦点
+
+
+下拉选择框需求：
+1.EditText嵌套了一个按钮，按下就会有一个下拉选择框
+2.点击选择框中的条目，就会自动显示到EditText中，并消失
+3.点击选择框PupopWindow外部，它也会消失（.setOutSideTouchable）
+4.点击删除，就会删除数据，并刷新UI
+5.删除完最后一个条目选择框PupopWindow外部，它也会消失
+
+
+
+完全自定义控件自定义View : 黑马74期-第四部分（自定义控件）-day1-视频10-自定义开关
+
+
+
+
+Android UI 界面绘制流程 : 黑马74期-第四部分（自定义控件）-day1-视频10-自定义开关      第10分钟的时候
+
+自定义控件 - 怎么给自定义控件设置属性，就可以在XML布局文件里直接使用这些属性，黑马74期-第四部分（自定义控件）-day1-视频14-自定义开关 自定义属性
+
+去掉标题 无标题 取消标题栏： 在onCreat()方法的setContentView()之前设置：requestWindowFeature(Window.FEATURE_NO_TITILE)
+
+在ListView最上方添加控件，Button等，可以用listview对象.addheadView(传入要添加在上面的控件的对象)方法，此步骤需要在给ListView设置Adapter之前添加，不然会出错
+
+像下拉刷新的显示然后变成别的等待图片可以用帧布局Framelayout实现，设置两个重叠的图片，然后用代码设置什么时候隐藏就行
+
+画下拉刷新的雷达扫描XML文件，看 : 黑马74期-第四部分（自定义控件）-day2-视频03-下拉刷新_自定义    第4分钟
+下拉刷新隐藏头布局隐藏刷新布局，看 : 黑马74期-第四部分（自定义控件）-day2-视频04-下拉刷新_隐藏头布局    第3分钟
+
+TextView设置图片TextView放图片的时候，要控制图片和文字的间隔距离，就设置属性DrawablePadding值    并设置可点击
+
+设置透明色背景  @android:color/transparent
+
+查看快速抽取样式的方式：黑马74期-第四部分（自定义控件）-day2-视频10-侧滑面板-界面搭建
+
+extract style ←抽取样式
+
+录屏软件:        camtasia studio汉化版|camtasia studio       中的Camtasia Recorder   录屏
+
+平滑滚动，平滑滑动，平滑动画：黑马74期-第四部分（自定义控件）-day2-视频13-侧滑面板_平滑动画:new sroller()   要注意，要先执行super函数，再new 出动画，注意点在11分15秒左右
+
+逻辑代码要写在super.()的下面
+				 
+				 
+				 
+				 
+				 
+JNI笔记
+
+C语言中：
+sizeof(int)可以看int占多少字节.
+println() 要打印变量不用"+" 用占位符，%d  代表int
+打印某个变量(i)的地址println("%d",&i)    → "&"是取地址符     以十六进制打出来 ：println("%#x",&i)   
+什么类型的指针，打印时候的占位符就用什么样的类型，例如，int* point  要打印point，就用%d    println("%d",&point) 
+什么类型的指针,就指向什么类型的地址，不然会出现错误。
+
+数组的结束符  \0
+
+申请堆内存   day01 学生学号管理系统  3分钟的时候    
+
+获取字符串的长度 strlen() 将字符串当参数传入
+			
+使用ADB打开网页，或者打开APP，详情见： JNI  day03   05cfork子进程  19分钟的时候
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+智慧北京：{
+	
+}
+
+splash 开启页面     ：旋转动画（第18分钟） 缩放动画（第20分钟）   渐变动画（第22分钟）    → → → day01-04视频_闪屏页开发-18分钟时候开始
+						多种动画结合在一起，同时不同动画（第23分钟）  动画集合    → → → day01-04视频_闪屏页开发-23分钟时候开始
+
+全屏且不需要状态栏时间等，去掉标题栏取消标题栏和状态栏，如何设置，看  → → → day01-04视频_闪屏页开发-12分钟时候开始
+↓↓↓
+//去除title
+requestWindowFeature(Window.FEATURE_NO_TITLE);
+//去掉Activity上面的状态栏,沉浸式状态栏：全屏模式，使状态栏变为透明状态
+getWindow().setFlags(WindowManager.LayoutParams. FLAG_FULLSCREEN , WindowManager.LayoutParams. FLAG_FULLSCREEN);
+
+
+设置更换APP图标LOGO Icon 和APP名字，看  → → → day01-04视频_闪屏页开发-14分钟时候开始
+
+给动画设置监听，就是监听的动画完成后要干嘛什么的。   → → → day01-05视频_闪屏页转跳页面-30秒时候开始
+
+sharePreference  读写操作XML文件      → → → day01-05视频_闪屏页转跳页面-02分钟时候开始     写入XML文件，在06分钟
+
+Context问题，如果想在你哪个Activity操作，上下文就写哪个Activity.this 	   → → → day01-05视频_闪屏页转跳页面-05分钟时候开始    或者（getApplicationContext）
+
+去掉标题栏取消标题栏 	   → → → day01-06视频_新手引导页开发...-50秒时候开始    必须在setContentView() 前使用 requestWindowFeature(Window.FEATURE_NO_TITILE)
+
+可以滑动的页面ViewPager   新手引导页面   滑动的时候一部分滑动，一部分不滑动按钮不滑动 有小圆点 滑动小圆点   → → → day01-06视频_新手引导页开发...-第2分钟时候开始
+
+用java代码创建ImageView          → → → day01-06视频_新手引导页开发...-12分钟时候开始
+
+用xml文件画图形画圆形画小圆点 shape          → → → day01-07视频_页面指示器开发...-7分钟时候开始
+
+用java代码设置View的宽高间距等属性             → → → day01-07视频_页面指示器开发...-11分钟时候开始
+
+Eclipse绑定Android源码步骤教程             → → → day01-07视频_页面指示器开发...-21分钟时候开始
+
+ViewPager的滑动监听方法解释setOnPageChangeLinstener()            → → → day01-07视频_页面指示器开发...-21分钟时候开始
+
+计算两个控件之间间距的距离 得在Oncread方法执行结束后才可以，可以监听layout方法结束事件              → → → day01-07视频_页面指示器开发...-32分钟时候开始 一直到40分钟才开始,49分钟是layout方法执行结束回调的方法解释   
+要移动小圆点可以用marginLeft等margin不断修改小圆点距离
+
+视图树观察工具  hierarchyviewer    → → → day01-07视频_页面指示器开发1...-43分钟时候开始 
+
+用代码获取布局的属性参数：   .getLayoutParams()   → → → day01-08视频_页面指示器小圆点开发2...-09分钟时候开始 
+
+button按钮中的文字的选择器selector        → → → day01-09视频_开始体验按钮逻辑...-07分钟时候开始 
+
+
+侧滑 侧边栏 库 SlidingMenu          → → → day01-10视频_库项目介绍...-02分钟时候开始（库项目使用方法步骤  把项目打包成Lib jar包  库文件）     库的使用的注意事项在11分钟
+侧滑 侧边栏 库 SlidingMenu          → → → day01-11视频_SlidingMenu介绍...-10分钟时候开始做Demo
+
+错误 dex Loader unable to execute dex : Multiple dex files define ....  多个jar包重复了，例如引入的lib库包里也有和项目一样的v4包等，引发冲突，把自己的库包删除就行，详情见     → → → day01-12视频_智慧北京使用侧边栏.       第3分钟
+
+
+Fragment 生命周期                   → → → day02-02视频_使用fragment搭建UI框架...-07分钟时候开始
+Activity 生命周期   6个  onCreate(onDestroy)    onStart(onStop)     onResum(onPause)    → → → day02-02视频_使用fragment搭建UI框架...-10分钟时候开始
+在Fragment里面拿到获取它的父Activity（） 获取fragment所依赖的Activity   以及写BaseFragment     → → → day02-02视频_使用fragment搭建UI框架...-12分钟时候开始
+在fragment的onCreateView初始化Fragment的布局           → → → day02-02视频_使用fragment搭建UI框架...-13分钟时候开始
+在fragment加载一个布局的时候，需要Context，这个Contex可以在BaseFragment定义，或者从        → → → day02-02视频_使用fragment搭建UI框架...-21分钟时候开始
+要定义一个空的布局用FrameLayout（用以放置fragment）        → → → day02-02视频_使用fragment搭建UI框架...-25分钟时候开始
+初始化Fragment（在Activity加入加载Fragment）        → → → day02-02视频_使用fragment搭建UI框架...-28分钟时候开始
+绑定源码（可能是外库的源码，注意看清楚）        → → → day02-02视频_使用fragment搭建UI框架...-29分钟时候开始
+根据Tab找到Fragment对象        → → → day02-02视频_使用fragment搭建UI框架...-36分钟时候开始
+用RadioGroup和RadioButton开发底部标签栏，类似于微信的底部标签栏        → → → day02-03视频_主页底栏标签开发...-05分钟时候开始
+用RadioGroup和RadioButton开发底部标签栏，类似于微信的底部标签栏  点击图片和字变颜色        → → → day02-03视频_主页底栏标签开发...-18分钟时候开始
+用代码动态给布局添加布局或者更改更新View             → → → day02-04视频_创建5个标签页面...-18分钟时候开始
+
+怎么看某个方法在哪里被调用了  调方法（点住方法名，右键，选open call hierarchy）      → → → day02-05视频_填充5个标签页&禁用viewpager滑动事件 ...-11分钟时候开始
+设置让ViewPager不能滑动      → → → day02-05视频_填充5个标签页&禁用viewpager滑动事件 ...-17分钟时候开始
+eclipse 拷贝复制类的全名称包名等    右键 → 选copy qualified name      → → → day02-05视频_填充5个标签页&禁用viewpager滑动事件 ...-19分钟时候开始
+点击底部标签，切换页面，并且设置点击时候页面切换不要有滑动的效果      → → → day02-06视频_点击标签切换页面&性能优化 ...-3分钟时候开始
+viewpager的优化：不要让viewpager提前加载页面，点到哪个才加载哪个，省流量和性能，     → → → day02-06视频_点击标签切换页面&性能优化 ...-8分钟时候开始     
+用代码隐藏某个控件  → 控件.setVisibility()              → → → day02-07视频_侧边栏开启和运用 ...-1分钟时候开始
+slidingMenu侧边栏的禁用和启用设置            → → → day02-07视频_侧边栏开启和运用 ...-5分钟时候开始
+
+APP怎么获取服务器的数据如何访问服务器的数据，以及服务器的部署            → → → day02-08视频_使用Xutils访问服务器获取Json ...-09分钟时候开始
+专门用来格式化Json的工具：Hijson.exe 资料里有                   → → → day02-07视频_使用Xutils访问服务器获取Json ...-13分钟时候开始
+APP怎么请求服务器，拿到Json(XUtil使用步骤使用教程 介绍)            → → → day02-08视频_使用Xutils访问服务器获取Json ...-19分钟时候开始
+定义全局变量            → → → day02-08视频_使用Xutils访问服务器获取Json ...-29分钟时候开始
+
+使用Xutil需要的权限       → → → day02-08视频_使用Xutils访问服务器获取Json ...-33分钟时候开始
+Json解析工具使用方法步骤教程   Gson            → → → day02-09视频_使用Gson解析Json ...-0分钟时候开始
+JavaBean的使用方法            → → → day02-09视频_使用Gson解析Json ...-2分钟时候开始
+
+网络缓存 网络数据缓存 把网上数据存到本地存储到本地存储到手机            → → → day02-10视频_网络缓存 ...-1分钟时候开始   
+思维导图软件  Mindjet MindManager   及使用          → → → day02-11视频_设置侧边栏数据&ViewUtils的使用 ...-1分钟时候开始
+怎么从一个对象，拿到另一个远程的对 象，给它设置数据，不同对象之间的传递数据方法思路 ☆☆☆☆☆          → → → day02-11视频_设置侧边栏数据&ViewUtils的使用 ...-7分钟时候开始
+ViewUtils的使用 用注解方式去findViewById()        → → → day02-11视频_设置侧边栏数据&ViewUtils的使用 ...-16分钟时候开始
+ListView的使用方法步骤        → → → day02-11视频_设置侧边栏数据&ViewUtils的使用 ...-20分钟时候开始
+Paddding的效果        → → → day02-12视频_侧边栏数据填充&切换 ...-2分钟45秒时候开始
+ListView选择器  选中哪个那个变色 selector   只能选中一个        → → → day02-12视频_侧边栏数据填充&切换 ...-7分钟时候开始
+ListView更新刷新数据        → → → day02-12视频_侧边栏数据填充&切换 ...-15分钟时候开始
+用代码关闭侧边栏 收起侧边栏  或者展开侧边栏       → → → day02-12视频_侧边栏数据填充&切换 ...-17分钟时候开始
+
+viewpager里面嵌套(放了放置 有 多重嵌套)viewpager 滑动事件的拦截   设置不拦截子类控件的触摸(滑动)事件     → → → day03-03视频_页签滑动事件处理
+viewpager类新闻界面的开源框架的使用  库项目   viewpagerIndicator    → → → day03-04视频_viewpagerIndicator的使用       1分钟时候开始
+
+从viewpagerIndicator的demo中找到我们需要的代码   → → → day03-04视频_viewpagerIndicator的使用       7分钟时候开始
+
+库项目中的v4包冲突和重复问题解决方法             → → → day03-04视频_viewpagerIndicator的使用       11分钟时候开始
+
+修改引用的库项目中的样式颜色图片等方法步骤             → → → day03-04视频_viewpagerIndicator的使用       23分钟时候开始
+
+事件分发 dispatchTouchEvent -> onInterceptTouchEvent -> onTouchEvent    就是触摸 触控或者滑动事件的传递层级传递方式   要解决父控件拦截触摸事件，见       requestDisallowInterceptTouchEvent()      → → → day03-05视频_指示器事件处理&页签滑动禁用侧边栏&去掉Listview分割线       4分钟时候开始
+如果用外部的框架Indicator 要获取第几个页面应该监听 Indicator 的位置，而不要监听viewpager，不然会有BUG    用于划到最前面第一个页面再继续往左滑 左边的侧边栏才能画出来的效果  → → → day03-05视频_指示器事件处理&页签滑动禁用侧边栏&去掉Listview分割线       13分钟时候开始 错误演示，然后是解决方案
+取消Listview分隔线分割线  在布局文件中 设置ListView的属性divider="@null"即可   → → → day03-05视频_指示器事件处理&页签滑动禁用侧边栏&去掉Listview分割线      17分钟时候开始
+自定义控件组合   组合控件     给Tab添加箭头按钮      → → → day03-06视频_页签点击按钮跳转下一页  
+用按钮控制ViewPager和Tab            → → → day03-06视频_页签点击按钮跳转下一页         5分钟时候开始
+
+
+新闻或者广告图的自动轮播效果（可用手滑动的） 自动滚动    用ViewPager   看页面分析             → → → day03-07视频_页签详情页结构分析&获取也钱也网络数据         2分钟时候开始
+
+查看当前类有哪些方法或变量的快捷键
+
+HttpUtils使用方法步骤             → → → day03-07视频_页签详情页结构分析&获取也钱也网络数据         10分钟时候开始
+Gson使用方法步骤2             → → → day03-07视频_页签详情页结构分析&获取也钱也网络数据         13分钟时候开始
+从网上下载图片，并设置给ImageView，并更新图片。并如何避免图片加载过大或过多产生的内存溢出，加载图片，并缓存从网上下载下来的图片（可用XUtils中的BitmapUtils的使用方法）        → → → day03-08视频_头条新闻加载及滑动事件处理&BitmapUtils的使用         13分钟时候开始
+判断字符串str是否为空     → → → TextUtils.isEmpty(string str)
+多种滑动不同情况的分析及操作  → → → day03-08视频_头条新闻加载及滑动事件处理&BitmapUtils的使用         26分钟时候开始
+获取PagerView 的数量数目 Adapter中的条目数量  → → → day03-08视频_头条新闻加载及滑动事件处理&BitmapUtils的使用         36分钟时候开始
+使用BitmapUtils的时候设置默认图片              → → → day03-09视频_更新头条新闻标题         1分钟时候开始
+在framelayout时候要控制子控件的位置，可以给子控件设置属性layout_gravity="",然后可以用Padding              → → → day03-09视频_更新头条新闻标题         6分钟时候开始
+滑动小圆点 指示器的实现 利用框架外库实现              → → → day03-10视频_头条新闻页面指示器（开源框架）         1分钟时候开始
+修改小圆点的样式颜色  修改外库的效果              → → → day03-10视频_头条新闻页面指示器（开源框架）         6分钟时候开始
+用代码设置小圆点的位置 重置小圆点位置              → → → day03-10视频_头条新闻页面指示器（开源框架）         13分钟时候开始
+ImageView等中图片的大小裁剪 缩放等操作              → → → day03-10视频_新闻列表加载&CenterCrop属性裁剪         6分钟时候开始
+ImageView图片添加边框 （设置背景，然后设置Padding，让图片小于背景就OK）              → → → day03-10视频_新闻列表展现&添加头布局         1分钟时候开始
+TextView设置最大的行数只显示一行或者2行等              → → → day03-10视频_新闻列表展现&添加头布局         3分钟时候开始
+ListView的复用机制复用                    → → → day03-10视频_新闻列表展现&添加头布局         7分钟时候开始
+解决滑动ListView时候背景变黑                   → → → day03-10视频_新闻列表展现&添加头布局         12分钟时候开始
+给ListView添加头布局 固定第一行  首行             → → → day03-10视频_新闻列表展现&添加头布局         16分钟时候开始
+隐藏控件尽量用visibility，尽量少用Gone，避免出现位移情况，具体原因             → → → day04-03视频_自定义下拉刷新(01)         08分钟时候开始
+自定义控件带下拉刷新的ListView             → → → day04-03视频_自定义下拉刷新(01)         10分钟时候开始
+自定义控件带下拉刷新的ListView隐藏头布局 隐藏下拉刷新             → → → day04-03视频_自定义下拉刷新(01)         16分钟时候开始
+设置常量 private(public) static final int MY_PHONE = 182365265926;
+下拉刷新箭头图形的变换转换动画             → → → day04-04视频_下拉刷新&回调接口         7分钟时候开始
+回调接口的定义以及使用 不同开发人员或者开发不同模块的时候会用到             → → → day04-04视频_下拉刷新&回调接口         23分钟时候开始 一直到视频结束
+获取当前时间  时间格式化 格式化时间的时候月份一定要是大写的MM，否则会从0开始算（"yyyy-MM-dd HH:mm:ss"），如果不想要0，例如第1分钟时候显示1而不是01，就只用一个字母，"yyyy-M-d H:m:s"   时间的小时这里，大写就是24小时，小写就是12小时制          → → → day04-05视频_下拉刷新更新时间         0分钟时候开始
+为什么用XUtils请求网络不需要开子线程，更新UI不需要Handler。原因   → → → day04-06视频_XUtils细节补充         0分钟时候开始
+(会动的会旋转的,用XML定义的图形+动画)圆形圆环环形进度条网络缓冲进度条   innerRadius内径  thickness厚度  gradient渐变      → → → day05-02视频_自定义进度条         0分钟时候开始
+给ListView添加脚布局，下拉刷新下拉更新下滑更新(在自定义的ListView类里写this.addFooterView(view))      → → → day05-03视频_下拉加载更多01         0分钟时候开始
+为了避免用户操作心急，应该定义一个变量在加载过程中再次操作会无效，不会导致重复多次加载的情况      → → → day05-03视频_下拉加载更多01         11分钟时候开始
+给ListView后面添加加载更多数据，并更新ListView（给ListView的数据集合后面添加新的数据，然后刷新就行了。Arrylist arr[].addAll()）      → → → day05-04视频_下拉加载更多02         02分钟时候开始
+在XML文件里的同一个标签，一个KEY，可以放多个值，并通过字符串的判断是否之前已经存在了这个值(取出String.contains(str))      → → → day05-05视频_标记已读未读         14分钟时候开始
+获取listView被点击的条目的View对象，并进行更改UI更新      → → → day05-05视频_标记已读未读         16分钟时候开始
+WebView的介绍      → → → day05-06视频_创建新闻详情页         01分钟时候开始
+WebView的使用：设定点击链接不跳出APP（17分钟）   点击返回键不是关闭Activity而是返回上一个页面（拦截返回键）（28分钟）   加载过程中的环形进度条，加载完成后小时（25分钟）   设定按钮或双击可放大缩小（11分钟）  设定开启JavaScript（13分钟）   设定顶部进度条和标题（微信的那种）（31分钟）      → → → day05-07视频_WebView的使用         08分钟时候开始
+有单选项的周边半透明弹窗Dialog      → → → day05-08视频_修改网页字体大小         10分钟时候开始
+修改webView的字体大小。      → → → day05-08视频_修改网页字体大小         20分钟时候开始
+分享到别的软件或平台      → → → day05-09视频_shareSDK的使用01-02         分钟时候开始
+修改shareSDK的样式UI      → → → day05-09视频_shareSDK的使用02         23分钟时候开始
+分享平台的审核一般要3天，最长1星期      → → → day05-09视频_shareSDK的使用02         32分钟时候开始
+Handler发送延时消息      → → → day05-11视频_头条新闻自动轮播         3分钟时候开始
+自动轮播图自定义控件的实现      → → → day05-11视频_头条新闻自动轮播         3分钟时候开始
+给ViewPager设置触摸事件，当触摸到ViewPager的时候，就停止自动轮播      → → → day05-11视频_头条新闻自动轮播         11分钟时候开始
+给ViewPager设置触摸事件，临时转移，取消了。ACTION_CANCEL      → → → day05-11视频_头条新闻自动轮播         18分钟时候开始
+图片是否以列表还是大图还是什么样的大小展现出来，如何实现      → → → day05-12视频_组图模块开发         0分钟时候开始
+GridView的使用 九格宫或者表格形式的，和ListView相似     → → → day05-12视频_组图模块开发         3分钟时候开始
+ListView的使用方法步骤 复用     → → → day05-12视频_组图模块开发         18分钟时候开始
+GridView的Adapter是和ListView一样的，一样写代码就行了，可以直接用同一个Adapter     → → → day05-12视频_组图模块开发         35分钟时候开始
+
+
+Android实现思维导图       URL: https://www.jianshu.com/p/5346384d71c4     D:\FCJ\Android Study Document\QandA\1\    或者搜: Android实现思维导图 - 简书
+异形的View的实现，实现拼图等功能。三角或者其他形状的View       URL: https://www.jianshu.com/p/0033e6a1e675     D:\FCJ\Android Study Document\QandA\2\    或者搜: Android的View裁剪
+图片的缓存过程，先从内存 → 没有就从本地（SD卡） → 最后从网络获取图片  三级缓存讲解     → → → day06-02视频_三级缓存原理         2分钟时候开始
+三级缓存和网络缓存的实现过程     → → → day06-03视频_网络缓存&AsyncTask的使用         2分钟时候开始
+能代替Handler的东西：AsyncTask，能实现网络请求，还有更新UI     → → → day06-03视频_网络缓存&AsyncTask的使用         9分钟时候开始
+用URL().openConnection()请求网络 得到HttpURLConnection对象     → → → day06-03视频_网络缓存完成         3分钟时候开始
+用Bitmap设置给ImageView -> ImgeView.setImageBitmap(bitmap)     → → → day06-03视频_网络缓存完成         9分钟时候开始
+ListView复用机制可能会出现的问题解决，重复使用     → → → day06-03视频_网络缓存完成         15分钟时候开始
+把图片(或文件)缓存到本地，以及MD5的简单用法     → → → day06-04视频_本地缓存         7分钟时候开始
+为什么会内存溢出，因为Android只给每个APP分配了16MB，超出后就会内存溢出挂掉     → → → day06-05视频_本地缓存         12分钟时候开始
+堆内存和栈内存原理还有垃圾回收机制     → → → day06-05视频_本地缓存         15分钟时候开始
+强引用 弱引用 虚引用     → → → day06-05视频_本地缓存         20分钟时候开始
+使用弱引用     → → → day06-05视频_本地缓存         26分钟时候开始
+ 弱引用 虚引用 都已经不可靠了，应该用LruCache类来缓存图片，在V4包中有（图片缓存，内存溢出解决）           → → → day06-07视频_LruCache&三级缓存总结         7分钟时候开始
+获得APP的最大运行内存           → → → day06-07视频_LruCache&三级缓存总结         13分钟时候开始
+获得对象图片的字节大小   object.getByteCount()           → → → day06-07视频_LruCache&三级缓存总结         16分钟时候开始
+面试：如何解决内存溢出           → → → day06-07视频_LruCache&三级缓存总结         29分钟时候开始 -- 结束   LruCache读"L" "R" "U" "Cache"
+面试：屏幕适配的解决几种办法      → → → day06-08视频_图片适配    
+图片放不同的分辨率的文件夹，一般放一个，如果某一个分辨率出问题了，就单独做一个那个分辨率的
+布局放不同的分辨率的文件夹，要做哪个分辨率的，就新建一个文件夹，单独做一个适配大屏或者小屏的布局文件。一般只调整空间的位置和大小，别的不变
+ldpi: 240*320   
+mdpi: 320*240
+hdpi: 480*800
+xhdpi: 1280*720
+xxhdpi: 1920*1080
+
+dp = px/设备密度      → → → day06-10视频_尺寸适配     3分钟时候开始
+定义尺寸样式  在dimens.xml文件   和布局，图片一样，可以定义多个文件夹放资源文件，不同分辨率放不同的尺寸适配文件   尺寸适配很常用☆☆☆☆☆  → → → day06-10视频_尺寸适配     12分钟时候开始
+权重适配，给父控件weisum属性  → → → day06-11视频_权重适配     3分钟时候开始
+用代码获取屏幕宽高，然后设置宽高的比例，或者直接设置宽高  → → → day06-12视频_代码适配     0分钟时候开始
+写工具类实现适配，将dp转px,和px转dp   (平时代码里面设置的值都是像素，所以应该将dp转成像素，再给代码设置)  → → → day06-13视频_解决智慧背景遗留的适配问题     4分钟时候开始    12分钟时候开始
+如何养成良好习惯，尽量避免屏幕适配。应该多用哪些单位，少用哪些单位  → → → day06-14视频_屏幕适配总结     0分钟时候开始
+面试过程中，问到屏幕适配问题，如何回答  → → → day06-14视频_屏幕适配总结     7分钟时候开始
+消息推送概念，服务端主动推送消息，客户端被动接收信息。用途：即时通讯聊天，广告推送等     → → → day07-02视频_极光推送演示     3分钟时候开始
+Json解析，或者解析键值对的字符串，根据键获取值     → → → day07-03视频_极光推送SDK的使用     21分钟时候开始
+即时通讯 聊天的数据传输结构     → → → day07-04视频_推送拓展     10分钟时候开始
+xmpp协议 -> 专门针对消息推送的一种协议   socket   长连接   心跳包     → → → day07-05视频_消息推送原理     4分钟时候开始
+如何防止网络断开的时候丢包（消息没发送到导致的丢失）     → → → day07-05视频_消息推送原理     13分钟时候开始
+科大讯飞语音云 开房平台SDK     → → → day07-06视频_语音识别     0分钟时候开始     8分钟开始教程
+手机屏幕同步工具  Android screen Monitor     → → → day07-06视频_语音识别     23分钟开始教程
+语音合成，设置发音人，地区（哪种地方话），音量，发音速度，     → → → day07-06视频_语音识别     40分钟开始教程
+
+即时通讯，聊天界面的分析与实现     → → → day07-07视频_聊天机器人     6分钟开始教程
+聊天界面的布局，用ListView实现，Item的View是把所有的情况都考虑在里面，图片，文字什么的，不需要的时候就隐藏，需要就显示     → → → day07-07视频_聊天机器人     12分钟开始教程
+StringBuffer  的使用，以及依次添加字符串  拼接字符串       → → → day07-07视频_聊天机器人     12分钟开始教程
+
+Android仿新版微信的小程序下拉栏        URL : https://juejin.im/post/5a4c90c15188257c4d1b8d0c       D:\FCJ\Android Study Document\QandA\3\
+ 
+ 
+{设置背景全屏，沉浸式状态栏 5.0以上版本可以使用 :
+
+/**
+ * 通过设置全屏，设置状态栏透明
+ *
+ * @param activity
+ */
+private void fullScreen(Activity activity) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            //5.x开始需要把颜色设置透明，否则导航栏会呈现系统默认的浅灰色
+            Window window = activity.getWindow();
+            View decorView = window.getDecorView();
+            //两个 flag 要结合使用，表示让应用的主体内容占用系统状态栏的空间
+            int option = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+            decorView.setSystemUiVisibility(option);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.setStatusBarColor(Color.TRANSPARENT);
+            //导航栏颜色也可以正常设置
+//                window.setNavigationBarColor(Color.TRANSPARENT);
+        } else {
+            Window window = activity.getWindow();
+            WindowManager.LayoutParams attributes = window.getAttributes();
+            int flagTranslucentStatus = WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+            int flagTranslucentNavigation = WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
+            attributes.flags |= flagTranslucentStatus;
+//                attributes.flags |= flagTranslucentNavigation;
+            window.setAttributes(attributes);
+        }
+    }
+}
+
+作者：扬州慢_
+链接：https://www.jianshu.com/p/dc20e98b9a90
+來源：简书
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+} 
+
+
+判断是否是数字{
+public boolean isNumeric(String str){   
+	Pattern pattern = Pattern.compile("[0-9]*");   
+	Matcher isNum = pattern.matcher(str);  
+	if( !isNum.matches() ){  
+	   return false;   
+	}   
+	return true;   
+	} 
+	
+	可以通过修改正则表达式实现校验负数，将正则表达式修改为“^-?[0-9]+”即可，修改为“-?[0-9]+.?[0-9]+”即可匹配所有数字。 
+}
+
+px和dp\px和sp之间的转换{
+	/**
+     * dp转换成px
+     */
+    public static int dp2px(Context context, float dpValue){
+        float scale=context.getResources().getDisplayMetrics().density;
+        return (int)(dpValue*scale+0.5f);
+    }
+
+    /**
+     * px转换成dp
+     */
+    public static int px2dp(Context context,float pxValue){
+        float scale=context.getResources().getDisplayMetrics().density;
+        return (int)(pxValue/scale+0.5f);
+    }
+    /**
+     * sp转换成px
+     */
+    public static int sp2px(Context context,float spValue){
+        float fontScale=context.getResources().getDisplayMetrics().scaledDensity;
+        return (int) (spValue*fontScale+0.5f);
+    }
+    /**
+     * px转换成sp
+     */
+    public static int px2sp(Context context,float pxValue){
+        float fontScale=context.getResources().getDisplayMetrics().scaledDensity;
+        return (int) (pxValue/fontScale+0.5f);
+    }
+}
+
+
+
+
+画圆角矩形按钮：{
+	在drawable文件夹右键 → new → Drawable resources file → 填写文件名和类型:shap ，然后在文件里定义形状类型、颜色、边框厚度和颜色、圆角半径
+	<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <solid android:color="#1AAD19"/>
+
+    <stroke android:width="1dp"
+        android:color="#179E16"/>
+
+    <corners android:radius="2dp"/>
+
+</shape>
+}
+
+遮罩效果{
+	方法一:{
+	selector里面包含形状，画圆形矩形，一张图完成遮罩效果。点击时候让imageView变透明，调整透明度
+		
+		<?xml version="1.0" encoding="utf-8"?>
+	<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+		<item android:state_pressed="true">
+			<shape android:shape="oval">
+				<solid android:color="#21000000" />
+			</shape>
+		</item>
+
+		<item>
+			<shape android:shape="oval">
+				<solid android:color="#00000000" />
+			</shape>
+		</item>
+		
+	</selector>
+	
+	
+	}
+	
+	
+	方法二：{
+		遮罩可直接叠加一层带alpha的纯白、或纯黑View,可直接在ImageView外套一层FrameLayout,其foreground(一般同学可能仅仅知道background,事实上framelayout还有foreground)给定一个selector(按下时给0x33000000,即泛黑),到位。
+	}
+}
+
+
+
+
+用代码设置View控件不可见，动态设置{
+image.setVisibility(visibility)
+
+其中visibility是int型的参数。对应上面：VISIBLE=0x00000000；INVISIBLE=0x00000004；GONE=0x00000008。
+
+即：
+
+image.setVisibility(View.VISIBLE) 表示显示；
+
+image.setVisibility(View.INVISIBLE)表示隐藏；
+
+image.setVisibility(View.GONE)表示view不存在。
+}
+
+创建Application类初始化一些数据{
+	创建一个global包，在里面创建一个class，继承于Application，重写onCreate（）方法，在里面初始化，然后在配置文件AndroidManiFest.xml文件的Application标签里添加属性name:"里面填写的是完整的路径包名"
+}
+
+设置控件可见/不可见/隐藏{
+	VISIBLE、INVISIBLE、GONE的区别
+1、可见 占有布局空间
+　XML代码: android:visibility="visible"
+　JAVA代码：view.setVisibility(View.VISIBLE);
+2、不可见 占有布局空间
+　XML代码: android:visibility="invisible"
+　JAVA代码：view.setVisibility(View.INVISIBLE);
+3、消失 不可见，不占有布局空间
+　XML代码: android:visibility="gone"
+　JAVA代码：view.setVisibility(View.GONE);
+}
+
+延时执行/延时3秒，在子线程开启Activity界面，并关闭当前Activity{
+	private Handler handler = new Handler();
+	mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startActivity(new Intent(SplashActivity.this,HomeActivity.class));
+                    finish();
+                }
+            },3000);
+	
+	清除/取消Handler的消息/任务，未执行的Handler里面的就不会执行了：handler.removeCallbacksAndMessages(null);
+}
+
+快捷键{
+	notpad++:{
+		折叠所有层次 Alt+0           	0是键盘上方的0，不是右侧的小键盘0
+		展开所有层次 Alt+Shift+0 		0是键盘上方的0，不是右侧的小键盘0
+		折叠当前层次 Ctrl+Alt+F 
+		展开当前层次 Ctrl+Alt+Shift+F
+		Ctrl+C 复制
+		Ctrl+X 剪切
+		Ctrl+V 粘贴
+		Ctrl+Z 撤消
+		Ctrl+Y 恢复
+		Ctrl+A 全选
+		Ctrl+F 键查找对话框启动
+		Ctrl+H 查找/替换对话框
+		Ctrl+↓ 复制并粘贴当行(自定义的)
+		Ctrl+T 当行向上移动一行
+		F3 查找下一个
+		Shift+F3 查找上一个
+		Ctrl+Shift+F 组合在文件中查找
+		Ctrl+F3 查找（volatil）下一页
+		Ctrl+Shift+F3 查找（volatil）上一页
+		Ctrl+Shift+I 组合增量搜索
+		Ctrl+S 保存文件
+		Ctrl+Alt+S 另存为
+		Ctrl+Shift+S 保存所有文件
+		Ctrl+O 打开文件
+		Ctrl+N 新建立文件
+		Ctrl+F2 切换书签
+		F2 转到下一个书签
+		Shift+F2 转到上一个书签
+		Ctrl+Alt+F 折叠当前层次
+		Ctrl+Alt+Shift+F展开当前层次
+		Alt+0 折叠全部
+		Alt+Shift+0 展开全部
+		Alt+(1~8) 折叠级别（1~8）
+		Alt+Shift+(1~8) 展开级别（1~8）
+		Ctrl+BackSpace 删除开始词
+		Ctrl+Delete 删除结束词
+		Ctrl+Shift+BackSpace 删除至行
+		Ctrl+Shift+Delete 删除至行尾
+		CTRL+U 转换为小写
+		Ctrl+Shift+U 转换为大写
+		Ctrl+B 转至匹配的括号
+		Ctrl+Shift+R 的开始录制/停止录制宏
+		Ctrl+Shift+P 播放录制的宏
+		CTRL+Q 注释/取消注释
+		Ctrl+Shift+T 当前行复制到剪贴板
+		Ctrl+P 打印
+		Alt+F4 退出
+		Ctrl+I 分割线
+		Ctrl+J 连接行
+		Ctrl+Alt+R 从右边阅读
+		Ctrl+Alt+L 从左边阅读
+		Ctrl+H 打开Find / Replace 对话框
+		Ctrl+D 删除当前行(自定义的)
+		Ctrl+L 剪切当前行
+		Ctrl+T 上下行交换
+		F3 找下一个
+		Shift+F3 找上一个
+		Ctrl+Shift-F 在文件中找
+		Ctrl+F2 触发书签
+		F2 到前一个书签
+		Shift+F2 到下一个书签
+		F5 打开run对话框
+		Ctrl+Space 打开CallTip列表框
+		Tab (selection of several lines) 加入Space
+		Shift+Tab (selection of several lines) 移除Space
+		F11 全屏
+		Alt+0 折叠全部
+		Alt+Shift+0 展开全部
+		Ctrl+U 变为小写
+		Ctrl+Shift+U 变为大写
+		Ctrl+Q 块注释/消除注释
+	}
+	
+	eclipse/android studio:{
+		快速修复 ctrl+1  --- 把有错误的地方改正，例如没重写的方法重写完成等等
+		复制当前行或代码块  Ctrl + Alt + 上下方向键
+		添加文档注释        ALT + SHIFT +J
+		生成对象		    Alt+shift+L
+		将局部变量转为成员变量/全局变量  Ctrl + Alt + F 
+		
+		生成构造方法		Alt + Shift + s → Generate → constructor
+		全局搜索			Ctrl+H
+		格式化代码[Refomart Code]：Ctrl+Alt+L
+		导包/类型转换(强转)/抽取字符串到资源文件xml文件中(相当于左边悬浮的小灯提示)   Alt + Enter
+		抽取方法			alt+shift+m
+		重命名/安全删除/抽取为成员变量等多种功能:Ctrl +Shift + Alt + T 
+		
+		重命名   			Alt + Shift + R
+		显示取色板			Ctrl + 反斜杠（回车上面那个） (我自己设定的快捷键 color picker)
+		提取XML文件中的属性 提取Style  Ctrl + shift + S (我自己设定的快捷键)
+		快速生成get() set() 方法/快速重写toString()方法/快速重写当前类中的父类方法override/打开GsonFormat： Alt + Insert 
+		快速查看类中的方法/变量 ctrl+O
+		快速向下和向上查找选定的内容：Ctrl+K(向下) Ctrl++Shift+K(向上) 
+		查找/搜索文件 	Ctrl+Shift +R
+		查找/搜索类 	Ctrl+Shift +T 
+		
+		
+		快速判断是否为空，
+	}
+	
+	android studio:{
+	是用Live complate 自动完成代码
+	
+	●查找所有快捷键
+
+	查找快捷键[Find Action]：Ctrl+Shift+A
+
+	●显示一些有用信息
+
+	显示简要信息：Ctrl+mouse?over?code 
+	快速查找文档[Quick Documention]：Ctrl+Q 
+	在方法调用的地方显示参数信息：Ctrl+P 
+	错误的显示说明或警示插入符号：Ctrl+F1
+
+	●编辑
+
+	格式化代码[Refomart Code]：Ctrl+Alt+L 
+	清除无效引用包[Optimize Imports]：Ctrl+Alt+O 
+	大小写切换[Toggle Case]：Ctrl+Shift+U 
+	重构－重命名[Rename]：Shift+F6 
+	复制当前行或代码块[Duplicate Line or Block]：Ctrl+D 
+	删除当前行或代码块[Delete Line]：Ctrl+X(no selection), Ctrl+Y 
+	上移行[Move Line UP]：Alt+Shift+↑ 
+	下移行[Move Line Down]：Alt+Shift+↓ 
+	上移代码块[Move Statement UP]：Ctrl+Shift+↑ 
+	下移代码块[Move Statement Down]：Ctrl+Shift+↓ 
+	生成代码：Alt+Insert（Alt+I） 
+	展示意向行动和快速修复[Show Intention Actions]：Alt+Enter
+
+	●代码补全
+
+	代码补全[CodeComplection-Basic]：Ctrl+Space 
+	代码智能补全，更精确的提示[CodeComplection-SmartType]：Ctrl+Shift+Space
+
+	●For循环的快速补全
+
+	For each loop：[variable name].for 
+	For i loop／i从小到大：[variable name].fori 
+	For i loop (reversed)／i从大到小：[variable name].forr
+
+	●移动和选择
+
+	光标移到上个方法：Alt+↑ 
+	光标移到下个方法：Alt+↓ 
+	跳到前面的标签[Select Previous Tab]：Alt+← 
+	跳到后面的标签[Select Next Tab]：Alt+→ 
+	后退[Back]：Ctrl+Alt+← 
+	前进[Forward]：Ctrl+Alt+→ 
+	增加性的选择代码块：Ctrl+W 
+	递减性的选择代码块：Ctrl + Shift + W
+
+	●导航
+
+	转到声明[Declaration]：Ctrl+B, Ctrl+Click 
+	转到实现[Implementation(s)]：Ctrl+Alt+B, Ctrl+Alt+Click 
+	打开类[Open Class]：Ctrl+N 
+	打开文件[Open File]：Ctrl+Shift+N
+
+	●查找替换
+
+	查找[Find]：Ctrl+F 
+	替换[Replace]：Ctrl+R 
+	查找下一个[Find Next]：F3 
+	查找前一个[Find Previous]：Shift+F3 
+	指定查找[Find in Path]：Ctrl+Shift+F 
+	指定替换[Replace in Path]：Ctrl+Shift+P 
+	全局查找：Double Shift 
+	查找被引用的地方[Find Usages]：Alt+F7 
+	在本文件中查找被引用的地方[Find Usages in File]：Ctrl+F7 
+	显示被引用的地方[Show Usages]：Ctrl+Alt+F7 
+	在本文件中显示被引用的地方[Highlight Usages in File]：Shift+Ctrl+F7
+
+	●其它
+
+	打开相应的工具窗口：Alt+#[0-9] 
+	转到编辑器（从工具窗口）：ESC 
+	标签和工具窗口之间切换：Ctrl+Tab
+	}
+}
+
+
+java权限修饰符{
+权限修饰符	同一个类	同一个包	不同包的子类	不同包的非子类
+Private		√			
+Default		√			√		
+Protected	√			√				√	
+Public		√			√				√			√
+}
+
+点击事件不响应{
+	被子控件的clickable="true"给抢去了，把子控件的clickable属性给删除
+	猜测:点击事件先传给父控件，再到子控件，默认是父控件不处理触摸事件，如果子控件不消费点击事件，再传回父控件判断
+}
+
+Button的textColor属性无效，设置后字体颜色变成粉红色的原因，以及解决办法{
+	原因及解决：不应该把字体的selector的item使用drawable属性，改为color属性即可解决。
+	错误代码：{
+		<selector xmlns:android="http://schemas.android.com/apk/res/android">
+			<item android:drawable="@color/colorTextSignInPress" android:state_pressed="true"/>
+			<item android:drawable="@color/colorWhite" />
+		</selector>
+	}
+	
+	
+	正确代码：{
+		<selector xmlns:android="http://schemas.android.com/apk/res/android">
+			<item android:color="@color/colorTextSignInPress" android:state_pressed="true"/>
+			<item android:color="@color/colorWhite" />
+		</selector>
+	}
+}
+
+
+getsharepreference用法:{
+	SharedPreferences sp = getSharedPreferences("config", MODE_PRIVATE) //获取名为config的xml文件
+	SharedPreferences.Editor editor = sp.edit();//获取编辑器       
+	editor.putString("content",string);//写入数据        
+	editor.commit();//提交
+	
+	String content = sp.getString("content","");//读取数据
+	
+	
+}
+
+xml布局文件中include的用法：{
+	<include  
+        android:id="@+id/bolck_titlebar"  
+        layout="@layout/block_header" /> 
+}
+
+
+
+代码模板{
+	<TextView
+        android:id="@+id/tv_"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="跟随系统"
+        android:textColor="#ffffff"
+        android:textSize="15sp"/>
+		
+	
+}
+
+
+设置子控件不能获取焦点{
+
+给根控件设置属性：android:descendantFocusability="blocksDescendants"，其子控件将无法获取焦点
+}
+
+
+设置listview距离顶端/底部有白边，且白边能滑动{
+	设置ListView的属性android:clipToPadding="false";.
+}
+
+查找数组中元素的索引/位置{
+	String[] arrays = new String[]{"a","b","c","d","e","fff","g","h","i","j",};  
+	int positon = Arrays.binarySearch(arrays, "fff"); 
+}
+
+String转成int类型（类型转换）{
+int a = Integer.parseInt(str);
+}
+
+
+ListView的写法{
+	String[] languageList = new String{"跟随系统", "简体中文", "繁體中文（台灣）"};
+	ListView lv_selectLanguage = (ListView) findViewById(R.id.lv_selectLanguage);
+	lv_selectLanguage.setOnItemClickListener(this);
+	
+	LanguageListAdapter languageListAdapter = new LanguageListAdapter(WeixinApplication.getmContext(), languageList);
+	lv_selectLanguage.setAdapter(languageListAdapter);
+	
+	只要在onItemClick()里面调用
+	languageListAdapter.setSelectItem(position),就会把当前条目位置记录到adapter里面，然后刷新页面/刷新数据languageListAdapter.notifyDataSetInvalidated();
+	
+	BaseAdapter的写法{
+		public class LanguageListAdapter extends BaseAdapter {
+		private Context context;
+		private String[] languages;
+		private int selectItem = -1;
+
+		public LanguageListAdapter(Context context, String[] language) {
+			this.context = context;
+			this.languages = language;
+
+		}
+
+		@Override
+		public int getCount() {
+			return languages.length;
+		}
+
+		@Override
+		public Object getItem(int i) {
+			return languages[i];
+		}
+
+		@Override
+		public long getItemId(int i) {
+			return i;
+		}
+
+		@Override
+		public View getView(int i, View convertView, ViewGroup viewGroup) {
+			//TODO ListView的优化
+			ViewHolder viewHolder;
+			if (convertView == null){
+				viewHolder = new ViewHolder();
+				convertView = View.inflate(context,R.layout.item_language,null);
+				viewHolder.tv_language = convertView.findViewById(R.id.tv_language);
+				viewHolder.iv_radio_button = convertView.findViewById(R.id.iv_select_language_radio_button);
+				convertView.setTag(viewHolder);
+			}else {
+				viewHolder = (ViewHolder) convertView.getTag();
+			}
+			viewHolder.tv_language.setText(languages[i]);
+
+			if(selectItem != i){
+				viewHolder.iv_radio_button.setImageResource(R.drawable.radio_button_normal);
+			}else {
+				viewHolder.iv_radio_button.setImageResource(R.drawable.radio_button_pressed);
+			}
+
+			return convertView;
+		}
+
+		private static class ViewHolder{
+			TextView tv_language;
+			ImageView iv_radio_button;
+		}
+
+		public void setSelectItem(int selectItem) {
+			this.selectItem = selectItem;
+		}
+		
+		}
+	}
+	
+}
+
+
+更改字体(未用过){
+	// 自定义字体
+	custom = new TextView(this);
+	//xx.ttf located at assets/fonts/
+	typeface = Typeface.createFromAsset(getAssets(),"fonts/xx.ttf");
+	custom.setTypeface(typeface);
+
+	.自定义字体
+	1.android Typeface使用TTF字体文件设置字体
+
+	我们可以在程序中放入ttf字体文件，在程序中使用Typeface设置字体。
+	第一步，在assets目录下新建fonts目录，把ttf字体文件放到这。
+	第二步，程序中调用：
+	AssetManager mgr=getAssets();//得到AssetManager
+	Typeface tf=Typeface.createFromAsset(mgr, "fonts/ttf.ttf");//根据路径得到Typeface
+	tv.setTypeface(tf);//设置字体
+}
+
+
+
+
+
+判断字符串是否为空{
+	1. TextUtils.isEmpty(String str);
+	2. str.equals("");
+	3. str.isEmpty();
+	3. str.length() == 0;
+}
+
+
+
+实时判断输入框EditText是否已经清空{
+	edit_text.addTextChangedListener(){new TextWatcher() {
+		//重写的afterTextChanged()里判断是否为空
+	
+		public void afterTextChanged(Editable editable) {
+			if (TextUtils.isEmpty(editable)) {
+				//EditText为空
+			}
+		}
+	}
+	}
+}
+
+
+Button按钮设置不可用/不可点击/灰色{
+	在java代码或布局文件设置enable属性为false是不可用/不可点击。
+	在selector里添加<item android:state_enabled="false">
+}
+
+给按钮Button取消阴影效果{
+	给按钮设置属性style="?android:attr/borderlessButtonStyle"即可
+	
+	button抽取样式方法：如果需要给Button设置style的话，让按钮继承parent="@style/Widget.AppCompat.Button.Borderless"即可。
+	
+	
+}
+
+BUG（用Java代码）设置颜色(背景background)无效/透明原因以及解决方法{
+注意:用代码设置颜色一定要用8位的颜色，否则会显示透明或不显示。正确示范：image_view.setBackgroundColor(0xFFD9D9D9);
+imageView.setColorFilter(0xFFFF0000);
+}
+
+String转int类型的颜色/颜色解析/解析颜色{
+
+	Color.parseColor("#FF9955CC");
+	示范：imageView.setColorFilter(Color.parseColor("#FF" + lastInputTextColor));
+	注意，前面一定要有#号，不然会崩，最好是固定使用"#FF"当前缀
+}
+
+
+android studio 缩写快速输入live templates{
+	fbvc findViewById并强制转换
+}
+
+命名{
+	《阿里巴巴java开发手册》{
+	代码的命名:
+		1. 不能以_或$符号开头和结尾
+		2. 禁止使用拼音或拼音与英文结合
+		3. 类名：使用驼峰命名法(UpperCamelCase)首字母大写。XML要写成Xml，一个词只有首字母大写
+		4. 方法名、参数名、成员变量、局部变量：使用首字母小写的驼峰命名法
+		5. 常量名全部大写，用下划线隔开词，语义要表达完整清除，不嫌名字长。如：MAX_STOCK_COUNT
+		6. 抽象类命名：用Abstract/Base开头;异常类命名使用Exception结尾;测试类命名以它要测试的类名开始，以Test结尾，例如要测试MainActivity.class，测试类就叫MainActivityTest.class
+		7. 定义数组：类型与中括号紧挨	例如：int[] arrayDemo;
+		8. 包名使用全小写，分隔符之间仅有一个单词，包名统一使用单数形式，如果类名有复数可以用复数，例如：com.alibaba.ai.util，类名为MessageUtils(此规则可以参考spring框架结构)
+		9. 杜绝单词缩写，例如AbstractClass写成AbsClass
+		10. 如果模块、接口、类、方法使用了设计模式，在命名时体现出具体模式，将设计模式体现在名字中。例如：public class OrderFactory;	MainActivity
+		11.	接口类中的方法和属性不要加任何修饰符号 （public 也不要加 ） ，保持代码的简洁性，并加上有效的 Javadoc 注释。尽量不要在接口里定义变量，如果一定要定义变量，肯定是与接口方法相关，并且是整个应用的基础常量。
+			正例：接口方法签名 void f();接口常量 String COMPANY = " alibaba " ;
+		12. 枚举类名用Enum后缀，枚举成员名称全大写，单词用下划线隔开。
+			说明：枚举其实就是特殊的常量类，且构造方法被默认强制是私有。
+			正例：枚举名字为 ProcessStatusEnum 的 成员名称： SUCCESS /  UNKNOWN _ REASON 。
+		13.	各层命名规约：
+				A) Service / DAO 层方法命名规约
+					1 ） 获取单个对象的方法用 get 作前缀。
+					2 ） 获取多个对象的方法用 list 作前缀。
+					3 ） 获取统计值的方法用 count 作前缀。
+					4 ） 插入的方法用 save/insert 作前缀。
+					5 ） 删除的方法用 remove/delete 作前缀。
+					6 ） 修改的方法用 update 作前缀。
+				B) 领域模型命名规约
+					1 ） 数据对象： xxxDO ， xxx 即为数据表名。
+					2 ） 数据传输对象： xxxDTO ， xxx 为业务领域相关的名称。
+					3 ） 展示对象： xxxVO ， xxx 一般为网页名称。
+					4 ） POJO 是 DO / DTO / BO / VO 的统称，禁止命名成 xxxPOJO 。
+		
+		
+		常量的定义：
+		1. 未经预先定义的常量不能直接出现在代码中。反例：xxx.set(a/13)   //每次都需要除以13  。应该先声明13常量，再使用，提高可读性
+		2. long或者Long初始赋值时，使用大写L，小写的L容易跟数字1混淆，造成误解。 Long a = 9999L
+		3. 不要使用一个常量类维护所有常量，按常量功能进行归类，分开维护。缓存相关常量放在类CacheConsts下;系统配置相关常量放在类ConfigConsts下。
+		4. 
+		5.
+		6.
+		7.
+		8.
+		9.
+		
+	}
+}
+
+
+在Java代码中使用Xml资源文件的颜色，引用资源文件xml的尺寸，样式{
+	int color = getResources().getColor(R.color.mycolor);
+}
+
+
+selector没有效果的原因以及解决方法{
+	使用ImageView的src或background使用selector点击时，总没出现点击效果，这是为什么呢？
+	
+	编写selector的时候，最好将值为true的放前面即可解决。
+	如：
+	<item android:drawable="@drawable/home_recommend_p" android:state_pressed="true"></item>  
+    <item android:drawable="@drawable/home_recommend_d" android:state_pressed="false"></item> 
+}
+
+
+viewpager的滑动事件等监听不起作用原因及其解决办法{
+	获取viewpager对象以后设置监听，viewpager.addonPageChangeListener();就可以监听滑动等事件了
+}
+
+
+空指针异常Point情况{
+	1. 本应该使用String的时候使用了别的格式，例如TextView.setText()的参数不是String的时候
+	
+	java.lang.NullPointerException: Attempt to invoke virtual method 'java.lang.Object android.content.Context.getSystemService(java.lang.String)' on a null object reference
+	2. Context为空，如果是在Activity内，将Context改为this即可
+}
+
+
+popupwindow相关{
+	没反应，popupwindow不显示的原因{按钮没有设置点击事件}
+	
+	给popupwindow的外部设置颜色(透明色)，生成bitmapdrawable对象{mPopupWindow.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));}
+
+}
+
+
+用xml画渐变图片{
+	<?xml version="1.0" encoding="utf-8"?>
+	<shape xmlns:android="http://schemas.android.com/apk/res/android">
+		<gradient
+			android:startColor="#FF000000"   
+			android:centerColor="#99A73C3C"
+			android:endColor="#99000000"
+			android:angle="270"  角度
+			/>
+	</shape>
+}
+
+
+震动{
+	<uses-permission android:name="android.permission.VIBRATE"/>
+
+	然后这里示例的代码是使用点击按钮的时候可以实现震动，在按钮的点击事件的函数中添加这样几句话：
+
+	Vibrator vibrator = (Vibrator)this.getSystemService(this.VIBRATOR_SERVICE);
+	vibrator.vibrate(1000);
+}
+
+java代码获取图片/生成图片{
+	imageview.setImageResource(R.mipmap.ic_launcher)
+}
+
+
+style错误的原因{
+
+	属性名称没有写全
+	
+	错误示范{
+		<style name="SettingTextStyle">
+        <item name="layout_width">100dp</item>
+        <item name="layout_height">wrap_content</item>
+        <item name="textSize">18sp</item>
+        <item name="textColor">#333333</item>
+		</style>	
+	}
+	正确示范{
+		<style name="SettingTextStyle">
+        <item name="android:layout_width">@dimen/setting_text_width</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">@dimen/setting_text_size</item>
+        <item name="android:textColor">@color/colorTextView</item>
+		</style>
+	}
+
+}
+
+
+字符串转换成int类型{
+	int time = Integer.parseInt(etSettingTime.getText().toString().trim());
+    int textSize = Integer.parseInt(etSettingTextSize.getText().toString().trim());
+}
+
+文字图片不显示原因{
+	代码内没有使用八位数的颜色，导致透明了
+}
+
+
+
+
+权限{
+	读写权限{
+		<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+		<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+		<uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+	}
+	
+	震动权限{
+    <uses-permission android:name="android.permission.VIBRATE"/>
+	}
+
+}
+
+动态添加/删除/更改Fragment{
+	1. 将FragmentPagerAdapter 替换成FragmentStatePagerAdapter，
+		因为前者只要加载过，fragment中的视图就一直在内存中，在这个过程中无论你怎么刷新，
+		清除都是无用的，直至程序退出； 后者 可以满足我们的需求。
+	2. 我们可以重写Adapter的getItemPosition()，让其返回PagerAdapter.POSITION_NONE即可；
+}
+
+
+监听返回按钮/返回键{
+	方法一：{
+		@Override    
+		public void onBackPressed() {    
+			super.onBackPressed();    
+			System.out.println("按下了back键   onBackPressed()");           
+		}
+	} 
+	
+	
+	方法2：{
+		@Override    
+		public boolean onKeyDown(int keyCode, KeyEvent event) {    
+			if ((keyCode == KeyEvent.KEYCODE_BACK)) {    
+				 System.out.println("按下了back键   onKeyDown()");     
+				 return false;    
+			}else {    
+				return super.onKeyDown(keyCode, event);    
+			}    
+				
+		}
+	}
+}
+
+内部类赋值/更改外部类的变量(成员变量){
+	将外部类的成员变量修饰成Static,更改的时候使用类名.变量名即可
+}
+
+返回按钮事件的监听，取消返回键退回{
+	屏蔽返回键的方法,返回true即可，代表事件已经消费{
+		@Override
+		public boolean onKeyDown(int keyCode, KeyEvent event) {
+			if(keyCode == KeyEvent.KEYCODE_BACK){
+				return true;
+			}
+			return super.onKeyDown(keyCode, event);
+		}
+	}
+	
+	如果想屏蔽返回键，按下返回键执行相应的逻辑，且不返回主页面，把代码写在true之前即可{
+		@Override
+		public boolean onKeyDown(int keyCode, KeyEvent event) {
+			if(keyCode == KeyEvent.KEYCODE_BACK){
+				if(isPlaying){
+					llSettingPageRoot.setVisibility(View.VISIBLE);
+					mViewPager.setVisibility(View.GONE);
+				}
+				return true;
+			}
+			return super.onKeyDown(keyCode, event);
+		}
+	}
+	
+	如果想只是返回桌面而不销毁app,则在true之前调动moveTaskToBack(true);即可把App后台运行{
+		@Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+			moveTaskToBack(true);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+	}
+}
+
+
+取消ViewPager的滑动页面切换/翻页，直接定位到某个页面{
+	viewPager.setCurrentItem(index,false); //使用代码选中页面的时候，第二个参数传false即可不使用滑动效果，而直接跳到那一页
+}
+
+
+int转换成String{
+	String.valueOf(str);
+	String.format("%d", str)
+	new StringBuilder().append(lastInputTextSize).toString()
+}
+
+在Fragment获取Context方式{
+	getContext()/this.getActivity()（可以省略this）
+}
+
+从Activity传参数到Fragment/Activity与Fragment之间的数据传递{
+	如果报错：Error:Error: Avoid non-default constructors in fragments: use a default constructor plus Fragment#setArguments(Bundle) instead
+	或者报错：This fragment should provide a default constructor (a public constructor with no arguments) (com.example.TestFragment)
+	使用以下方法解决：
+	
+	创建Fragment的时候使用以下方式创建：
+	PageFragment pageFragment = PageFragment.newInstance(text, textSizeInt, mInputTextColorStr, mInputBackGroundColorStr);
+	
+	在Fragment里面定义方法：将获取的数据封装，然后返回Fragment对象
+	public static PageFragment newInstance(String text, int textSizeInt, String inputTextColor, String inputBackGroundColor) {
+        PageFragment newFragment = new PageFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString("content", text);
+        bundle.putInt("textSizeInt", textSizeInt);
+        bundle.putString("inputTextColor", inputTextColor);
+        bundle.putString("inputBackGroundColor", inputBackGroundColor);
+        newFragment.setArguments(bundle);
+        return newFragment;
+    }
+	
+	在Fragment里的onCreate()获取传过来的数据
+	public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        Bundle args = getArguments();
+        if (args != null) {
+            contentText = args.getString("content");
+            inputTextColor = args.getString("inputTextColor");
+            inputBackGroundColor = args.getString("inputBackGroundColor");
+            textSizeInt = args.getInt("textSizeInt");
+        }
+    }
+	
+	
+}
+
+
+ListView高度无效的问题，给ListView设置高度{
+	方法一：在布局文件中再嵌套一套布局
+	方法二：在代码实现对ListView的Item高度的控制{
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+		   View view =  View.inflate(MainActivity.this,R.layout.item,null);
+			AbsListView.LayoutParams param = new AbsListView.LayoutParams(300,200);
+			view.setLayoutParams(param);
+			return view;
+		}
+	}
+}
+
+
+代码设置Margin值{
+	ImageView image = (ImageView) findViewById(R.id.main_image);  
+	RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(image.getLayoutParams());  
+	lp.setMargins(50, 100, 0, 0);  
+	image.setLayoutParams(lp); 
+	
+	可以把设置margin的方式封装成方法，只要是GroupView里面的LayoutParams 即可。
+	public static void setMargins (View v, int l, int t, int r, int b) {  
+		if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {  
+			ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();  
+			p.setMargins(l, t, r, b);  
+			v.requestLayout();  
+    }   
+}
+
+recyclerView{
+	导入包{
+	打开build.gradle文件，看自己的SDK版本是多少，compileSdkVersion 26， 参考appcompat的版本复制过来即可导入成功
+		compile 'com.android.support:appcompat-v7:26.0.0-alpha1'
+		compile 'com.android.support:recyclerview-v7:26.0.0-alpha1'
+	}
+}
+
+BUG合集{
+
+	点击事件不响应原因合集{
+		1.selector一定要先把state_pressed="true"写在前面，否则无效
+			<item android:drawable="@color/colorLightGray" android:state_pressed="true"/>
+			<item android:drawable="@color/colorWhite"/>
+	}
+	
+	图片/背景不显示(无效){
+		BUG（用Java代码）设置颜色(背景background)无效/透明原因以及解决方法{
+		注意:用代码设置颜色一定要用8位的颜色，否则会显示透明或不显示。正确示范：image_view.setBackgroundColor(0xFFD9D9D9);
+		imageView.setColorFilter(0xFFFF0000);
+	}
+	
+	闪退/崩溃原因{
+		1.变量没有初始化就使用，例如：
+			public static List<String> mAddressListItem; //变量未赋值，此时引用为null
+			String str = "d";
+			mAddressListItem.add(str);
+			
+			正确写法：
+			public static List<String> mAddressListItem = new ArrayList();
+			String str = "d";
+			mAddressListItem.add(str);
+		
+		2.参数类型错误： TextView或者其他控件SetText的时候没有转换为String类型
+	}
+	
+	动画无效/没效果{
+		1.尝试clean project或者rebuild project
+		2.可能是动画忘了.start，执行一下animatorSet.start()即可
+	}
+
+}
+
+获取文字高度{
+	Rect bounds = new Rect();
+	mPaint.getTextBounds(str,0,str.length(),bounds);
+	int height = bounds.height();
+}
+
+include标签摆放无效的问题{
+	include的引用必须实现android:layout_height="1px"和layout_width="match_parent"，才可以实现控制其其他属性
+	include layout="@layout/divider"
+	android:layout_height="1px"
+	android:layout_width="match_parent"
+	android:layout_alignParentBottom="true"
+}
+
+listView复用写法ViewHolder{
+	写法1 老式写法{
+		public class AddressListAdapter extends BaseAdapter {
+
+			@Override
+			public int getCount() {
+				return mAddressListItem.size();
+			}
+
+			@Override
+			public Object getItem(int i) {
+				return mAddressListItem.get(i);
+			}
+
+			@Override
+			public long getItemId(int i) {
+				return i;
+			}
+
+			@Override
+			public View getView(int i, View convertView, ViewGroup viewGroup) {
+				ViewHolder holder;
+				if(convertView == null){
+					convertView = View.inflate(WeixinApplication.getmContext(), R.layout.home_fragment_address_list_item, null);
+					holder = new ViewHolder();
+					holder.firstWord = convertView.findViewById(R.id.address_list_name_first_word);
+					holder.headSculpture = convertView.findViewById(R.id.address_list_head_sculpture);
+					holder.nickName = convertView.findViewById(R.id.address_list_nick_name_tv);
+
+					convertView.setTag(holder);
+				}else {
+					holder = (ViewHolder) convertView.getTag();
+				}
+
+				holder.firstWord.setText("A");
+				holder.headSculpture.setImageResource(headSculptureList[i]);
+				holder.nickName.setText(nickNameList[i]);
+
+				return convertView;
+			}
+
+			static class ViewHolder{
+				TextView firstWord;
+				TextView nickName;
+				ImageView headSculpture;
+			}
+		}
+
+	}
+	
+	写法2 新式写法{
+		public class AddressListAdapter extends BaseAdapter {
+
+			@Override
+			public int getCount() {
+				return mAddressListItem.size();
+			}
+
+			@Override
+			public Object getItem(int i) {
+				return mAddressListItem.get(i);
+			}
+
+			@Override
+			public long getItemId(int i) {
+				return i;
+			}
+
+			@Override
+			public View getView(int i, View convertView, ViewGroup viewGroup) {
+				if(convertView == null){
+					convertView = View.inflate(WeixinApplication.getmContext(), R.layout.home_fragment_address_list_item, null);
+				}
+				ViewHolder holder = ViewHolder.getViewHolder(convertView);
+
+				holder.headSculpture.setImageResource(mAddressListItem.get(i).getHeadSculpture());
+				holder.nickName.setText(mAddressListItem.get(i).getNickName());
+		
+				return convertView;
+			}
+
+			static class ViewHolder{
+				TextView firstWord;
+				TextView nickName;
+				ImageView headSculpture;
+
+				public ViewHolder(View convertView){
+					firstWord = convertView.findViewById(R.id.address_list_name_first_word);
+					headSculpture = convertView.findViewById(R.id.address_list_head_sculpture);
+					nickName = convertView.findViewById(R.id.address_list_nick_name_tv);
+				}
+
+				public static ViewHolder getViewHolder(View convertView){
+					ViewHolder viewHolder = (ViewHolder) convertView.getTag();
+					if(viewHolder == null){
+						viewHolder = new ViewHolder(convertView);
+						convertView.setTag(viewHolder);
+					}
+					return viewHolder;
+				}
+			}
+		}
+	}
+}
+
+
+类型转换{
+	char	转String : String s = String.valueOf(char); //效率最高的方法
+	boolean	转String : String s = String.valueOf(boolean); //效率最高的方法
+	double	转String : String s = String.valueOf(double); //效率最高的方法
+	float	转String : String s = String.valueOf(float); //效率最高的方法
+	int		转String : String s = String.valueOf(int); //效率最高的方法
+	long	转String : String s = String.valueOf(long); //效率最高的方法
+	
+	String转int : int i=Integer.parseInt(str);  
+}
+
+根据拼音来排序{
+	1.Collections.sort(mAddressListItem) //Collections.sort(ArrayList arr) 
+	2.让ArrayList里面的对象实现Comparable<T> T这里是要比较的对象，一般都是这个对象自己，即传入ArrayList里面的对象的类名即可
+	3.然后实现/重写对象里面的compareTo()方法，返回：当前字母.compareTo(要比较的字母);
+	END ~
+}
+
+获取字符串的首个字符{char 首个字符 = String.charAt(int index);}
+
+中文/文字转拼音{
+	使用第三方java拼音库：TinyPinyin
+	URL：https://github.com/promeG/TinyPinyin
+	
+	1.添加到工程
+		buildscript {
+		  repositories {
+			jcenter()
+		  }
+
+		  dependencies {
+			compile 'com.github.promeg:tinypinyin:2.0.3' // TinyPinyin核心包，约80KB
+
+			compile 'com.github.promeg:tinypinyin-lexicons-android-cncity:2.0.3' // 可选，适用于Android的中国地区词典
+
+			compile 'com.github.promeg:tinypinyin-lexicons-java-cncity:2.0.3' // 可选，适用于Java的中国地区词典
+		  }
+		}
+	
+	2.使用{
+		汉字转拼音API TinyPinyin：https://github.com/promeG/TinyPinyin
+		
+		//如果c为汉字，则返回大写拼音；如果c不是汉字，则返回String.valueOf(c)
+		String Pinyin.toPinyin(char c)
+
+		//c为汉字，则返回true，否则返回false
+		boolean Pinyin.isChinese(char c)
+
+		//将输入字符串转为拼音，转换过程中会使用之前设置的用户词典，以字符为单位插入分隔符
+		String toPinyin(String str, String separator)
+		
+		
+		词典API
+		// 添加中文城市词典
+		Pinyin.init(Pinyin.newConfig().with(CnCityDict.getInstance());
+
+		// 添加自定义词典
+		Pinyin.init(Pinyin.newConfig()
+					.with(new PinyinMapDict() {
+						@Override
+						public Map<String, String[]> mapping() {
+							HashMap<String, String[]> map = new HashMap<String, String[]>();
+							map.put("重庆",  new String[]{"CHONG", "QING"});
+							return map;
+						}
+					}));
+	}
+}
+
+ListView指定滑到那个条目{
+	listView.setSelection(i); //执行此代码，就会让第i个条目跳到屏幕最顶端
+}
+
+
+回调接口的定义和使用{
+	在自定义类里面{
+	
+		//定义接口
+		private onTouchLetterListener touchLetterListener;
+
+		public void setOnTouchLetterListener(onTouchLetterListener touchLetterListener){
+			this.touchLetterListener = touchLetterListener;
+		}
+
+		public interface onTouchLetterListener{
+			void onTouchLetter(String letter);
+			void onCancelTouch();
+		}
+		
+		//最后在合适的地方调用接口内的方法即可，因为外部调用setOnCancelTouchListener传进来的接口对象，
+		已经实现了onCancelTouchListener接口内的onCancelTouch()的方法逻辑。定义接口的类的onTouchLetterListener touchLetterListener，是外部的逻辑。
+		调用此对象的方法，也就是调用了外部传进来的逻辑代码，实现了回调
+
+		
+	}
+}
+
+使用代码动态创建View{
+	TextView tv = new TextView(Context);  
+	//2.把信息设置为文本框的内容  
+	tv.setText(str);  
+	tv.setTextSize(20);  
+}
+
+onPageScrolled(int position, float positionOffset, int positionOffsetPixels)的参数{
+	int position, 				当前滑动的页面
+	float positionOffset, 		当前滑动的页面已滑动的比例，0-1，手指往左滑的时候positionOffset数值会变大，最终变为1，就到了下一页。如果手指往右滑,position就是下一页的索引，并且positionOffset会从1一直减小
+	int positionOffsetPixels
+}
+
+
+Toast位置的设定{
+	toast.setGravity(Gravity.TOP | Gravity.END, x, y);//此处的92是:新建任务按钮长度 + 搜索按钮长度的一半 = 92dp
+	toast.show();
+}
+
+动画{
+	属性动画{
+		1.alpha透明动画
+		//第一个参数为 view对象，第二个参数为 动画改变的类型，第三，第四个参数依次是开始透明度和结束透明度。  
+        ObjectAnimator alpha = ObjectAnimator.ofFloat(text, "alpha", 0f, 1f);  
+        alpha.setDuration(2000);//设置动画时间  
+        alpha.setInterpolator(new DecelerateInterpolator());//设置动画插入器，减速  
+        alpha.setRepeatCount(-1);//设置动画重复次数，这里-1代表无限  
+        alpha.setRepeatMode(Animation.REVERSE);//设置动画循环模式。  
+        alpha.start();//启动动画。 
+		
+		2.scale缩放动画
+		AnimatorSet animatorSet = new AnimatorSet();//组合动画  
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(text, "scaleX", 1f, 0f);  
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(text, "scaleY", 1f, 0f);  
+  
+        animatorSet.setDuration(2000);  
+        animatorSet.setInterpolator(new DecelerateInterpolator());  
+        animatorSet.play(scaleX).with(scaleY);
+		//两个动画同时开始 (或者如果要XY缩放的同时，还需要透明动画animatorSet.play(scaleX).with(scaleY).with(alpha);)
+        animatorSet.start();  
+		
+		3.translate平移动画
+		ObjectAnimator translationUp = ObjectAnimator.ofFloat(button, "Y", button.getY(), 0);  
+        translationUp.setInterpolator(new DecelerateInterpolator());  
+        translationUp.setDuration(1500);  
+        translationUp.start();  
+
+		4. rotate旋转动画
+		AnimatorSet set = new AnimatorSet() ;               
+		ObjectAnimator anim = ObjectAnimator .ofFloat(phone, "rotationX", 0f, 180f);   
+		anim.setDuration(2000);   
+		ObjectAnimator anim2 = ObjectAnimator .ofFloat(phone, "rotationX", 180f, 0f);   
+		anim2.setDuration(2000);   
+		ObjectAnimator anim3 = ObjectAnimator .ofFloat(phone, "rotationY", 0f, 180f);   
+		anim3.setDuration(2000);   
+		ObjectAnimator anim4 = ObjectAnimator .ofFloat(phone, "rotationY", 180f, 0f);   
+		anim4.setDuration(2000);   
+        
+		set.play(anim).before(anim2); //先执行anim动画之后在执行anim2  
+		set.play(anim3).before(anim4) ;   
+		set.start();   
+		
+		5.修改View控件的背景颜色
+		ObjectAnimator translationUp = ObjectAnimator.ofInt(button,  
+                "backgroundColor", Color.RED, Color.BLUE, Color.GRAY,  
+                Color.GREEN);  
+        translationUp.setInterpolator(new DecelerateInterpolator());  
+        translationUp.setDuration(1500);  
+        translationUp.setRepeatCount(-1);  
+        translationUp.setRepeatMode(Animation.REVERSE); 
+		
+        /* 
+         * ArgbEvaluator：这种评估者可以用来执行类型之间的插值整数值代表ARGB颜色。 
+         * FloatEvaluator：这种评估者可以用来执行浮点值之间的插值。 
+         * IntEvaluator：这种评估者可以用来执行类型int值之间的插值。 
+         * RectEvaluator：这种评估者可以用来执行类型之间的插值矩形值。 
+         *  
+         * 由于本例是改变View的backgroundColor属性的背景颜色所以此处使用ArgbEvaluator 
+         */  
+  
+        translationUp.setEvaluator(new ArgbEvaluator());  
+        translationUp.start(); 
+		
+		
+		属性动画的监听{
+			animatorSet.addListener(new Animator.AnimatorListener() {
+					@Override
+					public void onAnimationStart(Animator animator) {
+
+					}
+
+					@Override
+					public void onAnimationEnd(Animator animator) {
+						searchAppointContentRoot.setVisibility(View.VISIBLE);
+					}
+
+					@Override
+					public void onAnimationCancel(Animator animator) {
+
+					}
+
+					@Override
+					public void onAnimationRepeat(Animator animator) {
+
+					}
+				});
+		}
+
+	}
+}
+
+java代码获取xml资源{
+	已过时：getResources().getColor(R.color.colorLineGreen)；
+}
+
+Activity之间数据的传递{
+	
+	
+	方法1 使用Intent{
+		设置数据：
+		Intent intent=new Intent(MainActivity.this,SecondActivity.class);
+		intent.putExtra("name", "zhangsan");
+		intent.putExtra("age", "23"); 
+		startActivity(intent);
+
+		获取数据：
+		String name=getIntent().getStringExtra("name");
+		
+		{
+			使用Intent可以传递多种基础类型，或者多种基础类型的Array数据：
+			getIntent().getStringArrayExtra("name");
+			getIntent().getBooleanExtra("isOpen",true);
+			getIntent().getBooleanArrayExtra("name");
+			getIntent().getDoubleArrayExtra("name");
+			getIntent().getDoubleExtra("name",0.5);
+			getIntent().getFloatArrayExtra("name");
+			getIntent().getFloatExtra("name",0.5F);
+			getIntent().getLongArrayExtra("name");
+			getIntent().getLongExtra("name",777L);
+			getIntent().getCharArrayExtra("name");
+			getIntent().getLongExtra("name",'c');
+		}
+		
+		返回数据给上一个Activity{
+			跳转Activity返回数据到主Activity
+
+			主Activity:
+			Bundle bundle=new Bundle();
+			bundle.putString("userName", "zhangsan");
+			bundle.putInt("userAge", 100);
+		 
+			Intent intent=new Intent(MainActivity.this,ForthActivity.class);
+			intent.putExtras(bundle);
+			startActivityForResult(intent, 1);//
+
+
+			第二个Activity:
+			Intent intent=new Intent();
+			intent.putExtra("backData", "这是返回主Activity的数据");
+			setResult(RESULT_OK, intent);//回传数据到主Activity
+			finish(); //此方法后才能返回主Activity
+
+
+			主Activity接收回传数据，重写onActivityResult（）方法：
+			protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+			// TODO Auto-generated method stub
+			switch (requestCode){
+			case RESULT_OK:
+				 Bundle bundle=data.getExtras();
+				 String str=bundle.getString("backData");
+					  Toast.makeText(MainActivity.this, str, 1).show();
+				 break;
+			
+			default:
+				 break;
+			}
+		}
+		
+		使用Intent传递对象{
+			1.序列化后直接传递(不建议，效率低){
+				1. 让要传递的对象实现 Serializable
+				2. Person person = new Person();
+					person.setName("Hwaphon");
+					person.setAddress("Anhui");
+
+					Intent intent = new Intent(MainActivity.this,SecondActivity.class);
+					intent.putExtra("person",person);
+					startActivity(intent);
+					finish();
+				3. 获取数据
+					Intent intent = getIntent();
+					Person person = (Person) intent.getSerializableExtra("person");
+			}
+			
+			2.让对象实现Parcelable后传递{
+				令自定义类实现Parcelable接口，这个时候必须重写两个方法
+				1.describeContents(): 用于描述内容接口，一般直接 return 0即可
+				2.writeToParcel() : 用于将想要传递的数据写入到Parcel容器中。
+				除了这两个方法以外，我们还需要创建一个 Parcelable.Creator接口的实现，这个接口中也需要我们实现两个方法
+				1.createFromParcel() ： 用于将写入Parcel容器中的数据读出来，用读出来的数据实例化一个对象，并且返回。
+				2.newArray() ：创建一个长度为 size 的数组并且返回，一般而言，直接返回return T[size] 即可。
+				
+				对象类的写法：
+					public class Person implements Parcelable{
+						//定义要被传输的数据  
+						private String mName;
+						private String mAddress;
+
+						public String getName() {
+							return mName;
+						}
+
+						public void setName(String name) {
+							mName = name;
+						}
+
+						public String getAddress() {
+							 return mAddress;
+						}
+
+						public void setAddress(String address) {
+							mAddress = address;
+						}
+
+						@Override
+						public int describeContents() {
+							return 0;
+						}
+
+						@Override
+						public void writeToParcel(Parcel parcel, int i) {
+							parcel.writeString(mName);
+							parcel.writeString(mAddress);
+						}
+
+						public static final Parcelable.Creator<Person> CREATOR = new Parcelable.Creator<Person>(){
+							@Override
+							 public Person createFromParcel(Parcel parcel) {
+									Person person = new Person();
+									person.mName = parcel.readString();
+									person.mAddess = parcel.readString();
+									return person;
+							}
+
+							@Override
+							public Person[] newArray(int i) {
+									return new Person[i];
+							}
+						};
+					}
+					
+				发送数据：
+					Intent intent = new Intent();                   
+                    Person ps = new Person();               
+                    ps.mInt = 1;  
+                    ps.mStr = "字符串";  
+                    ps.mMap = new HashMap<String,String>();  
+                    ps.mMap.put("key", "value");                      
+                    intent.putExtra("key", ps);                      
+                    intent.setClass(MainActivity.this,ParcelableActivity.class);    
+					
+				
+				接收数据：
+					Intent intent = getIntent();
+					Person person = (Person) intent.getParcelableExtra("person");
+					
+				在writeToParcel()方法中，我们可以将我们想要的数据写入容器，
+				如果是我们不需要的数据，那么我们可以放弃写入，这也是Parcelabel 方法比 Serializable方法高效的原因所在。
+				但是，这种方法比Serializable 方法多了太多的实现代码了，有没有什么办法能改变这一现状呢？
+				可以使用插件一键生成这些代码，比如说 Android Parcelable code generator 插件，
+				可以直接在Android Studio Plugins去下载该插件，下载完之后 点击 Alt+Insert就可以看到Parcelable选项了。
+			}
+			
+			3.将对象转成Json再传输{
+				//对象转Json,需要导入Gson包
+				 Intent intent = new Intent(MainActivity.this,SecondActivity.class);
+				 intent.putExtra("person",new Gson().toJson(person));
+				 
+				// 接收数据
+				 Intent intent = getIntent();
+				 String JsonData = intent.getStringExtra("person");
+				 Person person = new Gson().fromJson(JsonData,Person.class);
+			}
+		}
+	}
+	
+	方法2 使用Bundle{
+		Bundle bundle = new Bundle();
+        bundle.putString("name", "张三");
+		bundle.putInt("age", 26);
+		Intent intent = new Intent(MainActivity.this,ThridActivity.class);
+        intent.putExtras(bundle);
+        startActivity(intent);
+
+        第二个Activity获取数据:
+        Bundle bundle=this.getIntent().getExtras();
+        String name=bundle.getString("name");
+        int age=bundle.getInt("age");
+        textView.setText("name:"+name+"\nage:"+age);
+		
+		使用Bundle传递对象{
+			对象Person要实现Serializable接口，此处已省略变量和方法
+			public class Person implements Serializable{  }
+
+			person=new Person();
+			person.setName("zhangsan");
+			person.setSex("male");
+			person.setAge(80);
+
+			Bundle bundle=new Bundle();
+			bundle.putSerializable("person", person);//或者putParcelable(key,object)方法
+
+			Intent intent=new Intent(MainActivity.this,FiveActivity.class);
+			intent.putExtras(bundle);
+			startActivity(intent);
+
+			第二个Activity:
+			Intent intent=getIntent();
+			Bundle bundle=intent.getExtras();
+			Person person=(Person) bundle.getSerializable("person");//获得传递的对象
+		}
+	}
+	
+	
+}
+
+Handler的用法{
+	Handler myHandler = new Handler() {  
+		public void handleMessage(Message msg) {   
+			switch (msg.what) {   
+				case TestHandler.GUIUPDATEIDENTIFIER:   
+				myBounceView.invalidate();  
+				break;   
+			}   
+			super.handleMessage(msg);   
+		}
+	};
+}
+
+将Adapter的数据传输给另一个Activity/adapter打开Activity,Activity之间传输图片imageView{
+	1.首先Adapter是不能开启Activity的，需要使用handler将数据传出去到Fragment或Activity（使用Message.obj = 对象/view）
+	2.然后从Handler取出来
+	3.如果是图片，需要从ImageView中取出图片，然后转换成Bitmap
+	4.然后将Bitmap转换成输出流
+	5.将输出流转换成Byte[]数组
+	6.传输
+	7.取出Byte[]
+	8.使用BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);将Byte数组转换成Bitmap
+	9.将Bitmap设置给ImageView:image.setImageBitmap(headSculptureBitmap);
+	
+	Demo背景：
+	需要将微信通讯录的Fragment中的ListView条目中的昵称和头像，传输到要打开的个人信息Activity并显示，
+	ListView的点击事件是在Adapter中实现的，因此Adapter无法打开Activity,
+	因此点击的时通过Handler将数据从Adapter传输到上一级的Fragment中，由Fragment开启个人信息Activity，
+	同时打开之前还要将信息String和Bitmap传递过去。在个人信息Activity中获取这些数据并显示
+	
+	Adapter:
+		Message message = handler.obtainMessage();
+        message.what = 1;
+        message.obj = view;
+        handler.sendMessage(message);
+	
+	Fragment:
+		switch (msg.what){
+			case 1:
+				//获取传过来的View对象，并提取昵称和头像，并传到下一个打开的页面(个人信息页面PersonalActivity)
+				View view = (View) msg.obj;
+				//还原对象
+				TextView nickName = view.findViewById(R.id.address_list_nick_name_tv);
+				ImageView headSculpture = view.findViewById(R.id.address_list_head_sculpture);
+
+				//提取昵称中的文字
+				String name = nickName.getText().toString();
+
+				//获取头像图片，并转为Bitmap对象
+				Bitmap headSculptureBitMap = ((BitmapDrawable)headSculpture.getDrawable()).getBitmap();
+				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+				//压缩Bitmap到输出流里，三个参数分别是：输出格式，压缩质量（0-100），图像处理的输出流
+				headSculptureBitMap.compress(Bitmap.CompressFormat.PNG, 100 ,byteArrayOutputStream);
+				//将输入流转换为Byte数组，便于传输
+				byte[] imageBytes = byteArrayOutputStream.toByteArray();
+				
+				//将昵称和图像传给要打开的PersonalActivity页面
+				Intent intent = new Intent(mContext, PersonalActivity.class);
+				intent.putExtra("nickName",name);
+				intent.putExtra("imageByte", imageBytes);
+				startActivity(intent);
+				break;
+		}
+		super.handleMessage(msg);
+		
+	Activity:
+		nickName = getIntent().getStringExtra("nickName");
+        byte[] imageBytes = getIntent().getByteArrayExtra("imageByte");
+        Bitmap headSculptureBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+		
+		ImageView image  = (ImageView) findViewById(R.id.personal_image);
+        image.setImageBitmap(headSculptureBitmap);
+		
+	有此完成了Adapter → Fragment → Activity的图片和文字传输
+}
+
+大写小写相互转换{
+	String a = "ABC";  
+	system.out.println(a.toLowerCase());//abc  
+	String b = "abc";  
+	system.out.println(b.toUpperCase());//ABC  
+}
+
+end!

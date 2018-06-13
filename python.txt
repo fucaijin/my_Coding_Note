@@ -91,3 +91,68 @@ pip安装太慢/被墙{
 	
 	windows下，直接在user目录中创建一个pip目录，如：C:\Users\xx\pip，新建文件pip.ini。内容同上。
 }
+
+
+导包{
+	from SignUp import models
+	from 包名 import 文件名
+	使用的时候直接models.方法名即可
+	例如models.initData()
+	
+	from weixin.views import login, register
+	导入Weixin包中的views文件中的login, register方法
+}
+
+Django{
+	新建/引入APP{
+		在terminal执行： python manage.py startapp startapp weixin(app名称)
+		打开项目同名文件夹下的setting.py，在INSTALLED_APPS = []尾部添加项目名称即可
+	}
+	
+	测试服务器的开启：python manage.py runserver
+	
+	1.创建APP: 	
+		在pycharm下方的terminal终端中输入命令：python manage.py startapp cmdb(app名称)
+	2.编写路由：
+		路由都在urls文件里，它将浏览器输入的url映射到相应的业务处理逻辑。
+		打开urls.py文件，在数组里写urlpatterns = [url(r'^index/', views.index),  # 表示以index开头的，第二个参数就是路由，表示views.index这个方法为响应函数
+												]
+	3.编写业务处理逻辑(业务处理逻辑都在views.py文件里):
+		定义def index(request): return 结果
+	4.
+		
+		
+		
+	创建数据库表:	python manage.py makemigrations
+	再输入命令	：	python manage.py migrate
+	
+	django 返回json格式数据{
+		方法1：
+			import json
+			from django.http import HttpResponse
+			def get_an_apple(request):
+				resp = {'errorcode': 100, 'detail': 'Get success'}
+				return HttpResponse(json.dumps(resp), content_type="application/json")
+				
+		方法2(推荐)：
+		model.py
+		class Click(models.Model):
+			count = models.IntegerField()
+			time = models.CharField(max_length=64, default="")
+			
+		views.py
+		def json1(request):   
+			all = Click.objects.values()
+			return JSONResponse({"res":"success", "msg":all})
+			
+		结果：
+		{"res":"success", 
+		 "msg":[
+				{"count":1,"id":1,"time":"2015-12-12"},
+				{"count":2,"id":2,"time":"2015-12-2"},
+				{"count":3,"id":3,"time":"2015-12-3"}
+			   ]
+		}
+		
+	}
+}

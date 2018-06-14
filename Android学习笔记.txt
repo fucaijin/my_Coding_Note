@@ -268,6 +268,20 @@ fragment 滑动 模仿微信 https://segmentfault.com/a/1190000008119377
 
 
 EditText输入框{
+	修改下划线和光标样式{
+		1. 定义样式 
+			<style name="MyEditText" parent="Theme.AppCompat.Light"> 
+				<item name="colorControlNormal">@color/indigo</item> 
+				<item name="colorControlActivated">@color/pink</item>
+			</style>
+		2. 通过theme属性将此样式应用于EditText
+				<EditText 
+				android:layout_width="match_parent" 
+				android:layout_height="wrap_content" 
+				android:hint="Hint text" 
+				android:theme="@style/MyEditText"/>
+	}
+
 	修改输入框EditText的下划线样式颜色：
 	设置属性：android:background="@null"   取消默认样式，即取消下划线
 	
@@ -520,6 +534,25 @@ EditText输入框{
 	}
 }
 
+Checkbox{
+	修改CheckBox图片{
+		1. 在xml给CheckBox设置属性：android:button="@null"
+		2. 创建一个selector：
+				<?xml version="1.0" encoding="utf-8"?>
+				<selector xmlns:android="http://schemas.android.com/apk/res/android">
+					<item android:drawable="@drawable/checked" android:state_checked="true"/>
+					<item android:drawable="@drawable/normal" android:state_checked="false"/>
+					<item android:drawable="@drawable/normal"/>
+				</selector>
+		3. 在java代码设置图片的大小：
+			//取得设置好的drawable对象
+			Drawable forceModeDrawable = this.getResources().getDrawable(R.drawable.checkbox_selector);
+			//设置drawable对象的大小
+			forceModeDrawable.setBounds(0,0, ConvertUtils.dp2px(this,21),ConvertUtils.dp2px(this,21));
+			//设置CheckBox对象的位置，对应为左、上、右、下
+			checkbox.setCompoundDrawables(forceModeDrawable,null,null,null);
+	}
+}
 
 
 
@@ -744,8 +777,6 @@ viewpager类新闻界面的开源框架的使用  库项目   viewpagerIndicator    → → → day
 
 
 新闻或者广告图的自动轮播效果（可用手滑动的） 自动滚动    用ViewPager   看页面分析             → → → day03-07视频_页签详情页结构分析&获取也钱也网络数据         2分钟时候开始
-
-查看当前类有哪些方法或变量的快捷键
 
 HttpUtils使用方法步骤             → → → day03-07视频_页签详情页结构分析&获取也钱也网络数据         10分钟时候开始
 Gson使用方法步骤2             → → → day03-07视频_页签详情页结构分析&获取也钱也网络数据         13分钟时候开始
@@ -1103,7 +1134,7 @@ image.setVisibility(View.GONE)表示view不存在。
 	eclipse/android studio:{
 		快速修复 ctrl+1  --- 把有错误的地方改正，例如没重写的方法重写完成等等
 		复制当前行或代码块  Ctrl + Alt + 上下方向键
-		添加文档注释        ALT + SHIFT +J
+		添加文档注释        ALT + SHIFT +J  / ALT + SHIFT + Ctrl + J
 		生成对象		    Alt+shift+L
 		将局部变量转为成员变量/全局变量  Ctrl + Alt + F 
 		
@@ -1793,11 +1824,17 @@ BUG合集{
 			mAddressListItem.add(str);
 		
 		2.参数类型错误： TextView或者其他控件SetText的时候没有转换为String类型
+		
+		3.相关的权限没有加：例如网络请求权限、文件读写权限、摄像头/震动权限等等
 	}
 	
 	动画无效/没效果{
 		1.尝试clean project或者rebuild project
 		2.可能是动画忘了.start，执行一下animatorSet.start()即可
+	}
+	
+	安装不了{
+		资源文件名称有大写，例如：QR_Code_tem.png，改成qr_code_tem.png即可
 	}
 
 }
@@ -2427,5 +2464,127 @@ Handler的用法{
 	String b = "abc";  
 	system.out.println(b.toUpperCase());//ABC  
 }
+
+网络请求{
+	get请求和post请求{
+		注：IOSUtil是作者自己的工具类
+		
+		public class LoginServer {    
+		   /**     
+		   *get的方式请求     
+		   *@param username 用户名     
+		   *@param password 密码     
+		   *@return 返回null 登录异常     
+		   */ 
+		   
+		   
+		   
+		public static String loginByGet(String username,String password){
+				//get的方式提交就是url拼接的方式
+				String path = "http://172.16.168.111:1010/login.php?username="+username+"&password="+password;
+				try {
+					URL url = new URL(path);
+					HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+					connection.setConnectTimeout(5000);
+					connection.setRequestMethod("GET");
+					//获得结果码
+					int responseCode = connection.getResponseCode();
+					if(responseCode ==200){
+						//请求成功 获得返回的流
+						InputStream is = connection.getInputStream();
+						return IOSUtil.inputStream2String(is);
+					}else {
+						//请求失败
+						return null;
+					}
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				} catch (ProtocolException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+			
+			
+			
+			
+			
+		   /** * post的方式请求 
+		   *@param username 用户名 
+		   *@param password 密码 
+		   *@return 返回null 登录异常 
+		   */
+			public static String loginByPost(String username,String password){
+				String path = "http://172.16.168.111:1010/login.php";
+				try {
+					URL url = new URL(path);
+					HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+					connection.setConnectTimeout(5000);
+					connection.setRequestMethod("POST");
+
+					//数据准备
+					String data = "username="+username+"&password="+password;
+					//至少要设置的两个请求头
+					connection.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
+					connection.setRequestProperty("Content-Length", data.length()+"");
+
+					//post的方式提交实际上是留的方式提交给服务器
+					connection.setDoOutput(true);
+					OutputStream outputStream = connection.getOutputStream();
+					outputStream.write(data.getBytes());
+
+					//获得结果码
+					int responseCode = connection.getResponseCode();
+					if(responseCode ==200){
+						//请求成功
+						InputStream is = connection.getInputStream();
+						return IOSUtil.inputStream2String(is);
+					}else {
+						//请求失败
+						return null;
+					}
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				} catch (ProtocolException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+	}
+}
+
+版本兼容{
+	if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+		//如果API Level 24(版本号为N)或以上的设备，则会走入此代码块
+	} else {
+	
+	}
+}
+
+存储键值对/无序存储{
+	HashMap<Object, Object> registerInfoMap = new HashMap<>();
+	registerInfoMap.put("nickName",nickName);
+	registerInfoMap.put("phone",phone);
+	registerInfoMap.put("password",password);
+}
+
+有序存储/不同类型对象的存储{
+	ArrayList<Object> objects = new ArrayList<>();
+}
+ 
+
+
+
+
+
+
+
+
+
+
 
 end!

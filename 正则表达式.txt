@@ -7,3 +7,5 @@ regex = "([a-z]+)([0-9]+)([A-Z]+)";
 ^[a-z] 只能匹配以小写字母为行首的行: "a..."
 [a-z]$ 只能匹配以小写字母为行尾的行: "...a"
 ^[a-z]$ 应该只能匹配只有一个小写字母的行: "a"
+
+python中，re.search(r'<a href="(.*?)" target="_blank" id="">', raw_code) 表示使用正则表达式在raw_code中搜索所有符合<a href="(.*?)" target="_blank" id="">并去除(.*?)内容

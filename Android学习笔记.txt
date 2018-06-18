@@ -1836,6 +1836,14 @@ BUG合集{
 	安装不了{
 		资源文件名称有大写，例如：QR_Code_tem.png，改成qr_code_tem.png即可
 	}
+	
+	android studio粘贴不了外部数据{
+		先在android studio随便找一段文字粘贴复制一下，然后就可以从外部的复制过来粘贴了
+	}
+	
+	getSharedPreferences没效果，没保存{
+		原因，修改之后没有提交edit.commit();
+	}
 
 }
 
@@ -2577,11 +2585,201 @@ Handler的用法{
 }
  
 
+从相册/相机选取图片并返回显示{
+	需要添加权限：<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+	
+	1. 调用此方法来弹出图片选择窗口{
+		private void selectImage() {
+	//        动弹权限
+			if (ContextCompat.checkSelfPermission(this,
+					Manifest.permission.WRITE_EXTERNAL_STORAGE)
+					!= PackageManager.PERMISSION_GRANTED) {
+				//权限还没有授予，需要在这里写申请权限的代码
+				ActivityCompat.requestPermissions(this,
+						new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+						1);
+			} else {
+				//权限已经被授予，在这里直接写要执行的相应方法即可
+				// 激活系统图库，选择一张图片
+				Intent intent = new Intent(Intent.ACTION_PICK);
+				intent.setType("image/*");
+				// 开启一个带有返回值的Activity，请求码为PHOTO_REQUEST_GALLERY
+				startActivityForResult(Intent.createChooser(intent, "选择表情图片"), PHOTO_REQUEST_GALLERY);
+			}
+		}
+	}
+	
+	2. 重写onActivityResult，获取返回结果{
+		@Override
+		protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+			super.onActivityResult(requestCode, resultCode, data);
+			if (requestCode == PHOTO_REQUEST_GALLERY) {
+				// 从相册返回的数据
+				if (data != null) {
+					// 得到图片的全路径
+					Uri uri = data.getData();
+					crop(uri);
+				}
+
+			} else if (requestCode == PHOTO_REQUEST_CUT) {
+				// 从剪切图片返回的数据
+				if (data != null) {
+					Bitmap bitmap = data.getParcelableExtra("data");
+					emojiReviewIv.setVisibility(View.VISIBLE);
+					emojiReviewIv.setImageBitmap(bitmap);
+				}
+				try {
+					// 将临时文件删除
+					tempFile.delete();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+			}
+		}
+	}
+	
+	3. 裁剪{
+		private void crop(Uri uri) {
+			// 裁剪图片意图
+			Intent intent = new Intent("com.android.camera.action.CROP");
+			intent.setDataAndType(uri, "image/*");
+			intent.putExtra("crop", "true");
+			// 裁剪框的比例，1：1
+			intent.putExtra("aspectX", 1);
+			intent.putExtra("aspectY", 1);
+			// 裁剪后输出图片的尺寸大小
+			intent.putExtra("outputX", 250);
+			intent.putExtra("outputY", 250);
+
+			intent.putExtra("outputFormat", "JPEG");// 图片格式
+			intent.putExtra("noFaceDetection", true);// 取消人脸识别
+			intent.putExtra("return-data", true);
+			// 开启一个带有返回值的Activity，请求码为PHOTO_REQUEST_CUT
+			startActivityForResult(intent, PHOTO_REQUEST_CUT);
+		}
+	}
+		
+}
+
+随机数{
+	以产生[10,99]范围内的随机数为例
+	// randNumber 将被赋值为一个 MIN 和 MAX 范围内的随机数
+	int randNumber = rand.nextInt(MAX - MIN + 1) + MIN;
+	int randNumber = rand.nextInt(99 - 10 + 1) + 10;
+	
+	产生1-100
+	Random rand = new Random();
+	int randNumber = rand.nextInt(100) + 1;
+	
+	Random rand=new Random();
+	float f=rand.nextFloat();
+	生成0-1之间的随机小数
+	
+}
 
 
+方法过时/弃用{
+	getResources.getColor(R.color.white)；弃用。 使用：ContextCompat.getColor(context, R.color.black)；
+	getAllNetworkInfo()过时了{
+		ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        //新版本调用方法获取网络状态
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Network[] networks = connectivityManager.getAllNetworks();
+            NetworkInfo networkInfo;
+            for (Network mNetwork : networks) {
+                networkInfo = connectivityManager.getNetworkInfo(mNetwork);
+			}
+		}
+	}
+				
+}
 
 
+权限{
+	获取网络状态的权限: android.permission.ACCESS_NETWORK_STATE
+}
 
+
+获取网络连接状态{
+	private boolean isNetworkAvalible() {
+        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        //新版本调用方法获取网络状态
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Network[] networks = connectivityManager.getAllNetworks();
+            NetworkInfo networkInfo;
+            for (Network mNetwork : networks) {
+                networkInfo = connectivityManager.getNetworkInfo(mNetwork);
+                if (networkInfo.getState().equals(NetworkInfo.State.CONNECTED)) {
+                    return true;
+                }
+            }
+        }else {
+            //否则调用旧版本方法
+            if (connectivityManager != null) {
+                NetworkInfo[] info = connectivityManager.getAllNetworkInfo();
+                if (info != null) {
+                    for (NetworkInfo anInfo : info) {
+                        if (anInfo.getState() == NetworkInfo.State.CONNECTED) {
+                            Log.d("Network",
+                                    "NETWORKNAME: " + anInfo.getTypeName());
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+}
+
+获取指定时间{
+//        获取指定时间
+        Calendar calendar = Calendar.getInstance();
+        calendar.clear();
+        calendar.set(2018,5,16); 注意，第二个参数是以0开头的，0代表1月。即第二个参数是要查询的 月份-1 填入第二个参数即可，否则时间相减会得到负数。此方法有多个不同的参数，也可以精确到小时分钟，甚至秒。
+        long millis = calendar.getTimeInMillis();
+
+//        获取当前时间毫秒
+        Date date = new Date();
+        long time = date.getTime();
+}
+
+dialog提示框{
+	LayoutInflater inflater = LayoutInflater.from(this);
+	View dialogView = inflater.inflate(R.layout.main_dialog_view, null);
+	TextView tv = dialogView.findViewById(R.id.tv_dialog_text);
+	tv.setText(whiteButtonResponseArrays[responseIndex]);
+	responseIndex++;
+	if (responseIndex == whiteButtonResponseArrays.length) {
+		responseIndex = 0;
+	}
+	AlertDialog alertDialog = new AlertDialog.Builder(this).
+			setView(dialogView).
+			create();
+
+	监听消失/关闭
+	alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+		@Override
+		public void onDismiss(DialogInterface dialogInterface) {
+
+		}
+	});
+	alertDialog.show();
+}
+
+获取屏幕宽高{
+	通过Resources获取
+	DisplayMetrics dm = getResources().getDisplayMetrics();
+	heigth = dm.heightPixels;
+	width = dm.widthPixels;
+}
+
+getSharedPreferences的edit的edit.commit 和 apply 区别{
+	1. apply没有返回值，commit有。        	commit返回boolean表明修改是否提交成功 
+	2. apply效率高于commit。 			  	apply是将修改数据原子提交到内存, 而后异步真正提交到硬件磁盘。 而commit是同步的提交到硬件磁盘，因此，在多个并发的提交commit的时候，他们会等待正在处理的commit保存到磁盘后在操作，从而降低了效率。而apply只是原子的提交到内容，后面有调用apply的函数的将会直接覆盖前面的内存数据，这样从一定程度上提高了很多效率。 
+	3. apply方法不会提示任何失败的提示。	由于在一个进程中，sharedPreference是单实例，一般不会出现并发冲突，如果对提交的结果不关心的话，建议使用apply，当然需要确保提交成功且有后续操作的话，还是需要用commit的。
+}
 
 
 

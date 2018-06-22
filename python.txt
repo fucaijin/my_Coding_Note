@@ -650,6 +650,22 @@ Django{
 		# 不要把你项目的静态文件放到这个目录。这个目录只有在运行manage.py collectstatic时才会用到
 
 	}
+	
+	bug{
+		数据库结构更新无效{
+			更改model之后，使用以下两个命令行更新数据库的表结构无效：
+			python manage.py makemigrations
+			python manage.py migrate
+			
+			1. 把数据库文件删除
+			2. 删除app(你自己创建的app叫什么，此处的app就是什么)底下的migrations文件夹底下的0001..或0002之类为开头的文件(即migrations文件夹下，除了__init__.py文件之外的都要删除)
+			3. 在控制台执行命令：
+				python manage.py makemigrations
+				python manage.py migrate
+			4. 打开数据库查看是否更新成功
+		}
+		
+	}
 }
 
 scrapy{

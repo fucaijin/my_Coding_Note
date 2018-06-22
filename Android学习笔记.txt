@@ -318,7 +318,7 @@ EditText输入框{
 		
 	设置单行：设置行数android:lines="1"（singleLine属性已过时）
 	
-	输入框EditText限制输入字数：android:maxLength="6"
+	输入框EditText限制输入字数/长度：android:maxLength="6"
 	
 	监听输入框EditText内容的变化：editText.addTextChangedListener(new TextWatcher(){})
 	
@@ -1289,20 +1289,6 @@ xml布局文件中include的用法：{
 }
 
 
-
-代码模板{
-	<TextView
-        android:id="@+id/tv_"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="跟随系统"
-        android:textColor="#ffffff"
-        android:textSize="15sp"/>
-		
-	
-}
-
-
 设置子控件不能获取焦点{
 
 给根控件设置属性：android:descendantFocusability="blocksDescendants"，其子控件将无法获取焦点
@@ -2171,7 +2157,16 @@ Toast位置的设定{
 					}
 				});
 		}
-
+		
+		在xml中直接画出一个有动画效果的图案shap{
+			在shap外层嵌套一层动画，例如在shap外层嵌套<rotate ,那么使用此图片的时候，就是自带旋转动画的图像了。
+			<rotate 
+				xmlns:android="https://schemas.android.com/apk/res/android"
+				android:fromDegrees="0"//起始角度
+				android:toDegrees="360"//结束角度
+				android:pivotX="50%"//旋转X方向的坐标
+				android:pivotY="50%"//旋转Y方向的坐标
+		}
 	}
 }
 
@@ -2780,6 +2775,192 @@ getSharedPreferences的edit的edit.commit 和 apply 区别{
 	2. apply效率高于commit。 			  	apply是将修改数据原子提交到内存, 而后异步真正提交到硬件磁盘。 而commit是同步的提交到硬件磁盘，因此，在多个并发的提交commit的时候，他们会等待正在处理的commit保存到磁盘后在操作，从而降低了效率。而apply只是原子的提交到内容，后面有调用apply的函数的将会直接覆盖前面的内存数据，这样从一定程度上提高了很多效率。 
 	3. apply方法不会提示任何失败的提示。	由于在一个进程中，sharedPreference是单实例，一般不会出现并发冲突，如果对提交的结果不关心的话，建议使用apply，当然需要确保提交成功且有后续操作的话，还是需要用commit的。
 }
+
+textView代码动态设置图片drawableleft{
+	textView.setCompoundDrawables(getResources().getDrawable());
+}
+
+
+shap用法详解{
+	xml画圆环{
+		<?xml version="1.0" encoding="utf-8"?>
+		<shape xmlns:android="http://schemas.android.com/apk/res/android"
+			android:shape="ring"		//定义环形
+			android:useLevel="false"	//这个得为false
+			android:innerRadius="16dp"	//内环半径
+			android:thickness="3dp">	//厚度
+
+			<gradient					//渐变效果
+				android:startColor="#C7C7C7"
+				android:centerColor="#C7C7C7"
+				android:endColor="#00000000"
+				android:type="sweep" />
+
+		</shape>
+	}
+	
+	shap属性详解{
+		<?xml version="1.0" encoding="utf-8"?>  
+		<shape  
+			xmlns:android="http://schemas.android.com/apk/res/android"  
+			android:shape=["rectangle" | "oval" | "line" | "ring"]      //共有4种类型，矩形（默认）/椭圆形/直线形/环形  
+			// 以下4个属性只有当类型为环形时才有效  
+			android:innerRadius="dimension"     //内环半径  
+			android:innerRadiusRatio="float"    //内环半径相对于环的宽度的比例，比如环的宽度为50,比例为2.5,那么内环半径为20  
+			android:thickness="dimension"   	//环的厚度  
+			android:thicknessRatio="float"     	//环的厚度相对于环的宽度的比例  
+			android:useLevel="boolean">    		//如果当做是LevelListDrawable使用时值为true，否则为false.  
+		  
+			<corners    //定义圆角  
+				android:radius="dimension"      			//全部的圆角半径  
+				android:topLeftRadius="dimension"   		//左上角的圆角半径  
+				android:topRightRadius="dimension"  		//右上角的圆角半径  
+				android:bottomLeftRadius="dimension"    	//左下角的圆角半径  
+				android:bottomRightRadius="dimension" />    //右下角的圆角半径  
+		  
+			<gradient   //定义渐变效果  
+				android:type=["linear" | "radial" | "sweep"]//共有3中渐变类型，线性渐变（默认）/放射渐变/扫描式渐变  
+				android:angle="integer"     			//渐变角度，必须为45的倍数，0为从左到右，90为从上到下  
+				android:centerX="float"     			//渐变中心X的相当位置，范围为0～1  
+				android:centerY="float"     			//渐变中心Y的相当位置，范围为0～1  
+				android:startColor="color"      		//渐变开始点的颜色  
+				android:centerColor="color"     		//渐变中间点的颜色，在开始与结束点之间  
+				android:endColor="color"    			//渐变结束点的颜色  
+				android:gradientRadius="float"  		//渐变的半径，只有当渐变类型为radial时才能使用  
+				android:useLevel=["true" | "false"] />  //使用LevelListDrawable时就要设置为true。设为false时才有渐变效果  
+		  
+			<padding    //内部边距  
+				android:left="dimension"  
+				android:top="dimension"  
+				android:right="dimension"  
+				android:bottom="dimension" />  
+		  
+			<size   //自定义的图形大小  
+				android:width="dimension"  
+				android:height="dimension" />  
+		  
+			<solid  //内部填充颜色  
+				android:color="color" />  
+		  
+			<stroke     //描边  
+				android:width="dimension"   	//描边的宽度  
+				android:color="color"   		//描边的颜色  
+				
+				// 以下两个属性设置虚线  
+				android:dashWidth="dimension"   //虚线的宽度，值为0时是实线  
+				android:dashGap="dimension" />  //虚线的间隔  
+		</shape>  
+	}
+}
+
+imageView{
+	
+	旋转{
+		1. 在xml文件中：android:rotation="90"
+		
+		2. 代码动态修改：
+			image.setPivotX(image.getWidth()/2);  
+			image.setPivotY(image.getHeight()/2);//设置旋转中心点在图片中心  
+			image.setRotation(90); 
+	}
+	
+	透明度{
+		1. 在xml文件中：android:alpha="0.5"  值为0-1
+	}
+}
+
+颜色生成drawable{
+	new ColorDrawable(ContextCompat.getColor(this,R.color.colorWhite));
+}
+
+AlertDialog{
+	
+	AlertDialog消失/取消{
+		
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("手机号码错误");
+		final AlertDialog show = builder.show();//在show()的时候生成的对象才有dissmiss()
+		builder.setMessage("你输入的是一个无效的手机号码").setPositiveButton("确定", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialogInterface, int i) {
+				show.dismiss();
+			}
+		});
+	}
+}
+
+TextView{
+	
+	自适应TextView(TextView自适应大小,即当文字长度变化时，文字的大小会相应的变化，保证显示在一行当中){
+		实现依靠于第三方类库：
+		https://github.com/grantland/android-autofittextview
+
+		和正常的使用TextView一样，只需要将要自适应的TextView标签设置为<me.grantland.widget.AutofitTextView/>
+		注意：一定要设置为单行，否定无法显示效果
+		android:singleLine="true"
+		
+		<me.grantland.widget.AutofitTextView
+			android:id="@+id/output_autofit"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="@string/example"
+			android:textSize="50sp"
+			android:gravity="center"
+			android:singleLine="true"
+			autofit:minTextSize="8sp"
+			/>
+
+		TextView mAutofitOutput = (TextView)findViewById(R.id.output_autofit);
+		mAutofitOutput.setText(charSequence);
+		
+	}
+}
+
+上传图片到服务器{
+	//图像裁剪
+	//图像压缩
+	//编码
+	String encodedImage = Base64.encodeToString(byteArrayImage, Base64.DEFAULT);
+	
+	然后在服务器中解码：
+	//解码
+	Bitmap bm = BitmapFactory.decodeFile("/path/to/image.jpg");
+	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
+	byte[] b = baos.toByteArray();
+	
+	在Django中解码：
+	# 取出上传头像解码
+	headPicture = request_content.get("headPicture")
+	imgdata = base64.b64decode(headPicture)
+
+	# 判断头像文件夹是否存在,如果不存在则创建
+	head_sculpture_dirs = 'upload/image/head_sculpture/'
+	if not os.path.exists(head_sculpture_dirs):
+		os.makedirs(head_sculpture_dirs)
+
+	# 保存图片
+	file = open(head_sculpture_dirs + user_phone + '.png', 'wb')
+	file.write(imgdata)
+	file.close()
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

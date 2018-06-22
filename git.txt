@@ -433,6 +433,24 @@
 	git commit -m "remove directory from remote repository"
 	git push
 
+	
+pycharm使用git上传到GitHub{
+	配置：
+		File → setting → version Control → GitHub ↓
+			右侧的面板 
+			1. Host: github.com  
+			2.Auth Type: Password(认证方式) 
+			3.Login:GitHub的用户名 
+			4.Password：GitHub的密码 
+			5.不要勾选Clone Git respositories usinng ssh 使用ssh传输
+			6.测试连接Test
+		左侧面板选择Git ↓
+			Path to Git executable:(可执行的Git路径)，例如：C:\Program Files\Git\bin\git.exe
+			Test测试
+	
+	建立远程仓库并提交代码
+		菜单栏 → VCS → import into version control → share project on github → 填写项目的描述description(注意，此处必须不能写中文，不然会失败)，然后提交就OK了
+}
 
 	
 取消git：右键小乌龟TortoiesGit → Delete and add to ignore list → 完成

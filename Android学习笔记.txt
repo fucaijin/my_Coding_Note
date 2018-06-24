@@ -229,6 +229,10 @@ android:theme="@style/Theme.AppCompat.NoActionBar"
     }
 }
 
+设置全屏，没有状态栏，不显示时间不显示电量，不显示状态栏{
+	只要在onCreate调用下面这一行即可：
+	getWindow().setFlags(WindowManager.LayoutParams. FLAG_FULLSCREEN , WindowManager.LayoutParams. FLAG_FULLSCREEN);
+}
 
 		
 		
@@ -303,6 +307,7 @@ EditText输入框{
 	
 	修改输入框EditText光标的样式{
 		android:textCursorDrawable="@drawable/edit_text_cursor_img"
+		
 		<?xml version="1.0" encoding="utf-8"?>
 		<shape xmlns:android="http://schemas.android.com/apk/res/android"
 			android:shape="rectangle">
@@ -908,10 +913,6 @@ private void fullScreen(Activity activity) {
     }
 }
 
-作者：扬州慢_
-链接：https://www.jianshu.com/p/dc20e98b9a90
-來源：简书
-著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
 } 
 
 
@@ -3097,11 +3098,95 @@ AndroidMainfest的xml语法层次 {
 	}
 }
 
+加载/显示gif动图{
+	使用第三方库：android-gif-drawable(https://github.com/koral--/android-gif-drawable){
+		使用方法：
+		1. 在build.gradle文件中的dependencies节点中添加： {compile 'pl.droidsonroids.gif:android-gif-drawable:1.2.12'}，然后更新同步
+		2. 直接在xml文件中使用：
+			<pl.droidsonroids.gif.GifImageView
+			android:id="@+id/gif_image_view"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent" />
+		3. 代码中找到控件，并绑定图片：
+			GifImageView gifImageView = (GifImageView) findViewById(R.id.gif_image_view);
+			try {
+				// 如果加载的是gif动图，第一步需要先将gif动图资源转化为GifDrawable
+				// 将gif图资源转化为GifDrawable
+				GifDrawable gifDrawable = new GifDrawable(getResources(), R.drawable.image);
 
+				// gif1加载一个动态图gif
+				gifImageView.setImageDrawable(gifDrawable);
 
+				// 如果是普通的图片资源，就像Android的ImageView set图片资源一样简单设置进去即可。
+				// gif2加载一个普通的图片（如png，bmp，jpeg等等）
+				// gifImageView.setImageResource(R.drawable.image);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		4. END！
+	}
+}
 
+Fragment{
+	Fragment的写法{
+		public class GifFragment extends Fragment {
+			@Nullable
+			@Override
+			public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+				super.onCreateView(inflater, container, savedInstanceState);
+				View inflate = inflater.inflate(R.layout.fragment_gif, container, false);
+				return inflate;
+			}
+		}
+	}
+}
 
+ViewPager{
+	ViewPager的用法{
+		1. 现在XML文件中定义
+			<android.support.v4.view.ViewPager
+				android:id="@+id/view_pager"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent">
+			</android.support.v4.view.ViewPager>
+			
+		2. Java代码中获取ViewPager控件，并设置Adapter
+			ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+			viewPager.setAdapter(new MyFragmentPageAdapter(getSupportFragmentManager()));
+			
+		3. 创建Adapter:
+			public class MyFragmentPageAdapter extends FragmentPagerAdapter {
+				ArrayList fragmentList = new ArrayList();
+				public MyFragmentPageAdapter(FragmentManager fm) {
+					super(fm);
+					fragmentList.add(new GifFragment());
+					fragmentList.add(new ScrollerFragment());
+				}
 
+				@Override
+				public Fragment getItem(int position) {
+					Fragment fragment = (Fragment) fragmentList.get(position);
+					return fragment;
+				}
+
+				@Override
+				public int getCount() {
+					return fragmentList.size();
+				}
+			}
+			
+		4. 创建Fragment:
+			public class GifFragment extends Fragment {
+				@Nullable
+				@Override
+				public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+					super.onCreateView(inflater, container, savedInstanceState);
+					View inflate = inflater.inflate(R.layout.fragment_gif, container, false);
+					return inflate;
+				}
+			}
+	}
+}
 
 
 

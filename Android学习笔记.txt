@@ -1784,7 +1784,7 @@ recyclerView{
 	}
 }
 
-BUG合集{
+BUG/ERROR合集{
 
 	点击事件不响应原因合集{
 		1.selector一定要先把state_pressed="true"写在前面，否则无效
@@ -1830,6 +1830,70 @@ BUG合集{
 	getSharedPreferences没效果，没保存{
 		原因，修改之后没有提交edit.commit();
 	}
+	
+	将腾讯移动应用分析MTA(mobile tencent anlytics)集成到项目的时候，出现错误{
+		1. Error:Could not find method ndk() for arguments [build_ec1rbko69r06z83c9r3o05f8k$_run_closure1$_closure4@2b8cd7b9] on project ':sayyouloveme' of type org.gradle.api.Project.
+		2. Error:Could not set unknown property 'manifestPlaceholders' for object of type com.android.build.gradle.AppExtension.
+		
+		解决办法，将ndk 和 manifestPlaceholders 放在defaultConfig里面即可
+		
+		正确的完整build.gradle文件为：{
+			apply plugin: 'com.android.application'
+
+			android {
+				compileSdkVersion 26
+				buildToolsVersion "26.0.2"
+
+				defaultConfig {
+					applicationId "com.fucaijin.sayyouloveme"
+					minSdkVersion 21
+					targetSdkVersion 26
+					versionCode 1
+					versionName "1.1"
+
+					testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+					ndk {
+			//根据需要 自行选择添加的对应cpu类型的.so库。以下是我装了所有的cpu类型的.so库
+						abiFilters 'armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64', 'mips', 'mips64'
+					}
+
+					manifestPlaceholders = [
+							MTA_APPKEY:"APC79NWV62IV",
+							MTA_CHANNEL:"GitHub"
+					]
+
+				}
+
+
+
+				buildTypes {
+					release {
+						minifyEnabled false
+						proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+					}
+				}
+			}
+
+			dependencies {
+				compile fileTree(dir: 'libs', include: ['*.jar'])
+				androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+					exclude group: 'com.android.support', module: 'support-annotations'
+				})
+				compile 'com.android.support:appcompat-v7:26.0.0-alpha1'
+				testCompile 'junit:junit:4.12'
+
+				//mta 3.3 稳定版
+				compile 'com.qq.mta:mta:3.3.1-release'
+
+				//mid  jar包 必须添加
+				compile 'com.tencent.mid:mid:3.73-release'
+			}
+		}
+		
+	}
+	
+	
 
 }
 
@@ -2922,14 +2986,14 @@ TextView{
 	//编码
 	String encodedImage = Base64.encodeToString(byteArrayImage, Base64.DEFAULT);
 	
-	然后在服务器中解码：
+	java服务器中解码：
 	//解码
 	Bitmap bm = BitmapFactory.decodeFile("/path/to/image.jpg");
 	ByteArrayOutputStream baos = new ByteArrayOutputStream();
 	bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
 	byte[] b = baos.toByteArray();
 	
-	在Django中解码：
+	python服务器中(Django)解码：
 	# 取出上传头像解码
 	headPicture = request_content.get("headPicture")
 	imgdata = base64.b64decode(headPicture)
@@ -2968,11 +3032,70 @@ TextView{
 	startActivity(inent);
 }
 
+识别用户唯一/用户身份{
+	IOS系统根据OpenUDID来识别设备ID；Android系统根据IMEI+MAC来识别设备ID。
+}
 
+AndroidMainfest的xml语法层次 {
+	android中Manifest文件的语法分为如下五个层次   
+	第一层： 定义了软件的属性：包路径、程序版本、版次等信息  
+		<manifest>  
+	第二层：定义了程序属性及功能  应用程序名称、应用程序图标、程序使用到的权限，测试的sdk版本等信息  
+		<application>  
+		<uses-permission>  
+		<permission>   
+		<instrumentation>  
+		<uses-sdk>  
+	第三层： 定义了程序的功能组建
+		<activity>  
+		<receiver>  
+		<service>  
+		<provider> 
+	第四层： 定义了程序组建的功能过滤器
+		<intent-filter>  
+		<meta-data> 
+	第五层：定义了程序的意图动作类型
+		<action>  
+		<category>  
+		<data> 
+}
 
+腾讯MTA(腾讯移动分析/腾讯云){
+	事件没有反应，即设置了事件却没有统计{
+		原因可能是打了空格，例如：MTA后台自定义的事件id(even_id)是：SettingPage；
+		代码写的是：StatService.trackCustomKVEvent(this, " SettingPage", null);(注意Setting前面多打了一个空格，因此无效，删除空格即可)
+	}
+	
+	使用{
+		1. 先在build.gradle文件中添加配置{
+			1. 在defaultConfig内添加：
+				ndk {
+					//根据需要 自行选择添加的对应cpu类型的.so库。以下是我装了所有的cpu类型的.so库
+					abiFilters 'armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64', 'mips', 'mips64'
+				}
 
+				manifestPlaceholders = [
+						MTA_APPKEY:"APC79NWV62IV",
+						MTA_CHANNEL:"GitHub"
+				]
+			
+			2. dependencies内添加：
+				//mta 3.3 稳定版
+				compile 'com.qq.mta:mta:3.3.1-release'
 
-
+				//mid  jar包 必须添加
+				compile 'com.tencent.mid:mid:3.73-release'
+		}
+		
+		2. 到MTA登录，然后进入到应用分析 → 时间分析 → 事件列表 → 添加自定义的事件(例如要统计的按钮点击次数，或者页面使用时长)
+		
+		3. 在客户端代码中，需要进行统计和分析的地方填入代码即可，第二个参数是和MTA官网定义的事件名称一致的String：
+			StatService.trackCustomKVEvent(this, "StartBtn", null)；		//计算次数
+			
+			StatService.trackCustomBeginEvent(this, "PlayPage", "run_time");//开始计算本页面的运行时长
+			StatService.trackCustomEndEvent(this, "PlayPage", "run_time");	//结束计算本页面的运行时长
+	}
+}
 
 
 

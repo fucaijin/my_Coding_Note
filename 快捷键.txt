@@ -156,8 +156,8 @@ eclipse/android studio:{
 	查找/搜索文件 	Ctrl+Shift +R
 	查找/搜索类 	Ctrl+Shift +T 
 	
-	
 	快速判断是否为空，
+	ctrl + shift + 空格  在打出一半有补全提示的时候按下此快捷键，就会显示改类/方法的文档
 }
 
 android studio:{

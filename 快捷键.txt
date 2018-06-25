@@ -231,3 +231,7 @@ Adobe Illustrator CS6{
 	原地粘贴 Ctrl+B 粘贴在后面(要先Ctrl+C)
 	Ctrl+Shift+Alt+V  直接粘贴到所有画板
 }
+
+Photoshop{
+	复制图层 Ctrl + J
+}

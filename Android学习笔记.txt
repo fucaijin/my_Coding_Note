@@ -268,10 +268,52 @@ String.format("%.2f",double值)
 fragment 滑动 模仿微信 https://segmentfault.com/a/1190000008119377
 
 
-
-
-
-EditText输入框{
+EditText控件{
+	设置EditText不可编辑，但可长按/双击复制{
+		1. xml:android:textIsSelectable="true" (此属性在textView也有，使用了以后TextView也可以实现复制功能)
+		2. editText.setKeyListener(null);
+		
+		3. 也可以选择隐藏光标和下划线{
+            android:background="@null"
+            android:textCursorDrawable="@drawable/edit_text_cursor_img"
+			
+			edit_text_cursor_img ： 
+				<?xml version="1.0" encoding="utf-8"?>
+				<shape xmlns:android="http://schemas.android.com/apk/res/android"
+					android:shape="rectangle">
+					<size android:width="0px"/>
+					<solid android:color="#00000000"/>
+				</shape>
+		}
+	}
+	默认弹出键盘类型{
+		//默认弹出英文键盘，可输入任何字符
+		editText.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+		//默认弹出数字键盘，且只能输入数字
+		editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+		
+		设置默认弹出键盘样式，并且设置指定输入的字符{
+			mEditText.setKeyListener(new NumberKeyListener() {
+                @Override
+                public int getInputType() {
+                    // TODO Auto-generated method stub
+                    return 3;// 默认使用数字键盘
+                }
+                @Override
+                protected char[] getAcceptedChars() {
+                    // TODO Auto-generated method stub
+                    char key[] = new char[] { '1', '2', '3', '4', '5', '6','7', '8', '9', '0', 'X' };
+                    return key;
+                }
+            });
+		}
+	}
+	
+	EditText实现不可编辑{
+		et.setFocusable(false);
+		et.setFocusableInTouchMode(false);
+	}
+	
 	修改下划线和光标样式{
 		1. 定义样式 
 			<style name="MyEditText" parent="Theme.AppCompat.Light"> 
@@ -294,7 +336,7 @@ EditText输入框{
 		drawable可以用图片，也可以用xml的shape 画出来
 	}
 	
-	取消/禁止输入框EditText自动获取焦点/禁止自动弹出键盘{
+	取消/禁止输入框EditText自动获取焦点/禁止自动弹出键盘/不自动获取焦点{
 		给EditText的父布局设置可获得焦点的属性即可：
 		android:focusable="true"
 		android:focusableInTouchMode="true"
@@ -318,7 +360,7 @@ EditText输入框{
 	
 	输入框的高度动态自增高{
 		android:maxHeight="111dp"
-    android:minHeight="47dp"
+		android:minHeight="47dp"
 	}
 		
 	设置单行：设置行数android:lines="1"（singleLine属性已过时）
@@ -1609,15 +1651,22 @@ style错误的原因{
 
 
 
-权限{
+权限permission{
+	uses-permission和permission的区别{
+		uses-permission 官方权限
+		permission     	自定义权限
+		<uses-permission>是官方定义的权限，是调用别人的东西的时候自己需要声明的权限，
+		<permission>是自己定义的权限，就是别人调用自己的APP时需要用<uses-permission>来声明。
+	}
+	
 	读写权限{
-		<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-		<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-		<uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+		<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> //写入外部存储文件权限
+		<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />//读取外部存储文件权限
+		<uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />//允许装载和卸载文件系统权
 	}
 	
 	震动权限{
-    <uses-permission android:name="android.permission.VIBRATE"/>
+		<uses-permission android:name="android.permission.VIBRATE"/>
 	}
 
 }
@@ -1762,10 +1811,10 @@ ListView高度无效的问题，给ListView设置高度{
 }
 
 
-代码设置Margin值{
+java代码设置Margin值/设置imageview的margin值{
 	ImageView image = (ImageView) findViewById(R.id.main_image);  
-	RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(image.getLayoutParams());  
-	lp.setMargins(50, 100, 0, 0);  
+	//注意，此处↓的RelativeLayout得根据imageview的实际父容器来写；并且需要先将ImageView放入父容器中才可写此行(因为不放入容器无法获得宽高等参数，无法获得参数就无法设置参数)
+	RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(image.getLayoutParams());  lp.setMargins(50, 100, 0, 0);  
 	image.setLayoutParams(lp); 
 	
 	可以把设置margin的方式封装成方法，只要是GroupView里面的LayoutParams 即可。
@@ -1892,6 +1941,10 @@ BUG/ERROR合集{
 			}
 		}
 		
+	}
+	
+	gradle编译有错误{
+		重新检查build.gradle文件的依赖，很可能是依赖有误，删除自定义的依赖，并重新添加依赖即可
 	}
 	
 	
@@ -2645,8 +2698,11 @@ Handler的用法{
 }
  
 
-从相册/相机选取图片并返回显示{
+从相册/相机选取图片并返回显示/获取图片{
 	需要添加权限：<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+	
+	private static final int PHOTO_REQUEST_GALLERY = 2;// 从相册中选择头像
+    private static final int PHOTO_REQUEST_CUT = 3;// 剪切完成的结果
 	
 	1. 调用此方法来弹出图片选择窗口{
 		private void selectImage() {
@@ -2688,13 +2744,6 @@ Handler的用法{
 					emojiReviewIv.setVisibility(View.VISIBLE);
 					emojiReviewIv.setImageBitmap(bitmap);
 				}
-				try {
-					// 将临时文件删除
-					tempFile.delete();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-
 			}
 		}
 	}
@@ -2932,6 +2981,85 @@ imageView{
 	透明度{
 		1. 在xml文件中：android:alpha="0.5"  值为0-1
 	}
+	
+	通过uri地址设置图片{
+		Uri uri = data.getData();
+		imageView.setImageURI(uri);
+	}
+	
+	通过bitmap设置图片{
+		imageView.setImageBitmap(bitmap);
+	}
+	
+	宽度填充屏幕，高度自适应的自定义的ImageView/自适应的imageView,直接复制代码即可使用{
+		public class ResizableImageView extends ImageView {  
+
+			public ResizableImageView(Context context) {  
+				super(context);  
+			}  
+
+			public ResizableImageView(Context context, AttributeSet attrs) {  
+				super(context, attrs);  
+			}  
+
+			@Override  
+			protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec){  
+				Drawable d = getDrawable();  
+
+				if(d!=null){  
+					// ceil not round - avoid thin vertical gaps along the left/right edges  
+					int width = MeasureSpec.getSize(widthMeasureSpec);  
+					//高度根据使得图片的宽度充满屏幕计算而得  
+					int height = (int) Math.ceil((float) width * (float) d.getIntrinsicHeight() / (float) d.getIntrinsicWidth());  
+					setMeasuredDimension(width, height);  
+				}else{  
+					super.onMeasure(widthMeasureSpec, heightMeasureSpec);  
+				}  
+			}  
+
+		}
+	}
+	
+	自适应的gif imageView(参考上面的宽度固定，高度自适应imageView,结合第三方库android-gif-drawable实现的){
+		1. 先在build.gradle文件添加依赖：compile 'pl.droidsonroids.gif:android-gif-drawable:1.2.12'
+		
+		2. 然后自定义View:{
+			public class ResizableGifView extends GifImageView {
+				public ResizableGifView(Context context) {
+					super(context);
+				}
+
+				public ResizableGifView(Context context, AttributeSet attrs) {
+					super(context, attrs);
+				}
+
+				@Override
+				protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+					Drawable d = getDrawable();
+					if (d != null) {
+						// ceil not round - avoid thin vertical gaps along the left/right edges
+						int width = MeasureSpec.getSize(widthMeasureSpec);
+						//高度根据使得图片的宽度充满屏幕计算而得
+						int height = (int) Math.ceil((float) width * (float) d.getIntrinsicHeight() / (float) d.getIntrinsicWidth());
+						setMeasuredDimension(width, height);
+					} else {
+						super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+					}
+				}
+			}
+		}
+		
+		3. 像普通imageView那样使用就可以，设置宽为match_parent,高为wrap_content:{
+			// 如果加载的是gif动图，第一步需要先将gif动图资源转化为GifDrawable
+			// 将gif图资源转化为GifDrawable
+			GifDrawable gifDrawable = new GifDrawable(getResources(), R.drawable.gif_image);
+
+			// gif1加载一个动态图gif
+			gifImageView.setImageDrawable(gifDrawable);
+		}
+		
+		4. end!
+	}
 }
 
 颜色生成drawable{
@@ -2978,6 +3106,10 @@ TextView{
 		TextView mAutofitOutput = (TextView)findViewById(R.id.output_autofit);
 		mAutofitOutput.setText(charSequence);
 		
+	}
+	
+	实现可以复制的TextView{
+		tv.setTextIsSelectable(true);
 	}
 }
 
@@ -3139,6 +3271,56 @@ Fragment{
 			}
 		}
 	}
+	
+	Fragment中获取Context对象的两种方法{
+		1.this.getActivity()（可以不写this.）
+		在Fragment中直接调用getActivity()方法，可以直接得到Fragment依附的Activity，而Activity是一个Context类型的对象。
+
+		2.获取Application对象
+		如下自己写一个MyApplication类继承Application，通过getInstance获取一个Application类型的对象，也是Context对象。
+		就是使用自己的Application，然后Application里使用this赋值给一个Context成员变量，再通过暴露一个方法获取此Context，从外部调用这个方法，就可以了。
+		如下{
+			public class MyApplication extends Application {
+				private MyApplication mInstance;
+
+				public static void getInstance(){
+					if(mInstance == null){
+						mInstance = new MyApplication();
+					}
+					return mInstance;
+				}
+			}
+		}
+		
+		3.两种方法比较：
+			1.this.getActivity()
+			优点：不需要写MyApplication类
+			缺点：Fragment很容易被销毁，调用getActivity()方法会报空指针错误（注意：并不是getActivity()返回值为null，而是this.getActivity()中的this，也就是Fragment自己是null，因为它已经被销毁了）
+			
+			2.获取Application对象
+			优点：不会遇到类似this.getActivity()的空指针问题
+			缺点：某些情况下的Context必须是Activity，特别是实例化Dialog等需要依附于一个Activity的可视化的对象时传参必须是Activity对象（Toast是Android的一种通知机制，不需要依附于Activity）
+			
+			3.两全其美的解决方案
+				1.MyApplication是一定要写的
+				2.写一个如下的BaseFragment类：所有的Fragment都继承这个BaseFragment,直接通过getContext()方法即可得到Context对象，当然实例化Dialog等需要依附于Activity的对象时，还是老老实实的getActivity()吧
+				public class BaseFragment extends Fragment{
+					private Activity activity;
+
+					public Context getContext(){
+						if(activity == null){
+							return MyApplication.getInstance();
+						}
+						return activity;
+					}
+
+					@Override
+					public void onAttach(Activity activity) {
+						super.onAttach(activity);
+						activity = getActivity();
+					}
+				}
+	}
 }
 
 ViewPager{
@@ -3188,6 +3370,8 @@ ViewPager{
 	}
 }
 
-
+uri转成路径Path{
+	String img_url = uri.getPath();//这是本机的图片路径
+}
 
 end!

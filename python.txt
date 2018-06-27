@@ -672,4 +672,181 @@ scrapy{
 	 中文乱码：在setting文件中设置：FEED_EXPORT_ENCODING = 'utf-8' 即可
 }
 
-字符串拼接 (和数字拼接)  ： "step="+str(1)
+字符串{
+	字符串拼接{
+		
+		1. 使用 + 拼接(低效) / 字符串和数字拼接："step="+str(1)
+		
+		2. 使用str.join(str)拼接(高效)
+			','.join(pieces)
+			'a,b,c,d,e'
+	}
+	
+	检查子串是否存在
+	'a' in 'abca'
+	True
+	
+	字符串索引
+	s.index('c') # 未找到时，返回ValueError
+	s.find('c') # 未找到时，返回-1
+
+	统计str1在str2中出现的次数
+	s.count(' ')
+	
+	字符串替换
+	'a ,b , c, d, e'.replace(' ','') # 删除所有空格
+	str1.replace(str2,str3) # 将str1中所有的str2替换为str3
+} 
+
+列表/元组/集合/字典{
+	
+	1. 列表list(如：booklist = ['Python','Java','PHP']){
+		列表是一种用于保存一系列有序项目的集合。可重复，类型可不同。用“[]”表示。
+		类似于栈，项目的列表用方括号括起来，创建的列表，可以添加、移除、搜索列表中的项目。
+		既然可以添加或删除项目，列表是一种可变的（Mutable）数据类型。
+		
+		1. 可以用list()函数或者方括号[]创建，元素之间用逗号’,‘’分隔。 
+		2. 列表的元素不需要具有相同的类型 
+		3. 使用索引来访问元素 
+		4. 可切片
+		
+		# 可用list()函数建立
+		list1 = list((1, 2))
+		# 用[]建立，可包含不同数据类型
+		list2 = [1, 3, 'hello', 3.5]
+		　　
+		booklist = ['Python','Java','PHP']
+
+		列表操作：
+		booklist.append('Python Crash Course')//向列表尾部添加一个对象
+
+		insert() :在任何位置添加新元素
+		booklist.insert(0,'Mysql')    # 在列表开头添加新元素
+
+		del语句：删除指定位置的元素
+		del L[1]        #删除指定下标的元素
+		del L[1:3]      #删除指定下标范围的元素
+
+		#复制list:
+		L1 = L      #L1为L的别名，用C来说就是指针地址相同，对L1操作即对L操作。
+		L1 = L[:]   #L1为L的克隆，即另一个拷贝。
+
+		pop():  默认删除末尾的元素，也可根据索引指定删除，删除后，可接着使用它的值
+		new_booklist = booklist.pop()
+		deleted_value = booklist.pop(2)     # 指定删除索引为2的元素, 接收被删除的值
+
+		remove(): 根据元素的值删除
+		booklist.remove('Mysql')         # 删除列表中值为“Mysql”的元素
+
+		sort(): 对列表进行永久性排序
+		booklist.sort()                    # 按照字母排序，排序后无法恢复
+		booklist.sort(reverse=True)        # 字母反序排序
+
+		sorted(): 临时排序，不影响原始排序
+		booklist.sorted()                    # 按照字母排序，排序后无法恢复
+		booklist.sorted(reverse=True)        # 字母反序排序
+
+		reverse(): 反转列表元素的排序
+		booklist.reverse()                # 永久性修改，但可再次调用reverse()恢复
+		
+		list.append():	追加成员
+		list.count(x):	计算列表中参数x出现的次数
+		list.extend(L):	向列表中追加另一个列表L
+		list.index(x):	获得参数x在列表中的位置
+		list.insert():	向列表中插入数据
+		list.pop():	删除列表中的成员（通过下标删除）
+		list.remove():	删除列表中的成员（直接删除）
+		list.reverse():	将列表中成员的顺序颠倒
+		list.sort():	将列表中成员排序
+		
+	}
+
+	2. 元组tuple(如：booklist = ('Python','Java','PHP')){
+		元组只读的,类似于列表，也可以存不同类型数据，不能修改,用“()”表示,使用逗号进行分隔。
+		
+		1. 可以用tuple()函数或者方括号()创建，元素之间用逗号’,‘’分隔。 
+		2. 元组的元素不需要具有相同的类型 
+		3. 使用索引来访问元素 
+		4. 可切片 
+		5. 元素的值一旦创建就不可修改!!!!!(这是区别与列表的一个特征）
+		
+		zoo = ('monkey','elephant',123)
+		print zoo[1]
+		
+		cmp(tuple1, tuple2)	比较两个元组元素。
+		len(tuple)			计算元组元素个数。
+		max(tuple)			返回元组中元素最大值。
+		min(tuple)			返回元组中元素最小值。
+		tuple(seq)			将列表转换为元组。
+		
+		1. 当你定义一个tuple时，在定义的时候，tuple的元素就必须被确定下来； 
+		2. 定义只有一个元素的Tuple的时候，需要这样: 
+		tuple1 = (123,) 
+		后面要加上一个逗号，这是因为括号()既可以表示tuple，又可以表示数学公式中的小括号，这就产生了歧义。 
+		tuple2 = (123) ＃如果你这样定义你定义的将是１２３这个元素，而不是一个元组。 
+		
+		元组中的元素值是不允许删除的，但我们可以使用del语句来删除整个元组。
+		元组的内置函数： 
+		1. 比较两个元组元素：cmp(tuple1,tuple2)相等的话返回0，不相等返回1； 
+		2. 计算元组的长度：len(tuple 
+		3. 返回元组中的最大值最小值：max(tuple),min(tuple)； 
+		4. 将列表转换成元组：Tuple = tuple(list)。
+	}
+
+	3. 字典dict(如：dict = {key1: value1, key2: values2}){
+		键值对存储数据，键必须是唯一的，形式：键:值，全部由{}括起。字典中的数据是乱序的
+		a_dict = {key1: value1, key2: values2}
+		
+		1. 元素由键（key）和值（value）组成 
+		2. 可以用dict()函数或者方括号()创建，元素之间用逗号’,‘’分隔，键与值之间用冒号”:”隔开 
+		3. 键必须是唯一的，但值则不必。值可以取任何数据类型，但键必须是不可变的，如字符串，数字或元组 
+		4. 使用键（key）来访问元素
+		
+		adict.keys()	返回一个包含字典所有KEY的列表；
+		adict.values()	返回一个包含字典所有value的列表；
+		adict.items()	返回一个包含所有（键，值）元祖的列表；
+		adict.clear()	删除字典中的所有项或元素；
+		adict.copy()	返回一个字典浅拷贝的副本；
+		adict.fromkeys(seq, val=None)	创建并返回一个新字典，以seq中的元素做该字典的键，val做该字典中所有键对应的初始值（默认为None）；
+		adict.get(key, default = None)	返回字典中key对应的值，若key不存在字典中，则返回default的值（default默认为None）；
+		adict.has_key(key)	如果key在字典中，返回True，否则返回False。 现在用 in 、 not in；
+		adict.iteritems() adict.iterkeys() adict.itervalues()	与它们对应的非迭代方法一样，不同的是它们返回一个迭代子，而不是一个列表；
+		adict.pop(key[,default])	和get方法相似。如果字典中存在key，删除并返回key对应的vuale；如果key不存在，且没有给出default的值，则引发keyerror异常；
+		adict.setdefault(key, default=None)	和set()方法相似，但如果字典中不存在Key键，由 adict[key] = default 为它赋值；
+		adict.update(bdict)	将字典bdict的键值对添加到字典adict中。
+		
+		删除键值对：del
+		del a_dict['key1']
+		
+		#更新成员，当对应键值不存在时，相当于加入  
+		m.update({'d':4})  
+	}
+
+	4. 集合set(如：set(['Russia','India','China'])){
+		集合最好的应用是去重。集合没有特殊的表示方法，而是通过一个set函数转换成集合，如：
+		lst = [ 1, 1, 0]
+		lst_set = set( lst )  #lst_set 为1 , 0
+		或者：
+		countries = set(['Russia','India','China'])
+		
+		具有以下特点： 
+		1. 可以用set()函数或者方括号{}创建，元素之间用逗号”,”分隔。 
+		2. 与字典相比少了键 
+		3. 不可索引，不可切片 
+		4. 不可以有重复元素
+		
+		s.issubset(t)，s <= t			测试是否 s 中的每一个元素都在 t 中
+		s.issuperset(t)，s >= t			测试是否 t 中的每一个元素都在 s 中
+		s.union(t)，s | t				返回一个新的 set 包含 s 和 t 中的每一个元素
+		s.intersection(t)，s & t		返回一个新的 set 包含 s 和 t 中的公共元素
+		s.difference(t),s - t			返回一个新的 set 包含 s 中有但是 t 中没有的元素
+		s.symmetric_difference(t),s ^ t	返回一个新的 set 包含 s 和 t 中不重复的元素
+		s.copy()						返回 set “s”的一个浅复制
+
+		tup = (2, 2, 1)
+		tup_set = set( tup) # tup_set为2 , 1
+
+		for item in lst_set:
+		print item
+	}
+}

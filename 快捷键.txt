@@ -230,7 +230,11 @@ eclipse/android studio:{
 	查找/搜索类 	Ctrl+Shift +T 
 	
 	快速判断是否为空，
-	ctrl + shift + 空格  在打出一半有补全提示的时候按下此快捷键，就会显示改类/方法的文档
+	ctrl + shift + 空格  在打出一半有补全提示的时候按下此快捷键，就会显示改类/方法的文档(查看文档)
+	
+	字母大小写相互转换 		ctrl+shift+x转为大写   ctrl+shift+y转为小写
+	
+	复制类的包含包名的引用地址(例如：com.fucaijin.gifshow.view.StrokeTextView)   点击类名，然后Ctrl + Alt + Ctrl + C 或者右键 Copy Reference
 }
 
 android studio:{

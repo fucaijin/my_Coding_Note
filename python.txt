@@ -377,7 +377,7 @@ Django{
 		
 		
 	创建数据库表:	python manage.py makemigrations
-	再输入命令	：	python manage.py migrate
+	更新数据库	：	python manage.py migrate
 	
 	django 返回json格式数据{
 		方法1：
@@ -682,20 +682,136 @@ scrapy{
 			'a,b,c,d,e'
 	}
 	
-	检查子串是否存在
-	'a' in 'abca'
-	True
+	'a' in 'abca' // 检查str是否在另一个str中，返回True或False
 	
 	字符串索引
-	s.index('c') # 未找到时，返回ValueError
-	s.find('c') # 未找到时，返回-1
-
-	统计str1在str2中出现的次数
-	s.count(' ')
+	s.index('c') // 未找到时，返回ValueError
+	s.find('c') // 未找到时，返回-1
 	
-	字符串替换
-	'a ,b , c, d, e'.replace(' ','') # 删除所有空格
-	str1.replace(str2,str3) # 将str1中所有的str2替换为str3
+	s.count(' ') //统计str1在str2中出现的次数
+	
+	str1.replace(str2,str3) // 将str1中所有的str2替换为str3,如：'a ,b , c, d, e'.replace(' ','') # 删除所有空格
+	str1.replace(str2, str3,  mystr.count(str1))//把 str1 中的 str2 替换成 str3,如果 count 指定，则替换不超过 count 次
+	
+	字符串常见函数操作
+	如有字符串mystr = 'hello world and bjsxt yunshuxueyuan sxt beijing'，以下是常见的操作
+
+	<1>find
+	mystr.find(str, start=0, end=len(mystr)) //检测 str 是否包含在 mystr中，如果是返回开始的索引值，否则返回-1
+
+
+	<2>index
+	mystr.index(str, start=0, end=len(mystr)) //跟find()方法一样，只不过如果str不在 mystr中会报一个异常.
+
+
+	<3>count
+	mystr.count(str, start=0, end=len(mystr))  //返回 str在start和end之间 在 mystr里面出现的次数
+
+
+	<4>replace
+	mystr.replace(str1, str2,  mystr.count(str1))  //把 mystr 中的 str1 替换成 str2,如果 count 指定，则替换不超过 count 次.
+
+
+	<5>split
+	mystr.split(str=" ", 2)    //以 str 为分隔符切片 mystr，如果 maxsplit有指定值，则仅分隔 maxsplit 个子字符串
+
+
+	<6>capitalize
+	mystr.capitalize()  //把字符串的第一个字符大写
+
+
+	<7>title
+	mystr.title() //把字符串的每个单词首字母大写
+
+	<8>startswith
+	mystr.startswith(str) // 检查字符串是否是以str/某个字符串开头, 是则返回 True，否则返回 False
+
+
+	<9>endswith
+	mystr.endswith(obj)  // 检查字符串是否是以str/某个字符串结束, 是则返回 True，否则返回 False
+
+
+	<10>lower
+	mystr.lower()        // 转换 mystr 中所有大写字符为小写
+
+
+	<11>upper
+	mystr.upper()    //转换 mystr 中的小写字母为大写
+
+
+	<12>ljust
+	mystr.ljust(width) //返回一个原字符串左对齐,并使用空格填充至长度 width 的新字符串
+
+
+	<13>rjust
+	mystr.rjust(width)    //返回一个原字符串右对齐,并使用空格填充至长度 width 的新字符串
+
+
+	<14>center
+	mystr.center(width)   //返回一个原字符串居中,并使用空格填充至长度 width 的新字符串
+
+
+	<15>lstrip
+	mystr.lstrip()   //删除 mystr 左边的空白字符
+
+
+	<16>rstrip
+	mystr.rstrip()    //删除 mystr 字符串末尾的空白字符
+
+
+	<17>strip
+	mystr.strip()//删除mystr字符串两端的空白字符
+	判断字符串是否为空： str.strip() == ""
+
+	<18>rfind
+	mystr.rfind(str, start=0,end=len(mystr) )//类似于 find()函数，不过是从右边开始查找.
+
+
+	<19>rindex
+	mystr.rindex( str, start=0,end=len(mystr))//类似于 index()，不过是从右边开始.
+
+
+	<20>partition
+	mystr.partition(str)//把mystr以str分割成三部分,str前，str和str后
+
+
+	<21>rpartition
+	mystr.rpartition(str)//类似于 partition()函数,不过是从右边开始.
+
+
+	<22>splitlines
+	mystr.splitlines()  //按照换行符分隔，返回一个包含各行作为元素的列表
+
+
+	<23>isalpha
+	mystr.isalpha()  //如果 mystr 所有字符都是字母 则返回 True,否则返回 False
+
+
+	<24>isdigit
+	mystr.isdigit() //如果 mystr 只包含数字则返回 True 否则返回 False.
+
+
+	<25>isalnum
+	mystr.isalnum()  //如果 mystr 所有字符都是字母或数字则返回 True,否则返回 False
+
+
+	<26>isspace
+	mystr.isspace()   //如果 mystr 中只包含空格，则返回 True，否则返回 False.
+
+
+	<27>join
+	mystr.join(list) //mystr 中每个字符后面插入list的每个元素后面,构造出一个新的字符串。如："1".join("2") → "21"
+
+
+	总结：
+
+		查找字符串：
+
+			find：找不到返回-1   ，都是从左边找，右边查找r
+
+			index：找不到报错
+	
+	
 } 
 
 列表/元组/集合/字典{
@@ -850,3 +966,69 @@ scrapy{
 		print item
 	}
 }
+
+
+图片和base64字符串之间的互换{
+	
+	将传过来的base64字符串，还原成图片保存{
+		imgdata=base64.b64decode(strs)  
+		file=open('1.jpg','wb') //在此处填写要保存的路径，和要保存的文件名，第二个参数不用管 
+		file.write(imgdata)  
+		file.close()
+	}
+
+	将图片转换成base64字符串{
+		import base64
+		f=open(r'c:\jb51.gif','rb') #二进制方式打开图文件
+		ls_f=base64.b64encode(f.read()) #读取文件内容，转换为base64编码
+		f.close()
+	}
+  
+}
+
+在for循环中拿到索引index{
+	方法1：
+		l = [2,7,11,15]
+		for i in range(len(l)):
+			print i,l[i]// i就是索引，l[i]就是遍历的元素
+			
+	方法2：
+		l = [2,7,11,15]
+		for index,value in enumerate(l):
+		print index,value
+			
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -390,6 +390,13 @@ EditText控件{
 		颜色取值时，限制输入框只能输入数字或一定范围的字母{
 			android:digits="0123456789abcdefABCDEF"
 		}
+		
+		限制值输入字母或数字{
+			android:inputType="number"
+			android:maxLength="8" //限制输入字数
+			android:digits="1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM"
+        
+		}
 	}
 	
 	多个Edittext相互监听，引发的栈溢出java.lang.StackOverflowError；
@@ -559,6 +566,7 @@ EditText控件{
 			android:inputType="textWebEditText"//作为网页表单的文本格式
 			android:inputType="textFilter"//文本筛选格式
 			android:inputType="textPhonetic"//拼音输入格式
+			
 			//数值类型
 			android:inputType="number"//数字格式
 			android:inputType="numberSigned"//有符号数字格式
@@ -1750,10 +1758,19 @@ style错误的原因{
 }
 
 
-int转换成String{
+int转换成String/int转String{
 	String.valueOf(str);
 	String.format("%d", str)
 	new StringBuilder().append(lastInputTextSize).toString()
+}
+
+string和16进制之间的转换{
+	int n1 = 14;
+	Integer.toHexString(n1);				//十进制转成十六进制：
+	Integer.valueOf("FFFF",16).toString();	//十六进制转成十进制
+	
+	Integer.toOctalString(n1);				//十进制转成八进制
+	Integer.toBinaryString(12);				//十进制转成二进制
 }
 
 在Fragment获取Context方式{
@@ -2288,10 +2305,6 @@ Toast位置的设定{
 	}
 }
 
-java代码获取xml资源{
-	已过时：getResources().getColor(R.color.colorLineGreen)；
-}
-
 Activity之间数据的传递{
 	
 	
@@ -2789,8 +2802,13 @@ Handler的用法{
 
 
 方法过时/弃用{
-	getResources.getColor(R.color.white)；弃用。 使用：ContextCompat.getColor(context, R.color.black)；
-	getAllNetworkInfo()过时了{
+	1. getResources.getColor(R.color.white)弃用{
+		替代方案：
+		ContextCompat.getColor(context, R.color.black)；
+	}
+	
+	2. getAllNetworkInfo()过时了{
+		替代方案：
 		ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         //新版本调用方法获取网络状态
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -2800,6 +2818,15 @@ Handler的用法{
                 networkInfo = connectivityManager.getNetworkInfo(mNetwork);
 			}
 		}
+	}
+	
+	3. display.getWidth()/display.getHeight()过时/弃用{
+		替代方案：
+		Display display = getWindowManager().getDefaultDisplay();
+		Point size = new Point();
+		display.getSize(size);
+		int width = size.x;
+		int height = size.y;
 	}
 				
 }
@@ -2855,6 +2882,31 @@ Handler的用法{
 }
 
 dialog提示框{
+	
+	普通的dialog{
+		import android.app.Dialog;
+		Dialog dialog = new Dialog(getActivity());
+		dialog.setContentView(R.layout.gif_tv_dialog_layout);
+		dialog.show();
+		
+		//获取屏幕宽度高度/宽高：
+		Display display = getActivity().getWindowManager().getDefaultDisplay();
+		Point size = new Point();
+		display.getSize(size);
+		int width = size.x;
+		int height = size.y;
+		
+		//dialog设置宽高：
+		dialog.getWindow().setLayout((int) (width*0.9),(int) (height*0.68));
+	}
+	
+	AlertDialog{
+		import android.support.v7.app.AlertDialog;
+		View dialogLayout = View.inflate(getContext(), R.layout.gif_tv_dialog_layout, null);
+		AlertDialog alertDialog = new AlertDialog.Builder(getContext()).setView(dialogLayout).create();
+		alertDialog.show();
+	}
+	
 	LayoutInflater inflater = LayoutInflater.from(this);
 	View dialogView = inflater.inflate(R.layout.main_dialog_view, null);
 	TextView tv = dialogView.findViewById(R.id.tv_dialog_text);
@@ -2863,6 +2915,7 @@ dialog提示框{
 	if (responseIndex == whiteButtonResponseArrays.length) {
 		responseIndex = 0;
 	}
+	//import android.support.v7.app.AlertDialog;
 	AlertDialog alertDialog = new AlertDialog.Builder(this).
 			setView(dialogView).
 			create();
@@ -2878,10 +2931,23 @@ dialog提示框{
 }
 
 获取屏幕宽高{
-	通过Resources获取
+	1. 通过Resources获取
 	DisplayMetrics dm = getResources().getDisplayMetrics();
 	heigth = dm.heightPixels;
 	width = dm.widthPixels;
+	
+	2.
+	Display display = getActivity().getWindowManager().getDefaultDisplay();//如果是在Activity内，就不需要：getActivity()
+	Point size = new Point();
+	display.getSize(size);
+	int width = size.x;
+	int height = size.y;
+	
+	3.
+	DisplayMetrics dm = new DisplayMetrics();
+	getActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
+	int width = dm.widthPixels;
+	int height = dm.heightPixels;
 }
 
 getSharedPreferences的edit的edit.commit 和 apply 区别{
@@ -3114,6 +3180,141 @@ TextView{
 }
 
 上传图片到服务器{
+	图片与base64字符串之间的互换{
+		
+		图片转base64字符串{
+			将图片转Bitmap,再转成Base64传出去
+			图片转Bitmap几种方法{
+				1．以文件流的方式，假设在sdcard下有 test.png图片
+					FileInputStream fis = new FileInputStream("/sdcard/test.png");
+					Bitmap bitmap  = BitmapFactory.decodeStream(fis);
+				2. 以R文件的方式，假设 res/drawable下有 test.jpg文件
+					Bitmap  bitmap = BitmapFactory.decodeResource(this.getContext().getResources(), R.drawable.test);
+
+				3.以ResourceStream的方式，但不用到R文件。
+					Bitmap.bitmap=BitmapFactory.decodeStream(getClass().getResourceAsStream(“/res/drawable/test.png”));
+
+				图片资源太大导致内存溢出。如何解决呢？
+				BitmapFactory.Options options = new BitmapFactory.Options();
+				options.inSampleSize = 2;  //图片宽高都为原来的二分之一，即图片为原来的四分一
+				//以上代码可以优化内存溢出，但它只是改变图片大小，并不能彻底解决内存溢出。
+			}
+			Bitmap customHeadSculptureBitmap = data.getParcelableExtra("data");
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();//将Bitmap转成Byte[]
+			customHeadSculptureBitmap.compress(Bitmap.CompressFormat.PNG, 50, baos);//压缩
+			headPictureStr = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);//加密转换成String
+			
+			或者：
+			public static String imageToBase64Str(String imgFile) {
+			   InputStream inputStream = null;
+			   byte[] data = null;
+			   try {
+				 inputStream = new FileInputStream(imgFile);
+				 data = new byte[inputStream.available()];
+				 inputStream.read(data);
+				 inputStream.close();
+			   } catch (IOException e) {
+				 e.printStackTrace();
+			   }
+			   // 加密
+			   BASE64Encoder encoder = new BASE64Encoder();
+			   return encoder.encode(data);
+			 }
+		}
+		
+		base64字符串转图片{
+			public static boolean base64StrToImage(String imgStr, String path) {
+				if (imgStr == null){
+					return false;
+				}
+
+				BASE64Decoder decoder = new BASE64Decoder();
+				try {
+					// 解密
+					byte[] b = decoder.decodeBuffer(imgStr);
+					// 处理数据
+					for (int i = 0; i < b.length; ++i) {
+						if (b[i] < 0) {
+							b[i] += 256;
+						}
+					}
+
+					//文件夹不存在则自动创建
+					File tempFile = new File(path);
+					if (!tempFile.getParentFile().exists()) {
+						tempFile.getParentFile().mkdirs();
+					}
+					OutputStream out = new FileOutputStream(tempFile);
+					out.write(b);
+					out.flush();
+					out.close();
+					return true;
+				} catch (Exception e) {
+					return false;
+				}
+			}
+		}
+		
+	}
+	
+	
+	{
+		import android.util.Base64;
+		
+		/**
+		 * bitmap转为base64
+		 *
+		 * @param bitmap
+		 * @return
+		 */
+		public static String bitmapToBase64(Bitmap bitmap) {
+			String result = null;
+			ByteArrayOutputStream baos = null;
+			try {
+				if (bitmap != null) {
+					baos = new ByteArrayOutputStream();
+					bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+					baos.flush();
+					baos.close();
+					byte[] bitmapBytes = baos.toByteArray();
+					result = Base64.encodeToString(bitmapBytes, Base64.URL_SAFE); // URL_SAFE:不使用特殊字符来加密
+				}
+			} catch (IOException e) {
+				Log.e(TAG, e.toString());
+			} finally {
+				try {
+					if (baos != null) {
+						baos.flush();
+						baos.close();
+					}
+				} catch (IOException e) {
+					Log.e(TAG, e.toString());
+				}
+			}
+			return result;
+		}
+
+		/**
+		 * base64转为bitmap
+		 *
+		 * @param base64Data
+		 * @return
+		 */
+		public static Bitmap base64ToBitmap(String base64Data) {
+			byte[] bytes = Base64.decode(base64Data, Base64.URL_SAFE);
+			return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+		}
+		
+		
+		Base64.decode(base64Data, Base64.URL_SAFE) 第二个参数→flags简介：
+		CRLF 这个参数看起来比较眼熟，它就是Win风格的换行符，意思就是使用CR LF这一对作为一行的结尾而不是Unix风格的LF
+		DEFAULT 这个参数是默认，使用默认的方法来加密
+		NO_PADDING 这个参数是略去加密字符串最后的”=”
+		NO_WRAP 这个参数意思是略去所有的换行符（设置后CRLF就没用了）
+		URL_SAFE 这个参数意思是加密时不使用对URL和文件名有特殊意义的字符来作为加密字符，具体就是以-和_取代+和/
+	}
+	
+	
 	//图像裁剪
 	//图像压缩
 	//编码
@@ -3374,4 +3575,164 @@ uri转成路径Path{
 	String img_url = uri.getPath();//这是本机的图片路径
 }
 
+路径{
+	获取外部存储路径{
+		如何区分手机外部存储和外插的sd卡{
+			在4.4 以后的系统中，API提供了这样一个方法来遍历手机的外部存储路径：
+			File[] files;
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+				files = getExternalFilesDirs(Environment.MEDIA_MOUNTED);
+				for(File file:files){
+					Log.e("main",file);
+				}
+			}
+			如果你的手机插了SD卡的话，那么它打印的路径就有两条了，例如我的华为荣耀7插了SD卡，它的结果如下： 
+			/storage/emulated/0/Android/data/packname/files/mounted 
+			/storage/B3E4-1711/Android/data/packname/files/mounted 
+			
+			其中/storage/emulated/0目录就是机身存储的外部存储路径 
+			而/storage/B3E4-1711/就是SD卡的路径 
+		}
+		
+		
+		1. 位于根目录/data下的路径{
+			1. Environment.getDataDirectory() = /data  												// 这个方法是获取内部存储的根路径 
+			2. getFilesDir().getAbsolutePath() = /data/user/0/packname/files   						//这个方法是获取某个应用在内部存储中的files路径 
+			3. getCacheDir().getAbsolutePath() = /data/user/0/packname/cache    					//这个方法是获取某个应用在内部存储中的cache路径 
+			4. getDir(“myFile”, MODE_PRIVATE).getAbsolutePath() = /data/user/0/packname/app_myFile  //这个方法是获取某个应用在内部存储中的自定义路径
+			
+			方法2, 3 , 4 的路径中都带有包名，说明他们是属于某个应用 
+		}
+			
+		
+		2. 位于根目录/storage下{
+			5. Environment.getExternalStorageDirectory().getAbsolutePath() = /storage/emulated/0 				//这个方法是获取外部存储的根路径 
+			6. Environment.getExternalStoragePublicDirectory("").getAbsolutePath() = /storage/emulated/0 		//这个方法是获取外部存储的根路径 
+			7. getExternalFilesDir("").getAbsolutePath() = /storage/emulated/0/Android/data/packname/files 		//这个方法是获取某个应用在外部存储中的files路径 
+			8. getExternalCacheDir().getAbsolutePath() = /storage/emulated/0/Android/data/packname/cache 		//这个方法是获取某个应用在外部存储中的cache路径
+		}
+		
+		3. 位于系统文件/system，或者缓存文件/cache{
+			Environment.getDownloadCacheDirectory() = /cache 
+			Environment.getRootDirectory() = /system 
+		}
+		
+		上面的方法分为三类:
+		第一类是位于根目录/data下；
+		还有一类是位于根目录/storage下，可以看到调用它们的API方法都带了一个External；
+		另外一类不在/data下也不再/storage下，比如系统文件/system，或者缓存文件/cache。 
+		
+		/data						(内部存储)
+		/storage 					(外部存储) 
+		/system用于存放系统文件		(内部存储)
+		/cache用于存放一些缓存文件	(内部存储)
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 end!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

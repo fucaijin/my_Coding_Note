@@ -454,3 +454,8 @@ pycharm使用git上传到GitHub{
 
 	
 取消git：右键小乌龟TortoiesGit → Delete and add to ignore list → 完成
+
+切换当前分支，在git仓库文件夹下，右键TortoiesGit → Switch\checkout → Branch → 完成
+
+合并别的分支到当前分支/把分支合并到主分支，例如需要把branch1合并到主分支master，先切换当前分支为master
+然后右键TortoiesGit → merge → 选择要合并过来的分支 → (不知道要不要执行这一步：勾选squash(合并)) → 完成

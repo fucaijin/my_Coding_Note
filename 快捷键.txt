@@ -307,6 +307,9 @@ Adobe Illustrator CS6{
 	原地粘贴 Ctrl+F 粘贴在前面(要先Ctrl+C)
 	原地粘贴 Ctrl+B 粘贴在后面(要先Ctrl+C)
 	Ctrl+Shift+Alt+V  直接粘贴到所有画板
+	
+	倒圆角 效果 → 风格化 → 圆角
+	不能渐变 → 选中的是描线，不是面，选择颜色那里点击一下实面转变一下就可以了
 }
 
 Photoshop{

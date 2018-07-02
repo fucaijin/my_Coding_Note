@@ -933,7 +933,7 @@ Android仿新版微信的小程序下拉栏        URL : https://juejin.im/post/5a4c90c15188
 {设置背景全屏，沉浸式状态栏 5.0以上版本可以使用 :
 
 /**
- * 通过设置全屏，设置状态栏透明
+ * 通过设置全屏，设置状态栏透明(可看得见电量、时间、手机信号等)
  *
  * @param activity
  */
@@ -1588,11 +1588,15 @@ viewpager的滑动事件等监听不起作用原因及其解决办法{
 }
 
 
-popupwindow相关{
-	没反应，popupwindow不显示的原因{按钮没有设置点击事件}
+popupwindow{
+	PopupWindow popupwindow = new PopupWindow(view,width,height);
+	popupwindow.showAsDropDown(view,x,y);//指定显示位置，此处指定为显示在某个控件下，x，和y的偏移量
 	
-	给popupwindow的外部设置颜色(透明色)，生成bitmapdrawable对象{mPopupWindow.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));}
-
+	bug: 没反应，popupwindow不显示的原因{按钮没有设置点击事件}
+	
+	给popupwindow的外部设置颜色(透明色)，生成bitmapdrawable对象{
+		mPopupWindow.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+		}
 }
 
 
@@ -1831,7 +1835,8 @@ ListView高度无效的问题，给ListView设置高度{
 java代码设置Margin值/设置imageview的margin值{
 	ImageView image = (ImageView) findViewById(R.id.main_image);  
 	//注意，此处↓的RelativeLayout得根据imageview的实际父容器来写；并且需要先将ImageView放入父容器中才可写此行(因为不放入容器无法获得宽高等参数，无法获得参数就无法设置参数)
-	RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(image.getLayoutParams());  lp.setMargins(50, 100, 0, 0);  
+	RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(image.getLayoutParams());  
+	lp.setMargins(50, 100, 0, 0);  
 	image.setLayoutParams(lp); 
 	
 	可以把设置margin的方式封装成方法，只要是GroupView里面的LayoutParams 即可。
@@ -1964,6 +1969,9 @@ BUG/ERROR合集{
 		重新检查build.gradle文件的依赖，很可能是依赖有误，删除自定义的依赖，并重新添加依赖即可
 	}
 	
+	点击弹出popupwindow，但点击没有响应/没弹出{
+		可能是按钮没有设置点击事件
+	}
 	
 
 }
@@ -2210,7 +2218,7 @@ Toast位置的设定{
 		//第一个参数为 view对象，第二个参数为 动画改变的类型，第三，第四个参数依次是开始透明度和结束透明度。  
         ObjectAnimator alpha = ObjectAnimator.ofFloat(text, "alpha", 0f, 1f);  
         alpha.setDuration(2000);//设置动画时间  
-        alpha.setInterpolator(new DecelerateInterpolator());//设置动画插入器，减速  
+        alpha.setInterpolator(new DecelerateInterpolator());//设置动画插入器/差值器，减速  
         alpha.setRepeatCount(-1);//设置动画重复次数，这里-1代表无限  
         alpha.setRepeatMode(Animation.REVERSE);//设置动画循环模式。  
         alpha.start();//启动动画。 
@@ -2247,14 +2255,25 @@ Toast位置的设定{
 		set.play(anim3).before(anim4) ;   
 		set.start();   
 		
+		或者
+		new RatateAnimation()(开始角度，结束角度，动画的x方向参考标准，旋转中心的x坐标，动画的y方向参考标准，旋转中心的y坐标)   
+		参考标准有：Animation.RELATIVE_TO_SELF(相对于自身)、Animation.RELATIVE_TO_PARENT(相对于父控件(容器)）。
+		
+		例如：
+		RatateAnimation ra = new RatateAnimation()(-180f,0f,Animation.RELATIVE_TO_SELF,0.5F,Animation.RELATIVE_TO_SELF,0.5F) 
+		ra.setDuration(500);
+		ra.setFillAfter(true);//设置动画结束就维持状态，而不是变回初始状态
+		ra.setStartOffset(200);//设置动画启动的延时，例如延时200ms
+		relativeLayout.startAnimation(ra);
+		
 		5.修改View控件的背景颜色
 		ObjectAnimator translationUp = ObjectAnimator.ofInt(button,  
                 "backgroundColor", Color.RED, Color.BLUE, Color.GRAY,  
                 Color.GREEN);  
         translationUp.setInterpolator(new DecelerateInterpolator());  
         translationUp.setDuration(1500);  
-        translationUp.setRepeatCount(-1);  
-        translationUp.setRepeatMode(Animation.REVERSE); 
+        translationUp.setRepeatCount(-1);  //设置动画的重复次数,-1是无限重复
+        translationUp.setRepeatMode(Animation.REVERSE); //设置重复类型，REVERSE是怎么过去的，再怎么回来(倒放)   Animation.RESTART就是重复播放
 		
         /* 
          * ArgbEvaluator：这种评估者可以用来执行类型之间的插值整数值代表ARGB颜色。 
@@ -2303,6 +2322,28 @@ Toast位置的设定{
 				android:pivotY="50%"//旋转Y方向的坐标
 		}
 	}
+
+	差值器TimeInterpolator{
+		new AccelerateDecelerateInterpolator() --- 慢慢开始，逐渐加快，然后慢慢减速，最后都0静止
+		new AccelerateInterpolator() --- 慢慢开始，逐渐加快，到最后马上停止(没有缓慢减速的结束)，就和汽车缓慢启动，然后加速，然后撞到一堵墙一样
+		new AnticipateInterpolator() --- 慢慢开始往反方向一点点，然后减速至0，然后和AccelerateInterpolator一样
+		new AnticipateOvershootInterpolator() --- 慢慢开始往反方向一点点，然后减速至0，然后逐渐加快，然后慢慢减速，直至超过，然后慢慢返回，最后都0静止，
+		new LinearInterpolator() --- 线型差值器，始终保持一个匀速运动
+		new DecelerateInterpolator() --- 在开始的地方快然后慢，最后缓慢变为0
+		new BounceInterpolator() --- 和小球掉落地面上然后多次回弹一样
+		new CycleInterpolator() --- 以指定的周期重复动画。变化率曲线为正弦。
+
+		
+		越来越快							AccelerateInterpolator()			@android:anim/accelerate_interpolator
+		越来越慢							DecelerateInterpolator()			@android:anim/decelerate_interpolator
+		先快后慢							AccelerateDecelerateInterpolator()	@android:anim/accelerate_decelerate_interpolator
+		先后退一小步然后向前加速			AnticipateInterpolator()			@android:anim/anticipate_interpolator
+		快速到达终点超出一小步然后回到终点	OvershootInterpolator()				@android:anim/overshoot_interpolator
+		到达终点超出一小步然后回到终点		AnticipateOvershootInterpolator()	@android:anim/anticipate_overshoot_interpolator
+		弹球效果，弹几下回到终点			BounceInterpolator()				@android:anim/bounce_interpolator
+		均匀速度							LinearInterpolator()				@android:anim/linear_interpolator
+	}
+		
 }
 
 Activity之间数据的传递{
@@ -2828,6 +2869,13 @@ Handler的用法{
 		int width = size.x;
 		int height = size.y;
 	}
+	
+	4. Html.fromHtml(str)过时{
+		charSequence = Html.fromHtml(content,Html.FROM_HTML_MODE_LEGACY);
+		其中的flags表示： 
+		FROM_HTML_MODE_COMPACT：html块元素之间使用一个换行符分隔 
+		FROM_HTML_MODE_LEGACY：html块元素之间使用两个换行符分隔
+	}
 				
 }
 
@@ -2956,9 +3004,7 @@ getSharedPreferences的edit的edit.commit 和 apply 区别{
 	3. apply方法不会提示任何失败的提示。	由于在一个进程中，sharedPreference是单实例，一般不会出现并发冲突，如果对提交的结果不关心的话，建议使用apply，当然需要确保提交成功且有后续操作的话，还是需要用commit的。
 }
 
-textView代码动态设置图片drawableleft{
-	textView.setCompoundDrawables(getResources().getDrawable());
-}
+
 
 
 shap用法详解{
@@ -3149,6 +3195,53 @@ AlertDialog{
 }
 
 TextView{
+	通过html标签设置部分文字有颜色/大小{
+		TextView tv=(TextView)findViewById(R.id.tv);
+		String str="默认颜色<font color='#FF0000'>红颜色</font>";
+		tv.setText(Html.fromHtml(str,Html.FROM_HTML_MODE_LEGACY));
+		
+		TextView tv=(TextView)findViewById(R.id.tv);
+		String str="默认颜色<font color='#FF0000'><small>红颜色</small></font>"; //此处“红颜色”会变小
+		tv.setText(Html.fromHtml(str,Html.FROM_HTML_MODE_LEGACY));
+		
+		charSequence = Html.fromHtml(content,Html.FROM_HTML_MODE_LEGACY);
+		其中的flags表示： 
+		FROM_HTML_MODE_COMPACT：html块元素之间使用一个换行符分隔 
+		FROM_HTML_MODE_LEGACY：html块元素之间使用两个换行符分隔
+		
+		用前先判断系统版本
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            challengeTv.setText(Html.fromHtml(str,Html.FROM_HTML_MODE_LEGACY));
+        } else {
+            challengeTv.setText(Html.fromHtml(str));
+        }
+	}
+	
+	textView代码动态设置图片drawableleft{
+		已过时：textView.setCompoundDrawables(getResources().getDrawable());
+
+		设置图片drawable大小
+		Drawable drawable = ContextCompat.getDrawable(this, R.mipmap.music);
+		drawable.setBounds(0,0,11,13);
+		textView.setCompoundDrawables(ContextCompat.getDrawable(this,R.mipmap.music),null,null,null);
+
+		android:drawablePadding="8dp" //设置drawableLeft的图片和文字之间的距离/间隔
+	}
+	
+	TextView字体加粗{
+		textView.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+		
+		Typeface.DEFAULT //常规字体类型
+		Typeface.DEFAULT_BOLD //黑体字体类型
+		Typeface.MONOSPACE //等宽字体类型
+		Typeface.SANS_SERIF //sans serif字体类型
+		Typeface.SERIF //serif字体类型
+		
+		Typeface.BOLD //粗体
+		Typeface.BOLD_ITALIC //粗斜体
+		Typeface.ITALIC //斜体
+		Typeface.NORMAL //常规
+	}
 	
 	自适应TextView(TextView自适应大小,即当文字长度变化时，文字的大小会相应的变化，保证显示在一行当中){
 		实现依靠于第三方类库：
@@ -3176,6 +3269,37 @@ TextView{
 	
 	实现可以复制的TextView{
 		tv.setTextIsSelectable(true);
+	}
+	
+	使用TextView跑马灯效果{
+		1.	android:ellipsize=”marquee”
+		2.	TextView必须单行显示，即内容必须超出TextView大小
+		3.	TextView要获得焦点才能滚动
+		mTVText.setText(“超过文本长度的数据");
+		mTVText.setSingleLine(true);设置单行显示
+		mTVText.setEllipsize(TruncateAt.MARQUEE);设置跑马灯显示效果
+		TextView.setHorizontallyScrolling(true); //让文字可以水平滑动
+		TextView还可以设置跑马灯效果的滚动次数
+		android:marqueerepeatlimit="1"。1代表1次，-1 代表无限循环。
+		
+		<TextView
+			android:id="@+id/tv_marquee"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/tv_marquee_text"
+			android:textSize="25sp"
+			android:focusable="true"
+			android:ellipsize="marquee"
+			android:marqueeRepeatLimit="marquee_forever"
+			android:focusableInTouchMode="true"
+			android:textColor="@color/colorPrimary" />
+			
+		tv_marguee.setSingleLine(true);//设置单行显示
+		tv_marguee.setHorizontallyScrolling(true);//设置水平滚动效果
+	//    tv_marguee.setMarqueeRepeatLimit(-1);//设置滚动次数，-1为无限滚动，1为滚动1次
+	
+	
+	
 	}
 }
 
@@ -3629,11 +3753,79 @@ uri转成路径Path{
 	}
 }
 
+使用自定义字体/更改字体{
+	系统自带字体：
+		1. noraml （普通字体,系统默认使用的字体）
+		2. sans（非衬线字体）
+		3. serif （衬线字体）
+		4. monospace（等宽字体）
+	
+	使用：android:typeface="sans"	或   textView.setTypeface(Typeface.SERIF);//设置serif字体
+	
+	使用自定义字体：
+	1. 	在java和res同等级下的assets资源目录(没有就自己创建一个)下的fonts目录，下放入.ttf字体文件
+	2.	//实例化TextView
+		TextView textView = findViewById(R.id.textview);
 
+		//得到AssetManager
+		AssetManager mgr=getAssets();
 
+		//根据路径得到Typeface
+		Typeface tf=Typeface.createFromAsset(mgr, "fonts/pocknum.ttf");
 
+		//设置字体
+		textView.setTypeface(tf);
+	
 
+	
+}
 
+屏蔽菜单键{
+	重写onKeyDown(int KeyCode,KeyEvent event){
+		if(KeyCode == KeyEvent.KEYCODE_MENU){
+			return true； 消费事件
+		}
+		return super.onKeyDown(
+	}
+}
+
+获取View的宽高{
+	
+	在画面显示(绘制组件)后才可以，例如onclick中也可以：
+	view.getWidth();
+	view.getHeight();
+	
+	
+	但是在oncreate()的时候，上面方法是没法获取宽高的(控件view宽高为0)，因为在调用oncreate()方法时，界面处于不可见状态，内存加载组件还没有绘制出来。
+	有以下三种方法可以：
+	1. //测量方法
+		int  width =View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED); 
+		int  height =View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED); 
+		view.measure(width,height); 
+		int  height=view.getMeasuredHeight(); 
+		int  width=view.getMeasuredWidth();
+		
+	2.//增加组件绘制之前的监听
+		ViewTreeObserver vto =view.getViewTreeObserver(); 
+		vto.addOnPreDrawListener(new  ViewTreeObserver.OnPreDrawListener() { 
+		   @Override
+			public  booleanonPreDraw() { 
+			   int  height =view.getMeasuredHeight(); 
+			   int  width =view.getMeasuredWidth();     
+			} 
+		}); 
+	
+	3.//增加整体布局监听
+		ViewTreeObserver vto = view.getViewTreeObserver();  
+		vto.addOnGlobalLayoutListener(new  OnGlobalLayoutListener(){ 
+			@Override 
+			public  voidonGlobalLayout() { 
+				view.getViewTreeObserver().removeGlobalOnLayoutListener(this);      
+				int  height =view.getMeasuredHeight(); 
+				int  width =view.getMeasuredWidth();  
+			}  
+		});
+}
 
 
 

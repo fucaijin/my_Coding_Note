@@ -4005,7 +4005,7 @@ uri转成路径Path{
 			@Override
 			protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 				setMeasuredDimension(switchBackgroupBitmap.getWidth(), switchBackgroupBitmap.getHeight());
-				//设置测量尺寸，宽高是图片的宽高
+				//设置当前View的宽高，宽高是图片的宽高
 			}
 		}
 		
@@ -4120,7 +4120,8 @@ uri转成路径Path{
 			}
 		}
 		
-		10. 在自定义控件中获取xml定义的属性,并使用{
+		10. 在自定义控件的构造方法中获取xml定义的属性,并使用{
+			方法一：
 			String namespace = "http://schemas.android.com/apk/res/com.itheima74.toggleview"
 			int switchBackgroundResouce = attrs.getAttributeResourceValue(namespace, "switch_background", -1)defaultValue一般写0或-1 即可
 			boolean switchBackgroundResouce = attrs.getAttributeBooleanValue(namespace, "switch_state", false)defaultValue一般写0或-1 即可
@@ -4158,6 +4159,13 @@ uri转成路径Path{
 			2. xmlns:tools=”http://schemas.android.com/tools”
 			3. xmlns:app=”http://schemas.android.com/apk/res-auto”
 			其中，1和2命名空间里的属性是系统封装好的，第3种命名空间里的属性是用户自定义的
+			
+			
+			方法二：{
+				TypedArray mTypedArray = context.obtainStyledAttributes(attrs, R.styleable.OvalImageView);
+				strokeColor = mTypedArray.getColor(R.styleable.OvalImageView_stroke_color, 0);
+				strokeWidth = mTypedArray.getDimension(R.styleable.OvalImageView_stroke_width, -1);
+			}
 			
 		}
 		
@@ -4251,6 +4259,44 @@ uri转成路径Path{
 				invalidate(); // 重绘界面-> drawChild() -> computeScroll();只要动画还没结束，就一直重绘界面(同时会不断调用computeScroll())
 			}
 		}
+		
+		9. 左侧面板的触摸事件处理{
+			当手指在左侧面板菜单滑动时候，根据Android的触摸事件分发来判断SlideMenu是否要拦截触摸触摸事件，
+			如果拦截了，则交由SlideMenu自己的onTouchEvent()处理，如果不拦截则往下传给SlideMenu中的左侧面板的ScrollView，执行上下滑动
+			
+			根据手指的滑动高度和宽度，判断用户是左右滑还是上下滑，来判断是否需要拦截事件，如果是左右滑就拦截事件{
+				/**
+				 * 拦截判断
+				 */
+				@Override
+				public boolean onInterceptTouchEvent(MotionEvent ev) {
+					
+					switch (ev.getAction()) {
+					case MotionEvent.ACTION_DOWN:
+						downX = ev.getX();
+						downY = ev.getY();
+						break;
+					case MotionEvent.ACTION_MOVE:
+						
+						float xOffset = Math.abs(ev.getX() - downX);
+						float yOffset = Math.abs(ev.getY() - downY);
+						
+						if(xOffset > yOffset && xOffset > 5){ // 水平方向超出一定距离时,才拦截(如果是左右滑，就拦截事件，执行左右滚动，否则不拦截，交给子控件的ScrollView进行上下滚动)
+							return true; // 拦截此次触摸事件, 界面的滚动
+						}
+						
+						break;
+					case MotionEvent.ACTION_UP:
+						
+						break;
+
+					default:
+						break;
+					}
+					return super.onInterceptTouchEvent(ev);
+				}
+			}
+		}
 	}
 	
 	onMeasure()的参数{
@@ -4288,6 +4334,7 @@ uri转成路径Path{
 
 数学计算Math(){
 	Math.abs() //求绝对值
+	Math.min() //求最小值
 }
 
 触摸事件的传递与拦截{
@@ -4305,13 +4352,13 @@ uri转成路径Path{
 	2. 在View中，事件分为dispatchTouchEvent（事件的分发），onTouchEvent（事件的处理）。
 	
 	在容器控件中(例如FrameLayout、RelativeLayout)等，有dispathTouchEvent()、onInterceptTouchEvent()、onTouchEvent(){
-		Activity
-				↓
-		dispathTouchEvent()
-				↓
-		onInterceptTouchEvent()
-				↓
-		onTouchEvent()
+		Activity - (dispathTouchEvent() →交给 onInterceptTouchEvent()判断)							onTouchEvent()
+		↓																								↑
+		FrameLayout - (dispathTouchEvent() → onInterceptTouchEvent())								onTouchEvent()
+		↓																								↑
+		RelativeLayout - (dispathTouchEvent() → onInterceptTouchEvent())	(如果onInterceptTouchEvent()返回ture，则会直接跳到此控件的onTouchEvent())	onTouchEvent()(如果返回true，就代表消费了事件，就不会继续往上传了)
+		↓																								↑
+		Veiw - (dispathTouchEvent() → onInterceptTouchEvent())    → → → → → → → → → → → →          	onTouchEvent()
 		
 		如果有触摸事件从父类传来了，那么由onInterceptTouchEvent()来判断是否要拦截，如果此方法return true则拦截了触摸事件，则RelativeLayout和Button就收不到此触摸事件了。但此控件还是可以收到触摸事件，并进行处理的(本控件的onTouchEvent()还是会被调用，下一级的不行)
 		dispathTouchEvent()是由其父类分发的触摸事件，如果此方法调用的是super.dispathTouchEvent()(就是不重写此方法的时候)，触摸事件就继续往下分发，否则就不分发

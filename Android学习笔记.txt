@@ -631,7 +631,7 @@ shape→形状选择：oval   ring是环形    line是线型
 
 Integer.MAX_VALUE   获取Integer int 的最大值
 
-子线程更新UI，1.用Handler        2.在子线程new runOnUiThread(new Runnable{   run(    可以在重写的run方法里面更新UI)})
+在子线程更新UI，1.用Handler        2. 在子线程new runOnUiThread(new Runnable{   run(    可以在重写的run方法里面更新UI)})
 
 看popupWindow使用方法：黑马74期-第四部分（自定义控件）-day1-视频08-下拉选择框-第10分钟的时候  （包含用代码创建ListView  ListView的使用方法（第12分钟）    用代码获取控件的属性，宽度等等，EditText.getwith()等）
 
@@ -663,7 +663,7 @@ Android UI 界面绘制流程 : 黑马74期-第四部分（自定义控件）-day1-视频10-自定义开关
 
 自定义控件 - 怎么给自定义控件设置属性，就可以在XML布局文件里直接使用这些属性，黑马74期-第四部分（自定义控件）-day1-视频14-自定义开关 自定义属性
 
-去掉标题 无标题 取消标题栏： 在onCreat()方法的setContentView()之前设置：requestWindowFeature(Window.FEATURE_NO_TITILE)
+去掉标题 无标题 取消标题栏/取消ActionBar/TitleBar/全屏模式沉浸式状态栏步骤一： 在onCreat()方法的setContentView()之前设置：requestWindowFeature(Window.FEATURE_NO_TITILE)
 
 在ListView最上方添加控件，Button等，可以用listview对象.addheadView(传入要添加在上面的控件的对象)方法，此步骤需要在给ListView设置Adapter之前添加，不然会出错
 
@@ -1346,10 +1346,6 @@ xml布局文件中include的用法：{
 }
 
 
-设置listview距离顶端/底部有白边，且白边能滑动{
-	设置ListView的属性android:clipToPadding="false";.
-}
-
 查找数组中元素的索引/位置{
 	String[] arrays = new String[]{"a","b","c","d","e","fff","g","h","i","j",};  
 	int positon = Arrays.binarySearch(arrays, "fff"); 
@@ -1360,82 +1356,282 @@ int a = Integer.parseInt(str);
 }
 
 
-ListView的写法{
-	String[] languageList = new String{"跟随系统", "简体中文", "繁體中文（台灣）"};
-	ListView lv_selectLanguage = (ListView) findViewById(R.id.lv_selectLanguage);
-	lv_selectLanguage.setOnItemClickListener(this);
+
+listView{
 	
-	LanguageListAdapter languageListAdapter = new LanguageListAdapter(WeixinApplication.getmContext(), languageList);
-	lv_selectLanguage.setAdapter(languageListAdapter);
-	
-	只要在onItemClick()里面调用
-	languageListAdapter.setSelectItem(position),就会把当前条目位置记录到adapter里面，然后刷新页面/刷新数据languageListAdapter.notifyDataSetInvalidated();
-	
-	BaseAdapter的写法{
-		public class LanguageListAdapter extends BaseAdapter {
-		private Context context;
-		private String[] languages;
-		private int selectItem = -1;
+	ListView的写法{
+		String[] languageList = new String{"跟随系统", "简体中文", "繁體中文（台灣）"};
+		ListView lv_selectLanguage = (ListView) findViewById(R.id.lv_selectLanguage);
+		lv_selectLanguage.setOnItemClickListener(this);
+		
+		LanguageListAdapter languageListAdapter = new LanguageListAdapter(WeixinApplication.getmContext(), languageList);
+		lv_selectLanguage.setAdapter(languageListAdapter);
+		
+		只要在onItemClick()里面调用
+		languageListAdapter.setSelectItem(position),就会把当前条目位置记录到adapter里面，然后刷新页面/刷新数据languageListAdapter.notifyDataSetInvalidated();
+		
+		BaseAdapter的写法{
+			public class LanguageListAdapter extends BaseAdapter {
+			private Context context;
+			private String[] languages;
+			private int selectItem = -1;
 
-		public LanguageListAdapter(Context context, String[] language) {
-			this.context = context;
-			this.languages = language;
+			public LanguageListAdapter(Context context, String[] language) {
+				this.context = context;
+				this.languages = language;
 
-		}
-
-		@Override
-		public int getCount() {
-			return languages.length;
-		}
-
-		@Override
-		public Object getItem(int i) {
-			return languages[i];
-		}
-
-		@Override
-		public long getItemId(int i) {
-			return i;
-		}
-
-		@Override
-		public View getView(int i, View convertView, ViewGroup viewGroup) {
-			//TODO ListView的优化
-			ViewHolder viewHolder;
-			if (convertView == null){
-				viewHolder = new ViewHolder();
-				convertView = View.inflate(context,R.layout.item_language,null);
-				viewHolder.tv_language = convertView.findViewById(R.id.tv_language);
-				viewHolder.iv_radio_button = convertView.findViewById(R.id.iv_select_language_radio_button);
-				convertView.setTag(viewHolder);
-			}else {
-				viewHolder = (ViewHolder) convertView.getTag();
-			}
-			viewHolder.tv_language.setText(languages[i]);
-
-			if(selectItem != i){
-				viewHolder.iv_radio_button.setImageResource(R.drawable.radio_button_normal);
-			}else {
-				viewHolder.iv_radio_button.setImageResource(R.drawable.radio_button_pressed);
 			}
 
-			return convertView;
-		}
+			@Override
+			public int getCount() {
+				return languages.length;
+			}
 
-		private static class ViewHolder{
-			TextView tv_language;
-			ImageView iv_radio_button;
-		}
+			@Override
+			public Object getItem(int i) {
+				return languages[i];
+			}
 
-		public void setSelectItem(int selectItem) {
-			this.selectItem = selectItem;
+			@Override
+			public long getItemId(int i) {
+				return i;
+			}
+
+			@Override
+			public View getView(int i, View convertView, ViewGroup viewGroup) {
+				//TODO ListView的优化
+				ViewHolder viewHolder;
+				if (convertView == null){
+					viewHolder = new ViewHolder();
+					convertView = View.inflate(context,R.layout.item_language,null);
+					viewHolder.tv_language = convertView.findViewById(R.id.tv_language);
+					viewHolder.iv_radio_button = convertView.findViewById(R.id.iv_select_language_radio_button);
+					convertView.setTag(viewHolder);
+				}else {
+					viewHolder = (ViewHolder) convertView.getTag();
+				}
+				viewHolder.tv_language.setText(languages[i]);
+
+				if(selectItem != i){
+					viewHolder.iv_radio_button.setImageResource(R.drawable.radio_button_normal);
+				}else {
+					viewHolder.iv_radio_button.setImageResource(R.drawable.radio_button_pressed);
+				}
+
+				return convertView;
+			}
+
+			private static class ViewHolder{
+				TextView tv_language;
+				ImageView iv_radio_button;
+			}
+
+			public void setSelectItem(int selectItem) {
+				this.selectItem = selectItem;
+			}
+			
+			}
 		}
 		
+	}
+
+	给listView添加头布局/脚布局{
+		listView.addheadView(view); //可以添加多个头布局，最先添加的头布局显示在最顶部，例如依次添加view1，view2，view3。显示的是view1，view2，view3然后下面就是listview
+		注意，添加头布局必须在setAdapter()之前，否则会报错：java.lang.IllegalStateException: Cannot add header view to list --setAdapter has already been called.
+		还可以通过调用ListView的addHeaderView(headView, null, false) 方法//可以控制header是否可以被selected
+		
+		如果添加了头布局，则listview.getAdapter().getCount() = 添加的头布局数量 + listItem数量
+		
+		headView和footerView都可以响应onItemClick方法，headView的position为0，footerView的position最大。 
+		不过可以给headView和footerView设置OnClickListener来覆盖OnItemClick，这样，你点击headview或者footerView将触发OnClickListener而不是onItemClick(). 
+		
+		listView.addfooterView(view)
+	}
+	
+	ListView指定滑到哪个条目/指定跳到条目{
+		listView.setSelection(i); //执行此代码，就会让第i个条目跳到屏幕最顶端
+	}
+	
+	listView复用写法ViewHolder{
+		写法1 老式写法{
+			public class AddressListAdapter extends BaseAdapter {
+
+				@Override
+				public int getCount() {
+					return mAddressListItem.size();
+				}
+
+				@Override
+				public Object getItem(int i) {
+					return mAddressListItem.get(i);
+				}
+
+				@Override
+				public long getItemId(int i) {
+					return i;
+				}
+
+				@Override
+				public View getView(int i, View convertView, ViewGroup viewGroup) {
+					ViewHolder holder;
+					if(convertView == null){
+						convertView = View.inflate(WeixinApplication.getmContext(), R.layout.home_fragment_address_list_item, null);
+						holder = new ViewHolder();
+						holder.firstWord = convertView.findViewById(R.id.address_list_name_first_word);
+						holder.headSculpture = convertView.findViewById(R.id.address_list_head_sculpture);
+						holder.nickName = convertView.findViewById(R.id.address_list_nick_name_tv);
+
+						convertView.setTag(holder);
+					}else {
+						holder = (ViewHolder) convertView.getTag();
+					}
+
+					holder.firstWord.setText("A");
+					holder.headSculpture.setImageResource(headSculptureList[i]);
+					holder.nickName.setText(nickNameList[i]);
+
+					return convertView;
+				}
+
+				static class ViewHolder{
+					TextView firstWord;
+					TextView nickName;
+					ImageView headSculpture;
+				}
+			}
+
+		}
+		
+		写法2 新式写法{
+			public class AddressListAdapter extends BaseAdapter {
+
+				@Override
+				public int getCount() {
+					return mAddressListItem.size();
+				}
+
+				@Override
+				public Object getItem(int i) {
+					return mAddressListItem.get(i);
+				}
+
+				@Override
+				public long getItemId(int i) {
+					return i;
+				}
+
+				@Override
+				public View getView(int i, View convertView, ViewGroup viewGroup) {
+					if(convertView == null){
+						convertView = View.inflate(WeixinApplication.getmContext(), R.layout.home_fragment_address_list_item, null);
+					}
+					ViewHolder holder = ViewHolder.getViewHolder(convertView);
+
+					holder.headSculpture.setImageResource(mAddressListItem.get(i).getHeadSculpture());
+					holder.nickName.setText(mAddressListItem.get(i).getNickName());
+			
+					return convertView;
+				}
+
+				static class ViewHolder{
+					TextView firstWord;
+					TextView nickName;
+					ImageView headSculpture;
+
+					public ViewHolder(View convertView){
+						firstWord = convertView.findViewById(R.id.address_list_name_first_word);
+						headSculpture = convertView.findViewById(R.id.address_list_head_sculpture);
+						nickName = convertView.findViewById(R.id.address_list_nick_name_tv);
+					}
+
+					public static ViewHolder getViewHolder(View convertView){
+						ViewHolder viewHolder = (ViewHolder) convertView.getTag();
+						if(viewHolder == null){
+							viewHolder = new ViewHolder(convertView);
+							convertView.setTag(viewHolder);
+						}
+						return viewHolder;
+					}
+				}
+			}
 		}
 	}
 	
-}
+	设置listview距离顶端/底部有白边，且白边能滑动{
+		设置ListView的属性android:clipToPadding="false";.
+	}
+	
+	ListView高度无效的问题，给ListView设置高度{
+		方法一：在布局文件中再嵌套一套布局
+		方法二：在代码实现对ListView的Item高度的控制{
+			@Override
+			public View getView(int position, View convertView, ViewGroup parent) {
+			   View view =  View.inflate(MainActivity.this,R.layout.item,null);
+				AbsListView.LayoutParams param = new AbsListView.LayoutParams(300,200);
+				view.setLayoutParams(param);
+				return view;
+			}
+		}
+	}
+	
+	item和item内view焦点争夺问题，OnItemClick无效/点击条目item无效{
+		Item内如果有Button等控件时，在监听ListView的onItemClick事件时，焦点会被Item内的Button、ImageButton等控件抢走，
+		从而导致在ListView设置了OnItemClick事件后不会被触发。
+		解决方法是在初始化Item的时候屏蔽掉其内部Button等控件的焦点获取，具体方法可以在自定义Item的根控件中调用：
+		setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+		这样就能阻塞字控件抢夺焦点，ListView的onItemClick就能被正确触发，同时对Item内部的Button等控件也没有影响，
+		他们在被点击时照样可以触发自身的点击事件。
+	}
+	
+	获取ListView当前屏幕显示的顶部/底部条目的位置{
+		getVisiablePosition()
+		getLastVisiblePosition()
+	}
+	
+	给ListView动态添加数据{
+		给数据添加数据，例如给Adapter使用的数据是：ArrayList<String> listDatas; 则给listDatas.add(index,"132165sdfa")
+		
+		添加数据到listView的头部：listDatas.add(0,"132165sdfa")
+		添加数据到listView的尾部：listDatas.add("132165sdfa")
+		
+		然后通知ListView更新，adapter.notifyDataSetChanged();即可
+	}
+	
+	通知ListView更新{
+		调用给ListView的Adapter对象的notifyDataSetChanged()
+		adapter.notifyDataSetChanged();
+	}
+	
+	滚动监听onScrollListener{
+		
+		//    public static int SCROLL_STATE_IDLE = 0; // 空闲
+		//    public static int SCROLL_STATE_TOUCH_SCROLL = 1; // 触摸滑动
+		//    public static int SCROLL_STATE_FLING = 2; // 滑翔
+		
+		// 往上迅速滑动的状态变化是 触摸滑动 → 滑翔 → 空闲(停止)
+		@Override
+		public void onScrollStateChanged(AbsListView view, int scrollState) {
+			scrollState == 0;// 空闲
+			scrollState == 1;// 触摸滑动
+			scrollState == 2;// 滑翔
+		}
 
+		@Override
+		public void onScroll(AbsListView view, int firstVisibleItem,
+				int visibleItemCount, int totalItemCount) {
+			// 滑动过程
+		}
+	}
+
+	获取ListView的条目数量{
+		listview.getCount();
+	}
+
+	跳到第一个条目/最后一个条目{
+		跳到第一个条目：setSelection(0)
+		跳到最后一个条目：setSelection(getCount())
+	}
+}
 
 更改字体(未用过){
 	// 自定义字体
@@ -1818,20 +2014,6 @@ string和16进制之间的转换{
 }
 
 
-ListView高度无效的问题，给ListView设置高度{
-	方法一：在布局文件中再嵌套一套布局
-	方法二：在代码实现对ListView的Item高度的控制{
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-		   View view =  View.inflate(MainActivity.this,R.layout.item,null);
-			AbsListView.LayoutParams param = new AbsListView.LayoutParams(300,200);
-			view.setLayoutParams(param);
-			return view;
-		}
-	}
-}
-
-
 java代码设置Margin值/设置imageview的margin值{
 	ImageView image = (ImageView) findViewById(R.id.main_image);  
 	//注意，此处↓的RelativeLayout得根据imageview的实际父容器来写；并且需要先将ImageView放入父容器中才可写此行(因为不放入容器无法获得宽高等参数，无法获得参数就无法设置参数)
@@ -1990,112 +2172,6 @@ include标签摆放无效的问题{
 	android:layout_alignParentBottom="true"
 }
 
-listView复用写法ViewHolder{
-	写法1 老式写法{
-		public class AddressListAdapter extends BaseAdapter {
-
-			@Override
-			public int getCount() {
-				return mAddressListItem.size();
-			}
-
-			@Override
-			public Object getItem(int i) {
-				return mAddressListItem.get(i);
-			}
-
-			@Override
-			public long getItemId(int i) {
-				return i;
-			}
-
-			@Override
-			public View getView(int i, View convertView, ViewGroup viewGroup) {
-				ViewHolder holder;
-				if(convertView == null){
-					convertView = View.inflate(WeixinApplication.getmContext(), R.layout.home_fragment_address_list_item, null);
-					holder = new ViewHolder();
-					holder.firstWord = convertView.findViewById(R.id.address_list_name_first_word);
-					holder.headSculpture = convertView.findViewById(R.id.address_list_head_sculpture);
-					holder.nickName = convertView.findViewById(R.id.address_list_nick_name_tv);
-
-					convertView.setTag(holder);
-				}else {
-					holder = (ViewHolder) convertView.getTag();
-				}
-
-				holder.firstWord.setText("A");
-				holder.headSculpture.setImageResource(headSculptureList[i]);
-				holder.nickName.setText(nickNameList[i]);
-
-				return convertView;
-			}
-
-			static class ViewHolder{
-				TextView firstWord;
-				TextView nickName;
-				ImageView headSculpture;
-			}
-		}
-
-	}
-	
-	写法2 新式写法{
-		public class AddressListAdapter extends BaseAdapter {
-
-			@Override
-			public int getCount() {
-				return mAddressListItem.size();
-			}
-
-			@Override
-			public Object getItem(int i) {
-				return mAddressListItem.get(i);
-			}
-
-			@Override
-			public long getItemId(int i) {
-				return i;
-			}
-
-			@Override
-			public View getView(int i, View convertView, ViewGroup viewGroup) {
-				if(convertView == null){
-					convertView = View.inflate(WeixinApplication.getmContext(), R.layout.home_fragment_address_list_item, null);
-				}
-				ViewHolder holder = ViewHolder.getViewHolder(convertView);
-
-				holder.headSculpture.setImageResource(mAddressListItem.get(i).getHeadSculpture());
-				holder.nickName.setText(mAddressListItem.get(i).getNickName());
-		
-				return convertView;
-			}
-
-			static class ViewHolder{
-				TextView firstWord;
-				TextView nickName;
-				ImageView headSculpture;
-
-				public ViewHolder(View convertView){
-					firstWord = convertView.findViewById(R.id.address_list_name_first_word);
-					headSculpture = convertView.findViewById(R.id.address_list_head_sculpture);
-					nickName = convertView.findViewById(R.id.address_list_nick_name_tv);
-				}
-
-				public static ViewHolder getViewHolder(View convertView){
-					ViewHolder viewHolder = (ViewHolder) convertView.getTag();
-					if(viewHolder == null){
-						viewHolder = new ViewHolder(convertView);
-						convertView.setTag(viewHolder);
-					}
-					return viewHolder;
-				}
-			}
-		}
-	}
-}
-
-
 类型转换{
 	char	转String : String s = String.valueOf(char); //效率最高的方法
 	boolean	转String : String s = String.valueOf(boolean); //效率最高的方法
@@ -2165,31 +2241,28 @@ listView复用写法ViewHolder{
 	}
 }
 
-ListView指定滑到那个条目{
-	listView.setSelection(i); //执行此代码，就会让第i个条目跳到屏幕最顶端
-}
-
 
 回调接口的定义和使用{
 	在自定义类里面{
-	
-		//定义接口
+		//定义接口作为成员变量
 		private onTouchLetterListener touchLetterListener;
 
+		//定义设置接口的方法，此方法会把外面传进来的回调方法，传给上面刚定义的成员变量
 		public void setOnTouchLetterListener(onTouchLetterListener touchLetterListener){
 			this.touchLetterListener = touchLetterListener;
 		}
-
+		
+		//定义接口
 		public interface onTouchLetterListener{
 			void onTouchLetter(String letter);
 			void onCancelTouch();
 		}
 		
+		//在合适的地方调用成员变量的接口的方法即可，(调用的其实是传进来的，外部的逻辑)
+		
 		//最后在合适的地方调用接口内的方法即可，因为外部调用setOnCancelTouchListener传进来的接口对象，
 		已经实现了onCancelTouchListener接口内的onCancelTouch()的方法逻辑。定义接口的类的onTouchLetterListener touchLetterListener，是外部的逻辑。
 		调用此对象的方法，也就是调用了外部传进来的逻辑代码，实现了回调
-
-		
 	}
 }
 
@@ -2256,13 +2329,14 @@ Toast位置的设定{
 		set.start();   
 		
 		或者
-		new RatateAnimation()(开始角度，结束角度，动画的x方向参考标准，旋转中心的x坐标，动画的y方向参考标准，旋转中心的y坐标)   
+		new RotateAnimation()(开始角度，结束角度，动画的x方向参考标准，旋转中心的x坐标，动画的y方向参考标准，旋转中心的y坐标)   
 		参考标准有：Animation.RELATIVE_TO_SELF(相对于自身)、Animation.RELATIVE_TO_PARENT(相对于父控件(容器)）。
 		
 		例如：
-		RatateAnimation ra = new RatateAnimation()(-180f,0f,Animation.RELATIVE_TO_SELF,0.5F,Animation.RELATIVE_TO_SELF,0.5F) 
+		RotateAnimation ra = new RotateAnimation()(-180f,0f,Animation.RELATIVE_TO_SELF,0.5F,Animation.RELATIVE_TO_SELF,0.5F) 
+		//new RotateAnimation()(起始角度,结束角度,中心相对参考位置X坐标,参考位置X坐标的百分比,Animation.RELATIVE_TO_SELF,0.5F)
 		ra.setDuration(500);
-		ra.setFillAfter(true);//设置动画结束就维持状态，而不是变回初始状态
+		ra.setFillAfter(true);//设置动画结束就维持状态，而不是变回初始状态(停留在动画结束位置)
 		ra.setStartOffset(200);//设置动画启动的延时，例如延时200ms
 		relativeLayout.startAnimation(ra);
 		
@@ -2320,6 +2394,10 @@ Toast位置的设定{
 				android:toDegrees="360"//结束角度
 				android:pivotX="50%"//旋转X方向的坐标
 				android:pivotY="50%"//旋转Y方向的坐标
+				>
+				<shap>
+				</shap>
+			</rotate>
 		}
 	}
 
@@ -2917,7 +2995,15 @@ Handler的用法{
     }
 }
 
-获取指定时间{
+
+时间{
+	获取当前时间/并格式化成字符串{
+		long currentTimeMillis = System.currentTimeMillis();
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String timeStr = format.format(currentTimeMillis);
+	}
+	
+	获取指定时间{
 //        获取指定时间
         Calendar calendar = Calendar.getInstance();
         calendar.clear();
@@ -2927,6 +3013,7 @@ Handler的用法{
 //        获取当前时间毫秒
         Date date = new Date();
         long time = date.getTime();
+}
 }
 
 dialog提示框{
@@ -3007,8 +3094,23 @@ getSharedPreferences的edit的edit.commit 和 apply 区别{
 
 
 
-shap用法详解{
-	xml画圆环{
+shap用法详解/xml画图{
+	
+	在xml中直接画出一个有动画效果的图案shap{
+		在shap外层嵌套一层动画，例如在shap外层嵌套<rotate ,那么使用此图片的时候，就是自带旋转动画的图像了。
+		<rotate 
+			xmlns:android="https://schemas.android.com/apk/res/android"
+			android:fromDegrees="0"//起始角度
+			android:toDegrees="360"//结束角度
+			android:pivotX="50%"//旋转X方向的坐标
+			android:pivotY="50%"//旋转Y方向的坐标
+			>
+			<shap>
+			</shap>
+		</rotate>
+	}
+	
+	xml画圆环/环形{
 		<?xml version="1.0" encoding="utf-8"?>
 		<shape xmlns:android="http://schemas.android.com/apk/res/android"
 			android:shape="ring"		//定义环形
@@ -3020,7 +3122,7 @@ shap用法详解{
 				android:startColor="#C7C7C7"
 				android:centerColor="#C7C7C7"
 				android:endColor="#00000000"
-				android:type="sweep" />
+				android:type="sweep" /> //扫描式渐变
 
 		</shape>
 	}
@@ -3225,7 +3327,8 @@ TextView{
 		drawable.setBounds(0,0,11,13);
 		textView.setCompoundDrawables(ContextCompat.getDrawable(this,R.mipmap.music),null,null,null);
 
-		android:drawablePadding="8dp" //设置drawableLeft的图片和文字之间的距离/间隔
+		android:drawablePadding="8dp" 			//xml设置drawableLeft的图片和文字之间的距离/间隔
+		textView.setCompoundDrawablePadding(4);	//代码设置图片和text之间的间距 
 	}
 	
 	TextView字体加粗{
@@ -3825,6 +3928,397 @@ uri转成路径Path{
 				int  width =view.getMeasuredWidth();  
 			}  
 		});
+		
+	或：
+	1. 在 Activity#onWindowFocusChanged 回调中获取宽高。
+	2. view.post(runnable)，在 runnable 中获取宽高。
+	3. ViewTreeObserver 添加 OnGlobalLayoutListener，在 onGlobalLayout 回调中获取宽高。
+	4. 调用 view.measure()，再通过 getMeasuredWidth 和 getMeasuredHeight 获取宽高。
+}
+
+自定义控件{
+	自定义控件步骤{
+		1. 创建类，继承View或ViewGroup
+		2. 实现三个参数个数为1、2、3的三个构造函数
+			三个构造函数的说明{
+				1. 参数个数为1的构造函数：在java代码创建的时候会调用，例如new TextView();
+				2. 参数个数为2的构造函数：在xml创建View的时候会调用，例如<TextVeiw ...>，可以自定义属性
+				3. 参数个数为3的构造函数：在xml创建，并且制定了样式style的时候会调用，例如<TextVeiw style...>;
+			}
+		3. 在xml中引用：复制类的引用com.fucaijin.douyin_fcj.view.OvalImageView，点击类名，右键，copy reference既可(ctrl + shift + alt + C)
+		4.
+	}
+	
+	自定义控件的绘制流程{
+		构造函数(view的初始化)
+			↓
+		onMeasure()(测量View的大小)
+			↓
+		onSizeChange()(确定View的大小)
+			↓
+		onLayout()(确定子View的布局，包含子View时用)
+			↓
+		onDraw()(绘制View)
+		
+		用户操作或自身变化引起的View变化，要执行invalidate()，它会重新调用OnDraw()
+		
+		自定义View主要就是重写  	onMeasure()(指定自己的宽高)和onDraw()
+		自定义ViewGroup主要就是重写	onMeasure()(指定自己的宽高和所有子View的宽高)、onLayout()(摆放所有子View)和onDraw()
+		
+		以上方法都会在onResume()方法之后执行
+	}
+	
+	例子1：(继承于View)自定义滑块开关{
+		1. 创建类，继承自View ToggleView extends View
+		2. 重写三个构造函数：ToggleView(Context context)、ToggleView(Context context, AttributeSet attrs)、ToggleView(Context context, AttributeSet attrs, int defStyle)
+		3. 在Activity的onCreate()中创建ToggleView
+			并调用ToggleView.setSwitchBackgroundResource(int switchBackground)设置背景图，
+			调用ToggleView.setSlideButtonResource(int slideButton)设置滑块图片，
+			调用ToggleView.setSwitchState(boolean true)设置开关状态
+		4. 在ToggleView类中实现第3步调用的那三个方法{
+			/**
+			 * 设置背景图
+			 * @param switchBackground
+			 */
+			public void setSwitchBackgroundResource(int switchBackground) {
+				(Bitmap 成员变量)switchBackgroupBitmap = BitmapFactory.decodeResource(getResources(), switchBackground);
+			}
+
+			/**
+			 * 设置滑块图片资源
+			 * @param slideButton
+			 */
+			public void setSlideButtonResource(int slideButton) {
+				(Bitmap 成员变量)slideButtonBitmap = BitmapFactory.decodeResource(getResources(), slideButton);
+			}
+
+			/**
+			 * 设置开关状态
+			 * @param b
+			 */
+			public void setSwitchState(boolean mSwitchState) {
+				(boolean 成员变量)this.mSwitchState = mSwitchState;
+			}
+		}
+		
+		5. 重写onMeasure(){
+			@Override
+			protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+				setMeasuredDimension(switchBackgroupBitmap.getWidth(), switchBackgroupBitmap.getHeight());
+				//设置测量尺寸，宽高是图片的宽高
+			}
+		}
+		
+		6. 重写onDraw(Canvas canvas){
+			删掉super，因为它super没做任何事情
+			在onDraw()绘制，需要new Paint()，应该在每个构造函数初始化一下，init(){Paint paint = new Paint()}
+			
+			绘制背景图片使用：canvas.drawaBitmap(bigmap对象，左上角x坐标，左上角y坐标，paint)(左上角x坐标，左上角y坐标是指你在测量的位置中，要画的图片的偏移)
+			同理画出开关滑块图案
+		}
+		
+		7. 重写onTouchEvent(MotionEvent event){
+			switch (event.getAction()) {
+				case MotionEvent.ACTION_DOWN:
+					isTouchMode = true;
+					System.out.println("event: ACTION_DOWN: " + event.getX());
+					currentX = event.getX();//获取当前的触摸位置
+					break;
+				case MotionEvent.ACTION_MOVE:
+					System.out.println("event: ACTION_MOVE: " + event.getX());
+					currentX = event.getX();
+					break;
+				case MotionEvent.ACTION_UP:
+					isTouchMode = false;
+					System.out.println("event: ACTION_UP: " + event.getX());
+					currentX = event.getX();
+					
+					float center = switchBackgroupBitmap.getWidth() / 2.0f;
+					
+					// 根据当前按下的位置, 和控件中心的位置进行比较. 
+					boolean state = currentX > center;
+					
+					// 如果开关状态变化了, 通知界面. 里边开关状态更新了.
+					if(state != mSwitchState && onSwitchStateUpdateListener != null){
+						// 把最新的boolean, 状态传出去了
+						onSwitchStateUpdateListener.onStateUpdate(state);
+					}
+					
+					mSwitchState = state;
+					break;
+			}
+			
+			// 重绘界面
+			invalidate(); // 会引发onDraw()被调用, 里边的变量会重新生效.界面会更新
+			
+		}
+		
+		8. 回调接口/回调的写法{
+			1. 在自定义类里定义一个接口,接口中有一个空方法{
+				public interface OnSwitchStateUpdateListener{
+					void onStateUpdate(boolean state);
+				}
+			}
+			2. 在自定义类中定义一个接口的成员变量{
+				private OnSwitchStateUpdateListener onSwitchStateUpdateListener;
+			}
+			3. 在自定义类中定义一个方法，此方法参数是这个接口，将参数的变量赋值给成员变量(此方法为外部调用，传进来的接口中的方法已经被外部实现了逻辑){
+				public void setOnSwitchStateUpdateListener(
+						OnSwitchStateUpdateListener onSwitchStateUpdateListener) {
+							this.onSwitchStateUpdateListener = onSwitchStateUpdateListener;
+				}
+			}
+			4. 在开关状态变化的时候，调用自定义类中定义的成员变量的方法即可(此时调用的是外部传进来的，将接口中方法内部实现了逻辑的接口，的方法){
+				// 如果开关状态变化了, 通知界面. 里边开关状态更新了.
+				if(state != mSwitchState && onSwitchStateUpdateListener != null){
+					// 把最新的boolean, 状态传出去了
+					onSwitchStateUpdateListener.onStateUpdate(state);
+				}
+			}
+		}
+		
+		9. 自定义属性/自定义xml属性{
+			1. 在values文件夹种，创建attrs.xml文件
+			2. 在attrs.xml文件中的<resources>标签内，创建<declare-styleable name="ToggleView"> 标签，Name为自定义类的类名
+			3. 在<declare-styleable>内，创建标签<attr name="switch_background" format="reference" /> name为属性名，format为属性类型
+			
+			format有以下几种类型{
+				format表示这个属性的值的类型,类型有以下几种:  
+				1. reference:引用(id)，引用就是前面带"@"的。参考指定Theme中资源ID,这个类型意思就是你传的值可以是引用资源  
+				2. string:字符串,如果你想别人既能直接写值也可以用类似"@string/test"引用资源的方式,可以写成format="string|reference"  
+				3. color：颜色  
+				4. boolean：布尔值  
+				5. dimension：尺寸值  
+				6. float：浮点型  
+				7. integer：整型  
+				8. fraction：百分数  
+				9. enum：枚举 ,如果你提供的属性只能让别人选择,不能随便传入,就可以写成这样  
+					<attr name="language">  
+					<enum name="china" value="1"/>  
+					<enum name="English" value="2"/>  
+					</attr>  
+				10.flag：位或运算  
+
+				<attr name="android:textColor" />	//可以使用内置属性，不用指定format
+				<attr name="background" format="reference|color" /> // 既可以引用图片，也可以设置颜色
+				<attr name="visibility">
+					<enum name="visible" value="0" />
+					<enum name="invisible" value="1" />
+					<enum name="gone" value="2" />
+				</attr> 
+			}
+			
+			ToggleView的自定义属性：{
+				<?xml version="1.0" encoding="utf-8"?>
+				<resources>
+					<declare-styleable name="ToggleView"> //自定义View的类名
+						<attr name="switch_background" format="reference" />
+						<attr name="slide_button" format="reference" />
+						<attr name="switch_state" format="boolean" />
+					</declare-styleable>
+				</resources>
+			}
+		}
+		
+		10. 在自定义控件中获取xml定义的属性,并使用{
+			String namespace = "http://schemas.android.com/apk/res/com.itheima74.toggleview"
+			int switchBackgroundResouce = attrs.getAttributeResourceValue(namespace, "switch_background", -1)defaultValue一般写0或-1 即可
+			boolean switchBackgroundResouce = attrs.getAttributeBooleanValue(namespace, "switch_state", false)defaultValue一般写0或-1 即可
+			setSwitchBackgroundResouce(switchBackgroundResouce);
+			
+			setSwitchBackgroundResouce(int drawableId){
+				// 解析图片资源为Bitmap
+				Bitmap switchButtonBitmap = BitmapFactory.decodeResource(getResources(),drawableId)
+			}
+			
+			
+			在两个参数的方法，参数为(Context context, AttributeSet attrs)中获取属性值：
+			attrs.getAttributeResourceValue(String namespace, String attribute, int defaultValue)
+			namespace → 就是放置自定义控件的xml布局文件的根节点的xmlns(此处是自己自定义的): 
+				xmlns:itheima="http://schemas.android.com/apk/res/com.itheima74.toggleview"
+				或者 ：xmlns:app=”http://schemas.android.com/apk/res-auto” (推荐此方式)
+			
+			
+			String str = "http://schemas.android.com/apk/res/com.itheima74.toggleview"
+			attrs.getAttributeResourceValue(str, 自己在attrs.xml里定义的属性name, int defaultValue)defaultValue一般写0即可
+			
+			xmlns:android="http://schemas.android.com/apk/res/android"
+			xmlns:itheima="http://schemas.android.com/apk/res/com.itheima74.toggleview"
+			xmlns:tools="http://schemas.android.com/tools"((tools)的命名空间,是帮助开发人员的工具.它的作用只于开发阶段发挥,当app被打包时,所有关于tools属性将都会被摒弃掉！)
+			
+			xmlns:itheima="http://schemas.android.com/apk/res/com.itheima74.toggleview"
+			xmlns:自定义一个自己的命名空间= str(http://schemas.android.com/apk/res/ + 自定义View的引用路径)
+			
+			然后再布局文件中就可以使用了： 
+				itheima(上面的自己自定义的命名空间名称):switch_state="false"
+				android:layout_width="wrap_content"
+			
+			在Android中，命名空间可分为3种:
+			1. xmlns:android=”http://schemas.android.com/apk/res/android”
+			2. xmlns:tools=”http://schemas.android.com/tools”
+			3. xmlns:app=”http://schemas.android.com/apk/res-auto”
+			其中，1和2命名空间里的属性是系统封装好的，第3种命名空间里的属性是用户自定义的
+			
+		}
+		
+	}
+	
+	例子2：(继承于ListView)自定义ListView的HeadView的刷新控件，RefreshView{
+		1. 在List.addAdapter()之前，调用List.addHeadView(view) //将RefreshView传入作为ListView的头布局
+		2. 创建自定义控件RefreshView继承于ListView
+		3. 在每个构造函数内的最后，都调用一下初始化函数init(),并定义init()
+		4. 创建头布局xml，然后View.inflate(),加载头布局为View,准备用于添加到头布局中
+		5. 在init()内将头布局添加到listView中，因为它自己本身是继承于ListView,相当于自己是在ListView中，直接调用addHeadView(view)即可
+		6. 在addHeadView(view)之前给view.setpadding(左，上，右，下)，值为头布局的View的高度的负值。但RefreshView是在Activity的oncreate()中初始化的，此时布局还没完成，获取的View的宽高是0。因此使用view.getMeasuredHeight()来获取View的真实高度
+		7. 在RefreshView重写onTouchEvent(MotionEvent event){
+			event.getX()/event.getY()
+			在move:  如果当前是在ListView的顶部(getVisiablePosition() == 0)且偏移量大于0(往下滑动)，就设置头布局的padding = -头布局View高度 + 移动偏移量(按下的y - 当前的y)
+			
+			8. 根据当前是否下拉到headView的头顶使之完全显示，如果拉到头顶，设置当前为释放刷新状态，如果拉到一半，则是正在下拉刷新状态，根据状态的改变来执行动画和文字的改变
+			9. 在up: 在松手的时候，根据padding的高度(view.getpaddingTop()获取控件/view的padding值)，决定是否需要刷新，刷新完成，将数据加到ListView的数据中，并通知ListView更新
+		}
+		
+		10. 设置回调，在刷新的时候，回调外部，让外部进行网络加载刷新数据
+		11. 让RefreshView实现滚动监听onScrollListener，如果滚到最底部，并且停止滚动，就加载新数据，加载完毕，就指定显示到最后一个条目setSelection(getCount());
+	}
+
+	例子3：(继承于ViewGroup)自定义控件SlideMenu(侧滑面板){
+		1. 创建自定义View继承于ViewGroup
+		2. 在xml中使用ViewGroup，其内部include两个子控件(include进来两个layout)
+		3. 在重写onMeasure()，使用leftMenu = getChildAt(0)/getChildAt(1)获取两个子控件 
+		4. 测量子控件View的宽高：leftMenu.measure(leftMenu.getLayoutParams().width, heightMeasureSpec);// 指定左面板的宽高，使用当前自定义控件的Measure的heightMeasureSpec传给子控件的Measure()作为测量高度规则，表示让子控件的高度是填充父元素
+		5. 摆放子控件View：重写onLayout()，在onLayout()中，摆放子View: 
+			View leftMenu = getChildAt(0); leftMenu.layout(-leftMenu.getMeasuredWidth(), 0, 0, b);// 摆放左面板
+			getChildAt(1).layout(l, t, r, b);// 摆放主面板
+		6. 监听触摸事件onTouchEvent(){
+			moveX = event.getX();
+			
+			// 将要发生的偏移量/变化量
+			int scrollX = (int) (downX - moveX);// 那么最后的结果就是屏幕显示的是layout内容的-50 = 假如按下的是50 + (-100) (移动了-100)
+			
+			// 计算将要滚动到的位置, 判断是否会超出去, 超出去了.不执行scrollBy
+			// getScrollX() 当前滚动到的位置
+			int newScrollPosition = getScrollX() + scrollX;
+			
+			if (newScrollPosition < -getChildAt(0).getMeasuredWidth()){ // 限定左边界
+				// < -240
+				scrollTo(-getChildAt(0).getMeasuredWidth(), 0);
+			} else if (newScrollPosition > 0){ // 限定右边界
+				// > 0
+				scrollTo(0, 0);
+			} else {
+				// 让变化量生效
+				scrollBy(scrollX, 0);
+			}
+			
+			downX = moveX;
+		}
+			
+		7. 在触摸监听事件处理触摸结束逻辑，在手指抬起的时候，判断当前的位置，来判断用户是要打开还是关闭左侧菜单面板{
+			// 根据当前滚动到的位置, 和左侧菜单面板的一半进行比较
+			int leftCenter = (int) (- getChildAt(0).getMeasuredWidth() / 2.0f);
+			
+			// 如果当前滚到的位置小于左侧菜单面板的一半，那么就打开左侧面板(需要做成平滑滚动过去的效果，不要直接到达)
+			if(getScrollX() < leftCenter){
+				// 打开, 切换成菜单面板
+				currentState = MENU_STATE;
+				Scroller scroller = new Scroller(getContex())//初始化滚动器，数值模拟器ValueAnimator(动画，Animation)
+				scroller.start(startX,startY,dx,dy,duration);//开启平滑滚动
+				// startX: 开始的x值
+				// startY: 开始的y值
+				// dx: 将要发生的水平变化量. 移动的x距离(从当前到最后，要移动的距离)
+				// dy: 将要发生的竖直变化量. 移动的y距离
+				// duration : 数据模拟持续的时长
+				
+				// 然后重绘画面，让上面的动画执行起来
+				invalidate();
+				// 如果ViewGroup调用了invalidate()，则会调用ViewGroup的DrawChid()，DrawChid()会调用ChildView.Draw(),子View的Draw()方法内会调用computeScroll()。
+				// 如果是View调用invalidate()，则onDraw()会被调用
+			}else {
+				// 关闭, 切换成主面板
+				currentState = MAIN_STATE;
+				// 此处类似于上面的打开菜单面板
+			}
+		}
+		
+		8. 重写View的computeScroll(){
+			// 因为上一步调用了invalidate()，则会调用ViewGroup的DrawChid()，DrawChid()会调用ChildView.Draw(),子View的Draw()方法内会调用computeScroll()。
+			判断第七步的scroller是否结束：scroller.computeScrollOffset() 如果是true是还未结束
+			if(scroller.computeScrollOffset()){ // 直到duration事件以后, 结束
+				// true, 动画还没有结束
+				int currX = scroller.getCurrX(); //获取当前数值模拟器给的数值(应该要滚到的位置)
+				scrollTo(currX, 0); // 平滑滚到坐标为(currX, 0)
+				invalidate(); // 重绘界面-> drawChild() -> computeScroll();只要动画还没结束，就一直重绘界面(同时会不断调用computeScroll())
+			}
+		}
+	}
+	
+	onMeasure()的参数{
+		onMeasure(int widthMeasureSpec, int heightMeasureSpec)：
+		widthMeasureSpec: 	当前控件的宽度测量规则
+		heightMeasureSpec: 	当前控件的高度测量规则
+	}
+	
+	onLayout()的参数{
+		onLayout(boolean changed, int l, int t, int r, int b)：
+		changed: 当前控件的尺寸大小, 位置 是否发生了变化
+		left:当前控件 左边距
+		top:当前控件 顶边距
+		right:当前控件 右边界
+		bottom:当前控件 下边界
+		
+	}
+	
+	在自定义控件里获取View的宽高{
+		手动测量View的宽高{
+			view.measure(0,0)//此方法的参数：measure(int widthMeasureSpec，int heightMeasureSpec) 0所对应的 MeasureSpec,现在知道了传递的0并不是简单的一个0，它符合着 MeasureSpec 规范。将0解包后，所对应的 SpecMode = 0，SpecSize = 0。SpecMode 0 对应的模式为 UNSPECIFIED - (文档：父容器不会对子元素加以任何约束，子元素可以是任何大小。)
+			int measuredHeight = view.getMeasuredHeight()
+			就可以获取View的高度了
+			view.getHeight()(这个在onResume()后才能得到)和view.getMeasuredHeight()的区别，view.getHeight()是显示在屏幕上的高度，view.getMeasuredHeight()是View的真实高度
+		}
+	}
+
+	ViewGroup的scrollTo()和scrollBy()/getScrollX()和getScrollY(){
+		scrollTo(int x, int y)是让屏幕移动到ViewGroup的内容的位置
+		scrollBy(int x, int y)是在当前位置上要移动的距离，以当前状态/位置为坐标系
+		getScrollX()获取当前屏幕显示的左上角坐标，滚到了ViewGroup内的内容的位置
+		getScrollY()
+	}
+}
+
+数学计算Math(){
+	Math.abs() //求绝对值
+}
+
+触摸事件的传递与拦截{
+	假如布局是：
+	<FrameLayout>
+		<RelativeLayout>
+			<Button>
+			</Button>
+		</RelativeLayout>
+	</FrameLayout>
+	
+	则触摸事件会从外层往里面传：Activity → FrameLayout → RelativeLayout → Button
+	
+	1. 在ViewGroup中，事件分为dispatchTouchEvent（事件的分发），onInterceptTouchEvent（事件的拦截），onTouchEvent（事件的处理）。
+	2. 在View中，事件分为dispatchTouchEvent（事件的分发），onTouchEvent（事件的处理）。
+	
+	在容器控件中(例如FrameLayout、RelativeLayout)等，有dispathTouchEvent()、onInterceptTouchEvent()、onTouchEvent(){
+		Activity
+				↓
+		dispathTouchEvent()
+				↓
+		onInterceptTouchEvent()
+				↓
+		onTouchEvent()
+		
+		如果有触摸事件从父类传来了，那么由onInterceptTouchEvent()来判断是否要拦截，如果此方法return true则拦截了触摸事件，则RelativeLayout和Button就收不到此触摸事件了。但此控件还是可以收到触摸事件，并进行处理的(本控件的onTouchEvent()还是会被调用，下一级的不行)
+		dispathTouchEvent()是由其父类分发的触摸事件，如果此方法调用的是super.dispathTouchEvent()(就是不重写此方法的时候)，触摸事件就继续往下分发，否则就不分发
+		
+	}
+	
+	就是FrameLayout的onTouchEvent会被调用，如果返回true，则FrameLayout消费了触摸事件，触摸事件被拦截了，便不再调用RelativeLayout和Button的onTouchEvent()了
 }
 
 
@@ -3846,85 +4340,4 @@ uri转成路径Path{
 
 
 
-
-
-
-
-
-
-
 end!
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

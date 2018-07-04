@@ -235,6 +235,8 @@ eclipse/android studio:{
 	字母大小写相互转换 		ctrl+shift+x转为大写   ctrl+shift+y转为小写
 	
 	复制类的包含包名的引用地址(例如：com.fucaijin.gifshow.view.StrokeTextView)   点击类名，然后Ctrl + Alt + Ctrl + C 或者右键 Copy Reference
+
+	抽取样式/抽取style 无需选中，只要把鼠标点在需要抽取样式的标签内，然后Ctrl + shift + S 或 右键 → Refactor → Extract → style/layout
 }
 
 android studio:{

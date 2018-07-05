@@ -2039,6 +2039,14 @@ recyclerView{
 }
 
 BUG/ERROR合集{
+	调用so库时崩溃，提示：“xxx.so has text relocations”{
+		xxx.so has text relocations。
+		1、错误原因：
+		因为在编译.so文件时的targetSdkVersion低于当前的targetSdkVersion。
+
+		2、解决办法：
+		将module的build.gradle中targetSdkVersion改小点，直到不在报此错误。
+	}
 
 	点击事件不响应原因合集{
 		1.selector一定要先把state_pressed="true"写在前面，否则无效

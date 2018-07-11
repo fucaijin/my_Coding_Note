@@ -216,23 +216,7 @@ public static int getContentViewHeight(Activity activity) {
 android:theme="@style/Theme.AppCompat.NoActionBar"
 
 
-沉浸式状态栏:{
-	在Activity的Oncread()里加入以下代码即可实现。最后一行是设置颜色的
-	if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
-			Window window = this.getWindow();
-			window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-			window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-			window.setStatusBarColor(0xff333333);
-			
-	设置沉浸式状态栏无效的可能原因：
-	1.重写的是Activity的onCreate(),然后是在这地方做的状态栏颜色设置,而没有重写AppcompatActivity的onCreate()
-    }
-}
 
-设置全屏，没有状态栏，不显示时间不显示电量，不显示状态栏{
-	只要在onCreate调用下面这一行即可：
-	getWindow().setFlags(WindowManager.LayoutParams. FLAG_FULLSCREEN , WindowManager.LayoutParams. FLAG_FULLSCREEN);
-}
 
 		
 		
@@ -731,10 +715,124 @@ splash 开启页面     ：旋转动画（第18分钟） 缩放动画（第20分钟）   渐变动画（第22
 
 全屏且不需要状态栏时间等，去掉标题栏取消标题栏和状态栏，如何设置，看  → → → day01-04视频_闪屏页开发-12分钟时候开始
 ↓↓↓
-//去除title
-requestWindowFeature(Window.FEATURE_NO_TITLE);
-//去掉Activity上面的状态栏,沉浸式状态栏：全屏模式，使状态栏变为透明状态
-getWindow().setFlags(WindowManager.LayoutParams. FLAG_FULLSCREEN , WindowManager.LayoutParams. FLAG_FULLSCREEN);
+
+
+全屏/沉浸式状态栏相关{
+	
+	沉浸式状态栏:{
+		在Activity的Oncread()里加入以下代码即可实现。最后一行是设置颜色的
+		if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
+				Window window = this.getWindow();
+				window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+				window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+				window.setStatusBarColor(0xff333333);
+				
+		设置沉浸式状态栏无效的可能原因：
+		1. 重写的是Activity的onCreate(),然后是在这地方做的状态栏颜色设置,而没有重写AppcompatActivity的onCreate()
+		}
+	}
+
+	设置全屏，没有状态栏，不显示时间不显示电量，不显示状态栏{
+		只要在onCreate调用下面这一行即可：
+		getWindow().setFlags(WindowManager.LayoutParams. FLAG_FULLSCREEN , WindowManager.LayoutParams. FLAG_FULLSCREEN);
+	}
+
+	去掉标题栏(全屏，不显示状态栏){
+		方法一：requestWindowFeature(Window.FEATURE_NO_TITLE);//去除title,一定要写在setContentView()方法前面，但如果Activity继承的是AppCompatActivity，则此方法会失效。
+		方法二：在AndroidManifest.xml文件中定义 <application android:theme="@android:style/Theme.NoTitleBar">//如果只想去掉某一个Activity的标题栏的话，可以把这个属性加到activity标签里面
+		
+		如果是继承的AppCompatActivity：
+		方法一：getSupportActionBar().hide();//这句一定要写在setContentView()方法的后面
+		方法二：在AndroidManifest.xml文件中定义 <application android:theme="@android:style/Theme.AppCompat.NoActionBar">
+	}
+	
+	去掉标题栏(全屏，显示状态栏){
+		方法一：getWindow().setFlags(WindowManager.LayoutParams. FLAG_FULLSCREEN , WindowManager.LayoutParams. FLAG_FULLSCREEN);
+	}
+	
+	//去掉Activity上面的状态栏,沉浸式状态栏：全屏模式，使状态栏变为透明状态
+	getWindow().setFlags(WindowManager.LayoutParams. FLAG_FULLSCREEN , WindowManager.LayoutParams. FLAG_FULLSCREEN);
+	
+	去掉标题栏/去掉ActionBar/去掉TitleBar/取消ActionBar{
+		<application
+			android:theme="@style/Theme.AppCompat.NoActionBar">
+	}
+	
+	全屏，但状态栏透明(即能看得到时间、电量等){
+		在setContentView()前调用：
+		/**
+		 * 通过设置全屏，设置状态栏透明(可看得见电量、时间、手机信号等)
+		 * @param activity
+		 */
+		private void fullScreen(Activity activity) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+					//5.x开始需要把颜色设置透明，否则导航栏会呈现系统默认的浅灰色
+					Window window = activity.getWindow();
+					View decorView = window.getDecorView();
+					//两个 flag 要结合使用，表示让应用的主体内容占用系统状态栏的空间
+					int option = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+							| View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+					decorView.setSystemUiVisibility(option);
+					window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+					window.setStatusBarColor(Color.TRANSPARENT);
+					//导航栏颜色也可以正常设置
+	//                window.setNavigationBarColor(Color.TRANSPARENT);
+				} else {
+					Window window = activity.getWindow();
+					WindowManager.LayoutParams attributes = window.getAttributes();
+					int flagTranslucentStatus = WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+					int flagTranslucentNavigation = WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
+					attributes.flags |= flagTranslucentStatus;
+	//                attributes.flags |= flagTranslucentNavigation;
+					window.setAttributes(attributes);
+				}
+			}
+		}
+	}
+	
+	全屏，状态栏不透明(看不到得到时间、电量等){
+		1. 如果Activity是继承的AppCompatActivity，设置取消标题栏：
+			方法一：getSupportActionBar().hide();//这句一定要写在setContentView()方法的后面
+			方法二：在AndroidManifest.xml文件中定义 <application android:theme="@android:style/Theme.AppCompat.NoActionBar">
+		
+		2. 在setContentView()前调用，设置全屏：
+			getWindow().setFlags(WindowManager.LayoutParams. FLAG_FULLSCREEN , WindowManager.LayoutParams. FLAG_FULLSCREEN);
+	}
+	
+	到状态栏底部，单独设置状态栏颜色(沉浸式状态栏){
+		在setContentView()前调用：
+		/**
+		 * 通过设置全屏，设置状态栏透明(可看得见电量、时间、手机信号等)
+		 * @param activity
+		 */
+		private void fullScreen(Activity activity) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+					//5.x开始需要把颜色设置透明，否则导航栏会呈现系统默认的浅灰色
+					Window window = activity.getWindow();
+					View decorView = window.getDecorView();
+					//两个 flag 要结合使用，表示让应用的主体内容占用系统状态栏的空间
+					int option = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+							| View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+					decorView.setSystemUiVisibility(option);
+					window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+					window.setStatusBarColor(Color.TRANSPARENT);//☆☆☆☆☆在此使用自己的颜色即可，填入16进制带透明度的int值，如0xFFFF0000
+					//导航栏颜色也可以正常设置
+	//                window.setNavigationBarColor(Color.TRANSPARENT);
+				} else {
+					Window window = activity.getWindow();
+					WindowManager.LayoutParams attributes = window.getAttributes();
+					int flagTranslucentStatus = WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+					int flagTranslucentNavigation = WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
+					attributes.flags |= flagTranslucentStatus;
+	//                attributes.flags |= flagTranslucentNavigation;
+					window.setAttributes(attributes);
+				}
+			}
+		}
+	}
+}
 
 
 设置更换APP图标LOGO Icon 和APP名字，看  → → → day01-04视频_闪屏页开发-14分钟时候开始
@@ -932,36 +1030,35 @@ Android仿新版微信的小程序下拉栏        URL : https://juejin.im/post/5a4c90c15188
  
 {设置背景全屏，沉浸式状态栏 5.0以上版本可以使用 :
 
-/**
- * 通过设置全屏，设置状态栏透明(可看得见电量、时间、手机信号等)
- *
- * @param activity
- */
-private void fullScreen(Activity activity) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            //5.x开始需要把颜色设置透明，否则导航栏会呈现系统默认的浅灰色
-            Window window = activity.getWindow();
-            View decorView = window.getDecorView();
-            //两个 flag 要结合使用，表示让应用的主体内容占用系统状态栏的空间
-            int option = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
-            decorView.setSystemUiVisibility(option);
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            window.setStatusBarColor(Color.TRANSPARENT);
-            //导航栏颜色也可以正常设置
-//                window.setNavigationBarColor(Color.TRANSPARENT);
-        } else {
-            Window window = activity.getWindow();
-            WindowManager.LayoutParams attributes = window.getAttributes();
-            int flagTranslucentStatus = WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
-            int flagTranslucentNavigation = WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
-            attributes.flags |= flagTranslucentStatus;
-//                attributes.flags |= flagTranslucentNavigation;
-            window.setAttributes(attributes);
-        }
-    }
-}
+	/**
+	 * 通过设置全屏，设置状态栏透明(可看得见电量、时间、手机信号等)
+	 * @param activity
+	 */
+	private void fullScreen(Activity activity) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				//5.x开始需要把颜色设置透明，否则导航栏会呈现系统默认的浅灰色
+				Window window = activity.getWindow();
+				View decorView = window.getDecorView();
+				//两个 flag 要结合使用，表示让应用的主体内容占用系统状态栏的空间
+				int option = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+						| View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+				decorView.setSystemUiVisibility(option);
+				window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+				window.setStatusBarColor(Color.TRANSPARENT);
+				//导航栏颜色也可以正常设置
+	//                window.setNavigationBarColor(Color.TRANSPARENT);
+			} else {
+				Window window = activity.getWindow();
+				WindowManager.LayoutParams attributes = window.getAttributes();
+				int flagTranslucentStatus = WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+				int flagTranslucentNavigation = WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
+				attributes.flags |= flagTranslucentStatus;
+	//                attributes.flags |= flagTranslucentNavigation;
+				window.setAttributes(attributes);
+			}
+		}
+	}
 
 } 
 
@@ -2038,7 +2135,22 @@ recyclerView{
 	}
 }
 
-BUG/ERROR合集{
+BUG/ERROR/崩溃合集{
+	requestWindowFeature(Window.FEATURE_NO_TITLE)隐藏标题栏没有作用{
+		原因：可能是activity继承的是AppCompatActivity
+		解决办法：
+		第一种：
+		getSupportActionBar().hide();//去掉标题栏注意这句一定要写在setContentView()方法的后面
+		
+		第二种：可以在AndroidManifest.xml中作如下配置，这样就没有标题栏了
+		<application android:theme="@style/Theme.AppCompat.NoActionBar">
+	}
+	
+	只响应ACTION_UP和ACTION_DOWN/只响应ACTION_DOWN{
+		方法一： 给相应控件添加：clickable="true"
+		方法二： 将onTouchEvent() return true;即可
+	}
+	
 	调用so库时崩溃，提示：“xxx.so has text relocations”{
 		xxx.so has text relocations。
 		1、错误原因：
@@ -2163,6 +2275,39 @@ BUG/ERROR合集{
 		可能是按钮没有设置点击事件
 	}
 	
+	
+	vitamio视频播放第三方库使用相关{
+		导入{
+			1. Could not find property 'ANDRPID_BUILD_SDK_VERSION' on project ':vitamio'{
+				解决方法：
+				1. 打开要引入vitamio的app module 中的build.gradle，然后在dependencies 中添加：compile project(':vitamio') 
+				2. 将引入vitamio的app module 中的build.gradle中的 compileSdkVersion 和buildToolsVersion，还有defaultConfig节点里的minSdkVersion和TargetSdkVersion以上四行信息，都复制到vitamio目录下的build.gradle的相应位置即可
+			}
+			
+			2. Error:Circular reference between projects: :vitamio -> :vitamio{
+				原因：此处是因为按照网上教程说将自己App中的build.gradle复制到vitamio中的build.gradle，然后自己把全部信息都复制过来了，把compile project(':vitamio')也复制到了vitamio中的build.gradle导致循环引用。
+				解决办法：不要将自己App中的build.gradle全部信息都复制到vitamio中的build.gradle。按照上面第三步操作即可。如果你vitamio的build.gradle已经修改，必须还原(撤销)为最初状态，再按照第三步进行，如果还原不了，就再从解压包解压一下替换。
+			}
+			
+			3.D:\FCJ\Android\AndroidStudioProjects\FucaijinApplication\sample\src\main\AndroidManifest.xml:13:9-43 Error:
+			Attribute application@icon value=(@mipmap/sample_icon) from AndroidManifest.xml:13:9-43
+			is also present at [FucaijinApplication:vitamio:unspecified] AndroidManifest.xml:16:9-45 value=(@drawable/ic_launcher).
+			Suggestion: add 'tools:replace="android:icon"' to <application> element at AndroidManifest.xml:11:5-30:19 to override.
+			D:\FCJ\Android\AndroidStudioProjects\FucaijinApplication\sample\src\main\AndroidManifest.xml:14:9-41 Error:
+			Attribute application@label value=(@string/app_name) from AndroidManifest.xml:14:9-41
+			is also present at [FucaijinApplication:vitamio:unspecified] AndroidManifest.xml:17:9-32 value=(Vitamio).
+			Suggestion: add 'tools:replace="android:label"' to <application> element at AndroidManifest.xml:11:5-30:19 to override.{
+				原因：以上报错信息说的是，我自己app下的AndroidManifest.xml文件里的application@icon value=(@mipmap/sample_icon)和application@label value=(@string/app_name)在Vitamio的AndroidManifest.xml都有了，重复了，建议在使用<application>节点中添加属性tools:replace="android:icon。
+				
+				解决方法：此处我是这么解决的，删除Vitamio的AndroidManifest.xml中的图标和app名称属性即可(application@icon value=(@mipmap/sample_icon)和application@label value=(@string/app_name))。
+			}
+			
+			3.xxx.so has text relocation{
+				原因：因为在编译.so文件时的targetSdkVersion低于当前的targetSdkVersion
+				解决办法：将module的build.gradle中targetSdkVersion改小点，直到不在报此错误
+			}
+		}
+	}
 
 }
 
@@ -2293,8 +2438,50 @@ Toast位置的设定{
 	toast.show();
 }
 
+bitmap缩放{
+	//传入Bitmap和目标宽高(缩放要达到的宽高目标值)
+	public  Bitmap zoomImage(Bitmap bgimage, double newWidth, double newHeight) {
+        // 获取这个图片的宽和高
+        float width = bgimage.getWidth();
+        float height = bgimage.getHeight();
+        // 创建操作图片用的matrix对象
+        Matrix matrix = new Matrix();
+        // 计算宽高缩放率
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+        // 缩放图片动作
+        matrix.postScale(scaleWidth, scaleHeight);
+        Bitmap bitmap = Bitmap.createBitmap(bgimage, 0, 0, (int) width,
+            (int) height, matrix, true);
+        return bitmap;
+    }
+}
+
+
+
 动画{
+	
+	数值模拟器ValueAnimator的用法{
+		ValueAnimator valueAnimator = ValueAnimator.ofInt(0, 2000);
+		valueAnimator.setDuration(2000);
+		valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+			@Override
+			public void onAnimationUpdate(ValueAnimator valueAnimator) {
+				int animatedValue = (int) valueAnimator.getAnimatedValue();//设置监听，监听每次变化，并拿到当前值
+				Log.v("123", "animatedValue = " + animatedValue);
+			}
+		});
+		valueAnimator.start();
+	}
+	
 	属性动画{
+		ObjectAnimator动画的开始、结束、暂停、继续：
+		ObjectAnimator rotation = ObjectAnimator.ofFloat(musicAlbumIv, "rotation", 0, 360f);
+		rotation.start(); 	//开始
+		rotation.end(); 	//结束
+		rotation.pause(); 	//暂停
+		rotation.resume(); 	//继续
+	
 		1.alpha透明动画
 		//第一个参数为 view对象，第二个参数为 动画改变的类型，第三，第四个参数依次是开始透明度和结束透明度。  
         ObjectAnimator alpha = ObjectAnimator.ofFloat(text, "alpha", 0f, 1f);  
@@ -2316,7 +2503,7 @@ Toast位置的设定{
         animatorSet.start();  
 		
 		3.translate平移动画
-		ObjectAnimator translationUp = ObjectAnimator.ofFloat(button, "Y", button.getY(), 0);  
+		ObjectAnimator translationUp = ObjectAnimator.ofFloat(button, "translationY", button.getY(), 0);  
         translationUp.setInterpolator(new DecelerateInterpolator());  
         translationUp.setDuration(1500);  
         translationUp.start();  
@@ -2331,6 +2518,8 @@ Toast位置的设定{
 		anim3.setDuration(2000);   
 		ObjectAnimator anim4 = ObjectAnimator .ofFloat(phone, "rotationY", 180f, 0f);   
 		anim4.setDuration(2000);   
+		
+		ObjectAnimator rotation = ObjectAnimator.ofFloat(followIv, "rotation", 0f, 90f);//直接使用这个也行
         
 		set.play(anim).before(anim2); //先执行anim动画之后在执行anim2  
 		set.play(anim3).before(anim4) ;   
@@ -3387,11 +3576,11 @@ TextView{
 		2.	TextView必须单行显示，即内容必须超出TextView大小
 		3.	TextView要获得焦点才能滚动
 		mTVText.setText(“超过文本长度的数据");
-		mTVText.setSingleLine(true);设置单行显示
-		mTVText.setEllipsize(TruncateAt.MARQUEE);设置跑马灯显示效果
+		mTVText.setSingleLine(true);//设置单行显示
+		mTVText.setEllipsize(TruncateAt.MARQUEE);//设置跑马灯显示效果
+		mTVText.setEllipsize(null);//暂停跑马灯
 		TextView.setHorizontallyScrolling(true); //让文字可以水平滑动
-		TextView还可以设置跑马灯效果的滚动次数
-		android:marqueerepeatlimit="1"。1代表1次，-1 代表无限循环。
+		android:marqueerepeatlimit="1"。//跑马灯的循环滚动次数，1代表1次，-1 代表无限循环。
 		
 		<TextView
 			android:id="@+id/tv_marquee"
@@ -3900,7 +4089,7 @@ uri转成路径Path{
 	}
 }
 
-获取View的宽高{
+获取View的宽高/获取控件的宽高/获取控件宽高{
 	
 	在画面显示(绘制组件)后才可以，例如onclick中也可以：
 	view.getWidth();
@@ -3909,14 +4098,19 @@ uri转成路径Path{
 	
 	但是在oncreate()的时候，上面方法是没法获取宽高的(控件view宽高为0)，因为在调用oncreate()方法时，界面处于不可见状态，内存加载组件还没有绘制出来。
 	有以下三种方法可以：
-	1. //测量方法
-		int  width =View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED); 
-		int  height =View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED); 
+	1. //测量方法 -- 此方法是用于自定义控件类内部
+		int  width =View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED); //此处为0
+		int  height =View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED); //此处为0
 		view.measure(width,height); 
-		int  height=view.getMeasuredHeight(); 
-		int  width=view.getMeasuredWidth();
+		int  height=view.getMeasuredHeight(); //此处有值
+		int  width=view.getMeasuredWidth();//此处有值
 		
-	2.//增加组件绘制之前的监听
+		或者：
+		measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        height = getMeasuredHeight();//此处有值
+        width = getMeasuredWidth();//此处有值
+		
+	2.//增加组件绘制之前的监听 -- 此方法不适用于自定义控件类
 		ViewTreeObserver vto =view.getViewTreeObserver(); 
 		vto.addOnPreDrawListener(new  ViewTreeObserver.OnPreDrawListener() { 
 		   @Override
@@ -3937,6 +4131,14 @@ uri转成路径Path{
 			}  
 		});
 		
+	4. //重写自定义控件的onSizeChanged()
+		@Override
+		protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+			super.onSizeChanged(w, h, oldw, oldh);
+			mTotalWidth = w;
+			mTotalHeight = h;
+		}
+		
 	或：
 	1. 在 Activity#onWindowFocusChanged 回调中获取宽高。
 	2. view.post(runnable)，在 runnable 中获取宽高。
@@ -3944,7 +4146,33 @@ uri转成路径Path{
 	4. 调用 view.measure()，再通过 getMeasuredWidth 和 getMeasuredHeight 获取宽高。
 }
 
-自定义控件{
+自定义控件/自定义View{
+	
+	drawable转bitmap/从资源文件获取Bitmap的过程{
+		/**
+		 * 返回一个Bitmap,其中通过资源Id获取Drawable，然后再将Drawable转为BitmapDrawable，在从BitmapDrawable转为Bitmap
+		 * @param imageId 要获取资源的Id
+		 */
+		private Bitmap loadBitmap(int imageId) {
+			return ((BitmapDrawable)ContextCompat.getDrawable(getContext(), imageId)).getBitmap();
+		}
+		
+		或者：
+		public void setPressedImage(int imageResource) {
+			pressedBitmap = BitmapFactory.decodeResource(getResources(), imageResource);
+		}
+	}
+	
+	Paint{
+		new Paint(Paint.ANTI_ALIAS_FLAG);//抗锯齿
+		
+		//用于图片的抗锯齿画笔
+		mBitPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mBitPaint.setFilterBitmap(true);
+        mBitPaint.setDither(true);
+	}
+	
+	
 	自定义控件步骤{
 		1. 创建类，继承View或ViewGroup
 		2. 实现三个参数个数为1、2、3的三个构造函数
@@ -3997,7 +4225,7 @@ uri转成路径Path{
 			 * @param slideButton
 			 */
 			public void setSlideButtonResource(int slideButton) {
-				(Bitmap 成员变量)slideButtonBitmap = BitmapFactory.decodeResource(getResources(), slideButton);
+				(Bitmap 成员变量)slideButtonBitmap = BitmapFactory.decodeResource(getResources(), slideButton);//解析Bitmap/解析图片资源为Bitmap
 			}
 
 			/**
@@ -4056,8 +4284,9 @@ uri转成路径Path{
 					break;
 			}
 			
-			// 重绘界面
+			// 重绘界面/刷新View/刷新控件/更新View/更新控件/刷新自定义View/刷新自定义控件: invalidate();invalidate();
 			invalidate(); // 会引发onDraw()被调用, 里边的变量会重新生效.界面会更新
+			invalidate();//如果是改变View的大小，调用此方法即可
 			
 		}
 		
@@ -4136,7 +4365,7 @@ uri转成路径Path{
 			setSwitchBackgroundResouce(switchBackgroundResouce);
 			
 			setSwitchBackgroundResouce(int drawableId){
-				// 解析图片资源为Bitmap
+				// 解析图片资源为Bitmap//解析Bitmap/解析图片资源为Bitmap
 				Bitmap switchButtonBitmap = BitmapFactory.decodeResource(getResources(),drawableId)
 			}
 			
@@ -4376,10 +4605,66 @@ uri转成路径Path{
 	就是FrameLayout的onTouchEvent会被调用，如果返回true，则FrameLayout消费了触摸事件，触摸事件被拦截了，便不再调用RelativeLayout和Button的onTouchEvent()了
 }
 
+视频播放控件vitamio{
+	导入{
+		1. 下载
+			github下载地址(选择最新版本即可):https://github.com/yixia/VitamioBundle/releases
+			vitamio官网(它还有一个产品，做小视频拍摄和特效的)：https://www.vitamio.org/
+		2. 解压文件,将vitamio导入Android Studio中
+			打开Android Studio,  File -> New -> Import Moudle,选择解压文件夹下的 vitamio 文件夹
+		3. 此时会报错Could not find property 'ANDRPID_BUILD_SDK_VERSION' on project ':vitamio'
+			(1)打开要引入vitamio的app module 中的build.gradle，然后在dependencies 中添加：compile project(':vitamio') 
+			(2)将引入vitamio的app module 中的build.gradle中的 compileSdkVersion 和buildToolsVersion，还有defaultConfig节点里的minSdkVersion和TargetSdkVersion以上四行信息，都复制到vitamio目录下的build.gradle的相应位置即可。
+		4. 在自己的app module的AndroidManifest.xml的Application节点内添加：
+			<activity
+				android:name="io.vov.vitamio.activity.InitActivity"
+				android:configChanges="orientation|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
+				android:launchMode="singleTop"
+				android:theme="@android:style/Theme.NoTitleBar"
+				android:windowSoftInputMode="stateAlwaysHidden" />
+				
+		可能会报错{
+			1. D:\FCJ\Android\AndroidStudioProjects\FucaijinApplication\sample\src\main\AndroidManifest.xml:13:9-43 Error:
+			Attribute application@icon value=(@mipmap/sample_icon) from AndroidManifest.xml:13:9-43
+			is also present at [FucaijinApplication:vitamio:unspecified] AndroidManifest.xml:16:9-45 value=(@drawable/ic_launcher).
+			Suggestion: add 'tools:replace="android:icon"' to <application> element at AndroidManifest.xml:11:5-30:19 to override.
+
+			D:\FCJ\Android\AndroidStudioProjects\FucaijinApplication\sample\src\main\AndroidManifest.xml:14:9-41 Error:
+			Attribute application@label value=(@string/app_name) from AndroidManifest.xml:14:9-41
+			is also present at [FucaijinApplication:vitamio:unspecified] AndroidManifest.xml:17:9-32 value=(Vitamio).
+			Suggestion: add 'tools:replace="android:label"' to <application> element at AndroidManifest.xml:11:5-30:19 to override.
+
+			原因：以上报错信息说的是，我自己app下的AndroidManifest.xml文件里的application@icon value=(@mipmap/sample_icon)和application@label value=(@string/app_name)在Vitamio的AndroidManifest.xml都有了，重复了，建议在使用<application>节点中添加属性tools:replace="android:icon。
+			解决方法：此处我是这么解决的，删除Vitamio的AndroidManifest.xml中的图标和app名称属性即可(application@icon value=(@mipmap/sample_icon)和application@label value=(@string/app_name))。
+
+			2. xxx.so has text relocation
+			原因：因为在编译.so文件时的targetSdkVersion低于当前的targetSdkVersion。
+			解决办法：将module的build.gradle中targetSdkVersion改小，直到不在报此错误。
+		}
+	}
+	
+	使用{
+		
+	}
+}
 
 
+xml画矩形/圆角矩形/倒圆角{
+	<?xml version="1.0" encoding="utf-8"?>  
+	<shape xmlns:android="http://schemas.android.com/apk/res/android">    
+		<solid android:color="#000000" />    
+		<corners android:topLeftRadius="10dp"   
+			android:topRightRadius="10dp"    
+			android:bottomRightRadius="10dp"   
+			android:bottomLeftRadius="10dp"/>    
+	</shape>  
 
+	解释：solid的表示填充颜色,为了简单，这里用的是黑色。 
+	而corners则是表示圆角，注意的是这里bottomRightRadius是左下角而不是右下角，bottomLeftRadius右下角。 
 
+	如果四个边角都一样的圆角大小，可以这么写： 
+	<corners android:radius="5dp" />  
+}
 
 
 

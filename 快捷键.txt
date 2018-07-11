@@ -1,4 +1,4 @@
-notpad++:{
+Notpad++:{
 	折叠所有层次 Alt+0           	0是键盘上方的0，不是右侧的小键盘0 (必须得定义了编程语言，例如python/java以后才行)
 	展开所有层次 Alt+Shift+0 		0是键盘上方的0，不是右侧的小键盘0 (必须得定义了编程语言，例如python/java以后才行)
 	折叠当前层次 Ctrl+Alt+F 
@@ -72,7 +72,7 @@ notpad++:{
 	Ctrl+Q 块注释/消除注释
 }
 
-pycharm{
+Pycharm{
 	ctrl + shift + F 全局搜索
 	Ctrl + N 按文件名搜索py文件
 	Ctrl+shift+N 按文件名搜索所有类型的文件
@@ -206,7 +206,7 @@ pycharm{
 	编辑器右键，local history, show history： 显示本地修改记录
 }
 
-eclipse/android studio:{
+Eclipse/android studio:{
 	快速修复 ctrl+1  --- 把有错误的地方改正，例如没重写的方法重写完成等等
 	复制当前行或代码块  Ctrl + Alt + 上下方向键
 	添加文档注释        ALT + SHIFT +J  / ALT + SHIFT + Ctrl + J
@@ -239,7 +239,7 @@ eclipse/android studio:{
 	抽取样式/抽取style 无需选中，只要把鼠标点在需要抽取样式的标签内，然后Ctrl + shift + S 或 右键 → Refactor → Extract → style/layout
 }
 
-android studio:{
+Android studio:{
 	Live complate 代码模板
 
 	查找快捷键[Find Action]：Ctrl+Shift+A
@@ -314,6 +314,73 @@ Adobe Illustrator CS6{
 	不能渐变 → 选中的是描线，不是面，选择颜色那里点击一下实面转变一下就可以了
 }
 
-Photoshop{
+Adobe Photoshop{
 	复制图层 Ctrl + J
+}
+
+Adobe Effects{
+	复制图层 Ctrl + C → Ctrl + D
+	效果预览/预览播放 空格键
+	
+	导出的视频并转成gif → 导出视频 → 打开Photoshop → 文件 → 视频帧到图层 → 文件 → 储存为Web所用格式 → 进行相关设置 → 存储
+}
+
+adb常用命令{
+	adb kill-server
+	adb start-server 
+	adb devices	//这个命令是查看当前连接的设备, 连接到计算机的android设备或者模拟器将会列出显示 
+	adb connect 192.168.1.61 //连接设备
+	adb disconnect 192.168.1.61 //断开设备
+	adb install -r (APK路径) // -r 代表如果apk已安装，重新安装apk并保留数据和缓存文件。apk路径则可以直接将apk文件拖进cmd窗口，记得加空格。
+	adb uninstall （apk包名） //adb install gen.apk
+adb uninstall -k （apk包名） //卸载 app 但保留数据和缓存文件：adb uninstall com.example.myapp
+列出手机装的所有app的包名： 
+adb shell pm list packages
+
+列出系统应用的所有包名： 
+adb shell pm list packages -s
+
+列出除了系统应用的第三方应用包名： 
+adb shell pm list packages -3 
+adb shell pm clear （apk包名）清除应用数据与缓存： 
+
+启动应用 
+adb shell am start -n com.helloshan.demo/.MianActivity 
+此处无图，要知道具体的软件的包名及入口才可以打开。
+
+adb shell am force-stop （apk包名） 需要强制停止应用，则执行以下命令： 
+
+删除系统应用： 
+adb remount （重新挂载系统分区，使系统分区重新可写）。 
+adb shell 
+cd system/app/ 
+ls 
+rm *.apk 
+ls命令可以查看文件夹下的所有文件 
+
+12.杀死某个进程：(三个步骤) 
+adb shell 
+ps 
+kill pid 
+ps是查看进程命令，kill pid 你想结束的进程 
+
+13.pull和push文件 
+adb push (文件路径) (想要push的路径) push到手机上//adb pull /sdcard/gen.apk
+adb pull (文件路径) (想要pull的路径) 
+adb push/pull 之前有些设备要获取权限先，14条讲解。
+14.获取文件的读写权限： 
+adb remount 
+有些设备并不能直接adb remount，必须要先以root身份进入，先执行adb root，在执行adb remount
+
+16.查看屏幕分辨率 
+adb shell wm size 
+
+17.常用操作文件夹命令 
+操作文件和文件夹有时会出现权限不够，Read-only file system。就需要adb remount 操作，获得权限。 
+cd system/sd/data //进入系统内指定文件夹 
+ls //列表显示当前文件夹内容 
+mkdir xxx //创建xxx的文件夹 
+rm -r xxx //删除名字为xxx的文件夹及其里面的所有文件 
+rm xxx //删除文件xxx 
+rmdir xxx //删除xxx的文件夹
 }

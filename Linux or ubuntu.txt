@@ -1,1 +1,91 @@
 安装 pip : sudo apt install python-pip -y
+
+升级Django:
+pip3 install Django --upgrade
+
+安装指定版本：
+sudo pip3 install django==2.0.7
+
+查看pid:ps laf
+根据端口号查找pid: netstat -anp |grep 8000(端口号)
+根据字符串查找pid: ps -ef | grep django(←这里是字符串) 或者： pgrep django
+
+杀死进程pid：kill -s 9 1827
+
+杀死进程pid(根据字符串筛选)： killall -9 django(←这里是字符串)
+
+查看当前路径：pwd
+
+使用uWSGI启动django项目：
+uwsgi --http :8000 --file dj_test/wsgi.py
+
+访问网址url(返回的是页面的源码): curl http://www.yahoo.com
+
+查看磁盘可用空间情况：df -h(以mb或gb形式展现)
+df -hl 查看磁盘剩余空间
+ 
+df -h 查看每个根路径的分区大小
+ 
+du -sh [目录名] 返回该目录的大小
+ 
+du -sm [文件夹] 返回该文件夹总M数
+ 
+du -h [目录名] 查看指定文件夹下的所有文件大小（包含子文件夹）
+
+linux系统很卡的基本排查方法{
+	1. 查看内存使用情况
+	free -g
+	
+	首先，查看/proc/sys/vm/drop_caches的值
+	[root@server test]# cat /proc/sys/vm/drop_caches
+	0
+	值默认为0
+	
+	然后，运行sync命令
+	[root@server test]# sync
+	
+	最后，输入手动释放内存的命令
+	[root@server test]# echo 1 > /proc/sys/vm/drop_caches
+	drop_caches的值可以是0-3之间的数字，代表不同的含义：
+	0：不释放（系统默认值）
+	1：释放页缓存
+	2：释放dentries和inodes
+	3：释放所有缓存
+	
+	释放完内存后改回去让系统重新自动分配内存
+	echo 0 >/proc/sys/vm/drop_caches
+	
+	free -m #看内存是否已经释放掉了。
+
+	如果我们需要释放所有缓存，就输入下面的命令：
+	[root@server test]# echo 3 > /proc/sys/vm/drop_caches
+	
+	2. 查看磁盘使用情况
+	df -h
+}
+
+查看文件权限 ll 或者ls -l
+
+移动文件 mv 文件路径/文件名 目标文件夹
+
+解压zip : unzip 文件名
+压缩： zip all.zip *.jpg 压缩所有.jpg文件到all.zip中
+
+studio.sh未找到命令： 执行文件的时候要./studio.sh  或者 .sh为文件(shell脚本) 使用: sh studio.sh 执行 
+
+重启nginx{
+	1.查找nginx路径： which nginx  然后显示路径：/usr/spin/nginx
+	2.cd /usr/spin/
+	3.sudo .nginx -s reload
+}
+
+django创建超级用户{
+python manage.py createsuperuser
+
+Username (leave blank to use 'root'): fucaijin
+Email address: fucaijin@qq.com
+Password:
+Password (again):
+Superuser created successfully.
+[root@solar HelloWorld]#
+}

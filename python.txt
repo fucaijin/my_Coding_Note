@@ -409,10 +409,6 @@ Django{
 		
 	}
 	
-	使外部主机可访问DJANGO服务{
-		欲让外部主机可访问Django的服务器，需使用如下命令开启服务））
-		python manage.py runserver 0.0.0.0:8000
-	}
 	
 	django settings.py 最佳配置文件，以及各个配置详解{
 		# encoding=utf-8
@@ -654,8 +650,8 @@ Django{
 	bug{
 		数据库结构更新无效{
 			更改model之后，使用以下两个命令行更新数据库的表结构无效：
-			python manage.py makemigrations
-			python manage.py migrate
+			python3 manage.py makemigrations
+			python3 manage.py migrate
 			
 			1. 把数据库文件删除
 			2. 删除app(你自己创建的app叫什么，此处的app就是什么)底下的migrations文件夹底下的0001..或0002之类为开头的文件(即migrations文件夹下，除了__init__.py文件之外的都要删除)
@@ -665,6 +661,136 @@ Django{
 			4. 打开数据库查看是否更新成功
 		}
 		
+	}
+	
+	完整Nginx+uWSGI+Django方法部署Django{
+		在这种方式中，我们的通常做法是，将nginx作为服务器最前端，它将接收WEB的所有请求，统一管理请求。
+		nginx把所有静态请求自己来处理（这是NGINX的强项）。
+		然后，NGINX将所有非静态请求通过uwsgi传递给Django，由Django来进行处理，从而完成一次WEB请求。
+		nginx具备优秀的静态内容处理能力，然后将动态内容转发给uWSGI服务器，这样可以达到很好的客户端响应。
+		nginx可以更加好的做到负载均衡。
+		
+		安装：
+		sudo pip install uwsgi
+		sudo apt-get install nginx
+		
+		一、使用uwsgi+django实现初步访问
+		1.安装uwsgi(所有非静态请求通过uwsgi传递给Django，uwsgi相当于一个桥梁的作用) ： pip install uwsgi
+		2.写一个test.py{
+			def application(env, start_response):
+			start_response('200 OK', [('Content-Type','text/html')])
+			# return "Hello World" #python2.x用此版本
+			return [b"Hello World"] #python3.x用此版本
+		}
+		3.在控制台进入test.py目录，运行(因为我的云服务器在配置的时候只对公网开放少数的端口，例如80端口，所以此处得填80，通过浏览器才能连上)：(可能需要sudo) uwsgi --http :80 --wsgi-file test.py
+		4.访问网页：http://127.0.0.1:8001/(此处的127.0.0.1:8001是你的服务器的公网ip，端口是第3步填的端口，如果是80端口此步骤可以不用写)，如果网页显示了hello world则表示测试成功
+		5.(可能需要sudo) uwsgi --http :80  --chdir /home/nocmt/ -w nocmt.wsgi        (uwsgi --http :80(此处是公网开放的端口)  --chdir /home/nocmt/(/home/nocmt/ → 此处是Django的项目目录，我写的是/home/ubuntu/Weixin_fucaijin_django.wsgi) -w nocmt.wsgi(此处是项目名称.wsgi，我写的是Weixin_fucaijin_django.wsgi))
+			我的是：(可能需要sudo) uwsgi --http :80  --chdir /home/ubuntu/Weixin_fucaijin_django.wsgi/ -w Weixin_fucaijin_django.wsgi
+		
+		二、Nginx+uWSGI+Django
+		1.配置uwsgi{
+			1.创建文件uwsgi.ini
+			2.在uwsgi.ini添加{
+				[uwsgi]
+				chdir = /home/feixue/python/www/for_test 
+				module = for_test.wsgi:application 
+				socket = 127.0.0.1:8000 
+				master = true         
+				daemonize = /home/feixue/pyth/for_test/run.log
+				disable-logging = true
+				
+				chdir 是你的博客项目的根目录，我这里的项目名叫for_test；你要替换成你自己的路径；
+				moudule 是你的入口wsgi模块，将for_test替换成你自己的项目名称；
+				socket 是通信端口设置，这个设置不用改，复制即可；
+				master = true 表示以主进程模式运行，不用改，复制即可；
+				daemonize 是你的日志文件目录，这个路径就是刚刚新建的run.log文件的路径；
+				disable-logging = true 表示不记录正常信息，只记录错误信息，否则你的日志可能很快就爆满了！
+				
+				我的项目是{
+					[uwsgi]
+					socket = 127.0.0.1:8000
+					chdir=/home/ubuntu/Weixin_fucaijin_django #这是django项目的目录
+					module=Weixin_fucaijin_django.wsgi		  #这是django项目名称.wsgi
+					master = true         
+					processes=4
+					threads=2
+					max-requests=2000
+					chmod-socket=664
+					vacuum=true
+					daemonize = /home/ubuntu/Weixin_fucaijin_django/uwsgi.log #这是日志目录
+					disable-logging = true
+				}
+			}
+		}
+		2.配置nginx{
+			1.打开/etc/nginx/nginx.conf文件{
+				在http节点中添加节点：
+				server{
+					listen 80; #服务器的对外开放端口
+					server_name localhost; #localhost本机，或者也可以写自己的网站的域名www.fucaijin.cn
+					charset utf-8;
+					#index index.nginx-debian.html ;
+					#root /var/www/html;
+					access_log off;
+					location /static {
+						alias /var/www/; 
+					}
+					location / {
+						uwsgi_pass  127.0.0.1:8000; #要和uwsgi.ini中的socket一样
+						include     /etc/nginx/uwsgi_params;
+					}
+				}
+				
+				网络简洁版{
+					server {
+						listen 80;
+						server_name nocmt.com;
+
+						location  /favicon.ico { 
+							access_log off; 
+							log_not_found off; 
+						}
+						
+						location /static/ {
+							root /home/nocmt;
+						}
+
+						location / {
+							include         uwsgi_params; 
+							uwsgi_pass      unix:/home/nocmt/nocmt.sock; #nocmt是网络教程作者的django项目名称
+						}
+					}
+				}
+				
+				开启日志版{
+					server{
+						listen 80;
+						server_name
+						nocmt.com;
+						access_log /home/nocmt/nginx.access.log;
+						error_log /home/nocmt/nginx.error.log;
+
+						location /static/ {
+							root /home/nocmt;
+						}
+							
+						location /favico.ico {
+							root /home/nocmt/static/img/favico.ico;
+						}
+						
+						location / {
+							include uwsgi_params;
+							uwsgi_pass unix: / home / nocmt / nocmt.sock;
+						}
+					}
+				}
+			}
+		
+		}
+		
+		3.测试nginx的配置，如果有错那就是配置错误：sudo service nginx configtest
+		4.如果配置没错误，就重启nginx： sudo service nginx restart
+		5.启动uwsgi，先进入uwsgi.ini文件的目录下，执行：uwsgi uwsgi.ini
 	}
 }
 

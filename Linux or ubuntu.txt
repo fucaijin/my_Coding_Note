@@ -74,9 +74,9 @@ linux系统很卡的基本排查方法{
 studio.sh未找到命令： 执行文件的时候要./studio.sh  或者 .sh为文件(shell脚本) 使用: sh studio.sh 执行 
 
 重启nginx{
-	1.查找nginx路径： which nginx  然后显示路径：/usr/spin/nginx
-	2.cd /usr/spin/
-	3.sudo .nginx -s reload
+	1.查找nginx路径： which nginx  然后显示路径：/usr/sbin/nginx
+	2.cd /usr/sbin/
+	3.sudo .nginx -s reload (nginx -s  reload) / (sudo service nginx restart)
 }
 
 django创建超级用户{

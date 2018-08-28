@@ -459,3 +459,44 @@ pycharm使用git上传到GitHub{
 
 合并别的分支到当前分支/把分支合并到主分支，例如需要把branch1合并到主分支master，先切换当前分支为master
 然后右键TortoiesGit → merge → 选择要合并过来的分支 → (不知道要不要执行这一步：勾选squash(合并)) → 完成
+
+分支操作：{
+	以下操作均在终端命令窗口，使用命令行完成，<>是占位符，实际输入的时候不需要输入
+
+	切换到要操作的项目文件夹cd <ProjectPath>  eg: cd ~/Weixin_Fucaijin/
+	
+	查看项目的所有分支(包括本地和远程分支，远程分支会有remotes作为前缀)：git branch -a
+	
+	删除本地分支：git branch -d <BranchName> 
+	
+	删除本地分支：git push origin --delete <BranchName> 
+	
+	是否删除成功，就再次查看项目所有分支即可
+	
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

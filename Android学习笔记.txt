@@ -5173,10 +5173,10 @@ uri转成路径Path{
 			github下载地址(选择最新版本即可):https://github.com/yixia/VitamioBundle/releases
 			vitamio官网(它还有一个产品，做小视频拍摄和特效的)：https://www.vitamio.org/
 		2. 解压文件,将vitamio导入Android Studio中
-			打开Android Studio,  File -> New -> Import Moudle,选择解压文件夹下的 vitamio 文件夹
+			打开Android Studio,  File -> New -> Import Moudle,选择解压文件夹下的 vitamio 文件夹，导入后Android项目的app同级会多出一个vitamio的文件夹(库)
 		3. 此时会报错Could not find property 'ANDRPID_BUILD_SDK_VERSION' on project ':vitamio'
 			(1)打开要引入vitamio的app module 中的build.gradle，然后在dependencies 中添加：compile project(':vitamio') 
-			(2)将引入vitamio的app module 中的build.gradle中的 compileSdkVersion 和buildToolsVersion，还有defaultConfig节点里的minSdkVersion和TargetSdkVersion以上四行信息，都复制到vitamio目录下的build.gradle的相应位置即可。
+			(2)将引入vitamio的app module 中的build.gradle中的 compileSdkVersion 和buildToolsVersion，还有defaultConfig节点里的minSdkVersion和TargetSdkVersion以上四行信息，都复制到vitamio目录下的build.gradle的相应位置，重新等待gradle编译完成即可解决。
 		4. 在自己的app module的AndroidManifest.xml的Application节点内添加：
 			<activity
 				android:name="io.vov.vitamio.activity.InitActivity"
@@ -5184,6 +5184,8 @@ uri转成路径Path{
 				android:launchMode="singleTop"
 				android:theme="@android:style/Theme.NoTitleBar"
 				android:windowSoftInputMode="stateAlwaysHidden" />
+				此InitActivity存在于vitamio/src对于目录下，不需要使用者自己编写
+		5.vitamio导入结束
 				
 		可能会报错{
 			1. D:\FCJ\Android\AndroidStudioProjects\FucaijinApplication\sample\src\main\AndroidManifest.xml:13:9-43 Error:
@@ -5199,14 +5201,45 @@ uri转成路径Path{
 			原因：以上报错信息说的是，我自己app下的AndroidManifest.xml文件里的application@icon value=(@mipmap/sample_icon)和application@label value=(@string/app_name)在Vitamio的AndroidManifest.xml都有了，重复了，建议在使用<application>节点中添加属性tools:replace="android:icon。
 			解决方法：此处我是这么解决的，删除Vitamio的AndroidManifest.xml中的图标和app名称属性即可(application@icon value=(@mipmap/sample_icon)和application@label value=(@string/app_name))。
 
-			2. xxx.so has text relocation
+			2. 调用so库时报错：xxx.so has text relocation
 			原因：因为在编译.so文件时的targetSdkVersion低于当前的targetSdkVersion。
 			解决办法：将module的build.gradle中targetSdkVersion改小，直到不在报此错误。
+			
+			Could not find property 'ANDRPID_BUILD_SDK_VERSION' on project ':vitamio'{
+				解决方法：
+				1. 打开要引入vitamio的app module 中的build.gradle，然后在dependencies 中添加：compile project(':vitamio') 
+				2. 将引入vitamio的app module 中的build.gradle中的 compileSdkVersion 和buildToolsVersion，还有defaultConfig节点里的minSdkVersion和TargetSdkVersion以上四行信息，都复制到vitamio目录下的build.gradle的相应位置即可
+			}
+
+			3.Error:Circular reference between projects: :vitamio -> :vitamio 
+			原因就是把app的gradle完全复制过来了，把vitamio也复制过来了，循环引用导致错误。只要参照导入的第3步即可，不要将app的gradle完全复制到vitamio的gradle
 		}
+		
 	}
 	
 	使用{
+		import io.vov.vitamio.widget.VideoView;
+		直接使用VideoView或者继承VideoView，即可，调用此控件的pause();start();暂停和播放
 		
+//        在setContentView()之前检查vitamio框架是否可用
+        if (!io.vov.vitamio.LibsChecker.checkVitamioLibs(this)) {
+            return;
+        }
+		
+        setContentView(R.layout.activity_main);
+		
+        //一定要初始化Vitamio
+        Vitamio.initialize(this);
+		
+		//根据视频路径，设置视屏路径
+		String path = Environment.getExternalStorageDirectory().getPath() + "/" + "DCIM/Camera/skating.mp4";
+        Uri uri = Uri.parse(path);
+        mVideoView.setVideoURI(uri);
+		
+		//设置准备、错误、完成三个监听
+        mVideoView.setOnPreparedListener(this);
+        mVideoView.setOnErrorListener(this);
+        mVideoView.setOnCompletionListener(this);
 	}
 }
 
@@ -5285,7 +5318,19 @@ xml画矩形/圆角矩形/倒圆角{
 	}
 }
 
-
+实现Activity侧滑返回{
+	使用第三方库SwipeBackLayout
+	GitHub地址：https://github.com/ikew0ng/SwipeBackLayout
+	
+	1.在module的build.gradle文件的dependencies节点中添加：compile 'me.imid.swipebacklayout.lib:library:1.1.0'  /  implementation 'me.imid.swipebacklayout.lib:library:1.1.0
+	2.更改APP的主题theme，首先在styles文件中添加{
+		<style name="SwipeBackTheme" parent="Theme.AppCompat.NoActionBar">
+			<item name="android:windowIsTranslucent">true</item>
+		</style>
+	}
+	3.让需要实现侧滑返回的Activity继承SwipeBackActivity即可
+	4.如果想关闭侧滑返回，在继承了SwipeBackActivity的Activity中调用setSwipeBackEnable(false);即可设置侧滑返回不可用
+}
 
 
 

@@ -77,6 +77,7 @@ Pycharm{
 	Ctrl + N 按文件名搜索py文件
 	Ctrl+shift+N 按文件名搜索所有类型的文件
 	ctrl+shift+f 全局字符串搜索
+	ctrl+shift+f 全局搜索
 	ctrl+f 搜索本页的字符串
 	ctrl+shift+a 搜索配置
 	Alt + Enter 快速修正(生成变量)

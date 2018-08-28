@@ -357,6 +357,66 @@ pip安装太慢/被墙/不稳定{
 }
 
 Django{
+	
+	django的使用步骤{
+		1.新建1个app, 名称叫 test
+			python manage.py startapp test     # test 是1个自定义的app的名称
+		2.在项目的settings.py中添加app:
+			INSTALLED_APPS = [
+			......
+			'test',
+			]
+		3.修改app的views.py代码，定义一个方法，方法返回HttpResponse()
+			#coding:utf-8 #第1句是声明编码为utf-8, 因为我们在代码中到了中文,如果不声明就报错.
+			from django.http import HttpResponse
+			def index(request):
+			return HttpResponse(u"欢迎光临 自强学堂!")
+			# 返回html文件的是：return render(request, "index.html")
+		4.配置路由，修改项目urls.py
+			import 下面方法名所在的文件名
+			urlpatterns = [
+			url(r'^login/', login),
+			url(r'^register/', register),
+			url(r'^index/', views.index),
+			]
+			# url(r'^网络地址/', 文件名.方法名/方法名) 此处使用正则表达式接收传递参数，^ 是代表以^之后的字符串开头，$是代表以$之前的字符串结尾，因为结尾没限定此处访问index/xxx也可以，上面也可以写成：url(r'^index/$', views.index),精准匹配index/
+			
+		5.修改项目setting.py文件： ALLOWED_HOSTS = ['*', ]
+
+		6.浏览器输入http://127.0.0.1:8000/index/
+		
+		7.如果需要操作数据库，则需要更改app的models文件，添加相应字段，完后执行以下命令：
+			python manage.py migrations
+			python manage.py migrations
+			
+
+
+
+		升级Django:
+		pip3 install Django --upgrade
+
+		安装指定版本：
+		sudo pip3 install Django==2.0.7
+
+		安装simplejson：pip install simplejson
+
+		删除django：
+		Python
+		import sys
+		sys.path = sys.path[1:]
+		import django
+		print(django.__path__)
+
+		例如得到django 安装目录 ['/Library/Python/2.7/site-packages/django']
+		删除 django 目录即可
+
+		查看django版本：
+		python
+		import django
+		print django.VERSION(或者django.get_version())
+
+	}
+
 	新建/引入APP{
 		在terminal执行： python manage.py startapp startapp weixin(app名称)
 		打开项目同名文件夹下的setting.py，在INSTALLED_APPS = []尾部添加项目名称即可
@@ -663,7 +723,7 @@ Django{
 		
 	}
 	
-	完整Nginx+uWSGI+Django方法部署Django{
+	完整Nginx+uWSGI+Django方法部署Django部署到服务器上{
 		在这种方式中，我们的通常做法是，将nginx作为服务器最前端，它将接收WEB的所有请求，统一管理请求。
 		nginx把所有静态请求自己来处理（这是NGINX的强项）。
 		然后，NGINX将所有非静态请求通过uwsgi传递给Django，由Django来进行处理，从而完成一次WEB请求。
@@ -671,8 +731,21 @@ Django{
 		nginx可以更加好的做到负载均衡。
 		
 		安装：
-		sudo pip install uwsgi
+		apt-get install pip
+		pip install django==版本号
+		django-admin startproject 项目名称
+		进入项目目录，python manage.py startapp app名称
+		创建static、media文件夹：mkdir static media
+		创建app的static文件夹，进入app目录：mkdir static
+		
+		sudo pip install uwsgi /sudo python3 -m pip install uwsgi /sudo pip3 install uwsgi /apt-get install uwsgi
 		sudo apt-get install nginx
+		
+		启动Nginx：{
+			fnngj@ubuntu:~$ /etc/init.d/nginx start  	#启动
+			fnngj@ubuntu:~$ /etc/init.d/nginx stop  	#关闭
+			fnngj@ubuntu:~$ /etc/init.d/nginx restart  	#重启
+		}
 		
 		一、使用uwsgi+django实现初步访问
 		1.安装uwsgi(所有非静态请求通过uwsgi传递给Django，uwsgi相当于一个桥梁的作用) ： pip install uwsgi
@@ -682,10 +755,10 @@ Django{
 			# return "Hello World" #python2.x用此版本
 			return [b"Hello World"] #python3.x用此版本
 		}
-		3.在控制台进入test.py目录，运行(因为我的云服务器在配置的时候只对公网开放少数的端口，例如80端口，所以此处得填80，通过浏览器才能连上)：(可能需要sudo) uwsgi --http :80 --wsgi-file test.py
+		3.在控制台进入test.py目录，运行(因为我的云服务器在配置的时候只对公网开放少数的端口，例如80端口，所以此处得填80，通过浏览器才能连上)：sudo uwsgi --http :80 --wsgi-file test.py
 		4.访问网页：http://127.0.0.1:8001/(此处的127.0.0.1:8001是你的服务器的公网ip，端口是第3步填的端口，如果是80端口此步骤可以不用写)，如果网页显示了hello world则表示测试成功
-		5.(可能需要sudo) uwsgi --http :80  --chdir /home/nocmt/ -w nocmt.wsgi        (uwsgi --http :80(此处是公网开放的端口)  --chdir /home/nocmt/(/home/nocmt/ → 此处是Django的项目目录，我写的是/home/ubuntu/Weixin_fucaijin_django.wsgi) -w nocmt.wsgi(此处是项目名称.wsgi，我写的是Weixin_fucaijin_django.wsgi))
-			我的是：(可能需要sudo) uwsgi --http :80  --chdir /home/ubuntu/Weixin_fucaijin_django.wsgi/ -w Weixin_fucaijin_django.wsgi
+		5.sudo uwsgi --http :80  --chdir /home/nocmt/ -w nocmt.wsgi        (uwsgi --http :80(此处是公网开放的端口)  --chdir /home/nocmt/(/home/nocmt/ → 此处是Django的项目目录，我写的是/home/ubuntu/Weixin_fucaijin_django.wsgi) -w nocmt.wsgi(此处是项目名称.wsgi，我写的是Weixin_fucaijin_django.wsgi))
+			我的是：sudo uwsgi --http :80  --chdir /home/ubuntu/Weixin_fucaijin_django/ -w Weixin_fucaijin_django.wsgi
 		
 		二、Nginx+uWSGI+Django
 		1.配置uwsgi{
@@ -699,20 +772,34 @@ Django{
 				daemonize = /home/feixue/pyth/for_test/run.log
 				disable-logging = true
 				
-				chdir 是你的博客项目的根目录，我这里的项目名叫for_test；你要替换成你自己的路径；
-				moudule 是你的入口wsgi模块，将for_test替换成你自己的项目名称；
-				socket 是通信端口设置，这个设置不用改，复制即可；
-				master = true 表示以主进程模式运行，不用改，复制即可；
-				daemonize 是你的日志文件目录，这个路径就是刚刚新建的run.log文件的路径；
-				disable-logging = true 表示不记录正常信息，只记录错误信息，否则你的日志可能很快就爆满了！
+				uwsgi.ini配置文件参数含义{
+					chdir 是你的博客项目的根目录，我这里的项目名叫for_test；你要替换成你自己的路径；
+					moudule 是你的入口wsgi模块，将for_test替换成你自己的项目名称；
+					socket 是通信端口设置，这个设置不用改，复制即可；
+					master = true 表示以主进程模式运行，不用改，复制即可；
+					daemonize 是你的日志文件目录，这个路径就是刚刚新建的run.log文件的路径；
+					disable-logging = true 表示不记录正常信息，只记录错误信息，否则你的日志可能很快就爆满了！
+					
+					http ： 协议类型和端口号
+					processes ： 开启的进程数量
+					workers ： 开启的进程数量，等同于processes（官网的说法是spawn the specified number ofworkers / processes）
+					chdir ： 指定运行目录（chdir to specified directory before apps loading）
+					wsgi-file ： 载入wsgi-file（load .wsgi file）
+					stats ： 在指定的地址上，开启状态服务（enable the stats server on the specified address）
+					threads ： 运行线程。由于GIL的存在，我觉得这个真心没啥用。（run each worker in prethreaded mode with the specified number of threads）
+					master ： 允许主进程存在（enable master process）
+					daemonize ： 使进程在后台运行，并将日志打到指定的日志文件或者udp服务器（daemonize uWSGI）。实际上最常用的，还是把运行记录输出到一个本地文件上。
+					pidfile ： 指定pid文件的位置，记录主进程的pid号。
+					vacuum ： 当服务器退出的时候自动清理环境，删除unix socket文件和pid文件（try to remove all of the generated file/sockets）
+				}
 				
 				我的项目是{
 					[uwsgi]
-					socket = 127.0.0.1:8000
-					chdir=/home/ubuntu/Weixin_fucaijin_django #这是django项目的目录
-					module=Weixin_fucaijin_django.wsgi		  #这是django项目名称.wsgi
-					master = true         
-					processes=4
+					socket = 127.0.0.1:8000						#指定项目执行的端口号
+					chdir=/home/ubuntu/Weixin_fucaijin_django 	#指定django项目的目录
+					module=Weixin_fucaijin_django.wsgi		  	#django的wsgi文件，即：django项目名称.wsgi。可以这么来理解，对于uwsgi.ini文件来说，与它的平级的有一个与Django项目名称相同的目录Weixin_fucaijin_django，这个目录下有一个wsgi.py文件。
+					master = true         						#
+					processes=4           						#最大的工作线程
 					threads=2
 					max-requests=2000
 					chmod-socket=664
@@ -732,13 +819,20 @@ Django{
 					#index index.nginx-debian.html ;
 					#root /var/www/html;
 					access_log off;
+					
 					location /static {
 						alias /var/www/; 
 					}
+					
 					location / {
 						uwsgi_pass  127.0.0.1:8000; #要和uwsgi.ini中的socket一样
-						include     /etc/nginx/uwsgi_params;
+						include     /etc/nginx/uwsgi_params; #此处必须指定为uwsgi_params。应该是这两行使得nginx和uwsgi进行关联
 					}
+					
+					#说明：
+					#location /media(此处没有)，location /static → media和static请求都是直接ngnix处理
+					#/ uwsgi_pass 127.0.0.1:8000 → 动态请求传递给:8000端口，也就是uwsgi(因为上一步的uwsgi.ini配置了监听:8000端口)
+
 				}
 				
 				网络简洁版{
@@ -790,7 +884,13 @@ Django{
 		
 		3.测试nginx的配置，如果有错那就是配置错误：sudo service nginx configtest
 		4.如果配置没错误，就重启nginx： sudo service nginx restart
-		5.启动uwsgi，先进入uwsgi.ini文件的目录下，执行：uwsgi uwsgi.ini
+		5.启动uwsgi，先进入uwsgi.ini文件的目录下，执行：sudo uwsgi uwsgi.ini
+		
+		bug:{
+			1.报500 只使用uwsgi运行django看日志(有可能是db的表格没有创建，因此在执行时候找不到表格，打开db文件看是否有自己创建的表格，如果不能在线创建数据库表，那就在自己电脑创建好之后拷贝上服务端): sudo uwsgi --http :80  --chdir /home/ubuntu/Weixin_fucaijin_django/ -w Weixin_fucaijin_django.wsgi
+			2.报404 可能是路由没有配置好，打开urls.py文件编辑添加路由即可
+			3.报502 可能没连上服务器，比如服务器没有开启，关机了
+		}
 	}
 }
 

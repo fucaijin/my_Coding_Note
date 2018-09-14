@@ -1,7 +1,0 @@
-阿里云大数据专业认证 ACP（Alibaba Cloud Certification Professional）
-
-考核点：
-1.大数据计算服务 - 60%
-2.Data IDE - 25%
-3.数据集成 - 10%
-4.与其他产品配合的应用及架构 - 5%

@@ -1,0 +1,32 @@
+腾讯im服务器模块{
+	生成sig
+
+	Load a signing key from disk, use it to sign a message, and write the signature to disk:
+	```python
+	from ecdsa import SigningKey
+	sk = SigningKey.from_pem(open("private.pem").read())
+	message = open("message","rb").read()
+	sig = sk.sign(message)
+	open("signature","wb").write(sig)
+
+
+	√ 1.需要秘钥文件内容 --- 用于生成私钥
+	√ 2.需要 new tls_sigcheck() 对象 --- 用于生成sig
+	3.需要appid
+	4.需要用户名
+
+	```
+	Load the verifying key, message, and signature from disk, and verify the signature:
+
+	```python
+	from ecdsa import VerifyingKey, BadSignatureError
+	vk = VerifyingKey.from_pem(open("public.pem").read())
+	message = open("message","rb").read()
+	sig = open("signature","rb").read()
+	try:
+		vk.verify(sig, message)
+		print "good signature"
+	except BadSignatureError:
+		print "BAD SIGNATURE"
+	```
+}

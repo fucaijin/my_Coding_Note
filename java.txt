@@ -1,0 +1,5 @@
+ªÒ»° ‰»Î{
+	import java.util.Scanner;
+	Scanner input = new Scanner(System.in);
+	int inputNumber = input.nextInt();
+}

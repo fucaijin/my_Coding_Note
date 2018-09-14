@@ -469,7 +469,7 @@ pycharm使用git上传到GitHub{
 	
 	删除本地分支：git branch -d <BranchName> 
 	
-	删除本地分支：git push origin --delete <BranchName> 
+	删除远程分支：git push origin --delete <BranchName> 
 	
 	是否删除成功，就再次查看项目所有分支即可
 	

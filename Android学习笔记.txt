@@ -301,8 +301,8 @@ EditText控件{
 	修改下划线和光标样式{
 		1. 定义样式 
 			<style name="MyEditText" parent="Theme.AppCompat.Light"> 
-				<item name="colorControlNormal">@color/indigo</item> 
-				<item name="colorControlActivated">@color/pink</item>
+				<item name="colorControlNormal">@color/indigo</item>  //为没有获取焦点时候下划线的颜色
+				<item name="colorControlActivated">@color/pink</item>  //为获取焦点时候光标与下划线的颜色
 			</style>
 		2. 通过theme属性将此样式应用于EditText
 				<EditText 
@@ -310,6 +310,11 @@ EditText控件{
 				android:layout_height="wrap_content" 
 				android:hint="Hint text" 
 				android:theme="@style/MyEditText"/>
+	}
+	
+	第三方库Edittext{
+		MaterialEditText
+		compile 'com.rengwuxian.materialedittext:library:2.1.4'
 	}
 
 	修改输入框EditText的下划线样式颜色：
@@ -2136,6 +2141,12 @@ recyclerView{
 }
 
 BUG/ERROR/崩溃合集{
+
+	android.view.ViewRootImpl$CalledFromWrongThreadException:{
+		在错误的线程中更新Ui:
+		如果是在Fragment中，应该使用此方法更新Ui:getActivity().runOnUiThread(new Runnable() {@Override public void run() {//在此处更新UI}});
+	}
+
 	requestWindowFeature(Window.FEATURE_NO_TITLE)隐藏标题栏没有作用{
 		原因：可能是activity继承的是AppCompatActivity
 		解决办法：
@@ -2307,6 +2318,21 @@ BUG/ERROR/崩溃合集{
 				解决办法：将module的build.gradle中targetSdkVersion改小点，直到不在报此错误
 			}
 		}
+	}
+	
+	java.lang.UnsatisfiedLinkError: Couldn't load weibosdkcore from loader dalvik.system.PathClassLoader[DexPathList[[zip file "/data/app/com.dk.dkweibo-2.apk"],nativeLibraryDirectories=[/data/app-lib/com.dk.dkweibo-2, /system/lib]]]: findLibrary returned null at java.lang.Runtime.loadLibrary(Runtime.java:358){
+		在使用腾讯IM时候出现的问题，导入.so文件错误，解决办法:
+		1.在项目中的src文件夹内创建jniLibs文件夹；
+		2.到新浪微博的SDK里找到libs文件夹下的目录（其他平台api也是如此），把当前目录的arm64-v8a、armeabi-v7a、x86、armeabi、mips等全部文件夹拷贝到项目的jniLibs目录中；
+		3.打开gradle.build文件，修改为（这一步是为了能把.so文件编译进去）
+		android{
+			...
+			sourceSets.main{
+				jniLibs.srcDirs = ['src/jniLibs'];
+			}
+			...
+		}
+		OK！
 	}
 
 }
@@ -5332,10 +5358,18 @@ xml画矩形/圆角矩形/倒圆角{
 	4.如果想关闭侧滑返回，在继承了SwipeBackActivity的Activity中调用setSwipeBackEnable(false);即可设置侧滑返回不可用
 }
 
+imageview显示绝对路径的图片文件：ImageView.setImageUri(Uri.fromFile(new File("/sdcard/test.jpg")));
 
+更新fragment Ui/fragment中延时操作更新Ui/Fragment原本只能在onCreateView()中更新Ui{
+	getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    //在此处更新Ui
+                }
+            });
+}
 
-
-
+播放内部文件
 
 
 

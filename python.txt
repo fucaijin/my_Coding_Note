@@ -1226,6 +1226,303 @@ scrapy{
 }
 
 
+Python3数据分析与挖掘建模实战 笔记{
+	涉及到的数学{
+		极差 = 最大值 - 最小值
+	}
+
+	数据学习网站{
+		数据竞赛网站Kaggle、(阿里云)天池
+		数据集网站ImageNet/Open Images
+		各领域统计数据(国家统计局、政府机构、公司财报)
+	}
+	
+	集中趋势{-数据聚拢位置的衡量
+		均值
+		中位数
+		分位数 - 把数据从小到大排列，分成几等分的分点位置的数：四分位数计算方法 - (下四分位数)Q1 = (n+1)*0.25 / Q2 = (n+1)*0.5 / (上四分位数)Q3 = (n+1)*0.75 如： 1 2 3 4 5 6 7 的Q1 = (7 + 1)*0.25 = 2
+		众数 - 离散值的集中趋势衡量，一组数据中出现次数最多的数值，叫众数
+	}
+	
+	离中趋势{-数据离散程度的衡量
+		标准差 - 标准差越大代表越离散，越小代表越聚拢
+		方差
+		
+		标准差的平方就是方差
+		
+		标准差σ = 根号下的((∑(每个数字 - 均值)的平方)/数据总量的个数)
+		方差 = (∑(每个数字 - 均值)的平方)/数据总量的个数
+		
+		正态分布的离中趋势，可以判断出概率
+	}
+	
+	数据分布{
+		偏态与峰态{
+			偏态系数如果为负值，说明偏小，也就是说明大部分值都是大于平均值的 例如 1 5 6 平均值为4,这列数据大部分值都是大于均值的
+			峰态系数(以正态分布的峰度为0，其他分布的峰度以正态分布为标准)如果为负值，说明数据分布曲线比正态分布平缓。峰度越小，越平缓，说明数值越不聚拢
+		}
+		正态分布与三大分布(t分布, 卡方x分布,F分布)
+		
+		
+	}
+	
+	抽样理论{
+		抽样误差
+		抽样精度
+		
+		重复抽样(有放回抽样)、不重复抽样(无放回抽样)的平均误差计算、估计总体时抽样数目的确定，都各有不同的计算公式
+	}
+	
+	import pandas as pd
+	df=pd.read_csv("./data/HR.csv") # 导入当前项目中的data文件夹中的HR.csv文件
+
+	3-5 02:40 求均值: df.mean() # 求得各列的均值
+	3-5 03:00 求某一列均值: df["satisfaction_level"].mean() # 求得satisfaction_level列的均值
+	3-5 03:00 求某一列和: df["satisfaction_level"].sum() # 求得satisfaction_level列的和
+	3-5 03:40 求中位数: df.median() # 求得各列的中位数
+	3-5 04:00 求分位数: df.quantile(q=0.25) # 求得下4分位数
+	3-5 04:30 求众数: df.mode()
+	3-5 05:40 求标准差: df.std()
+	3-5 05:55 求方差: df.var()
+	3-5 06:00 求和: df.sum()
+	3-5 06:35 求偏态系数: df.skew() - 用于辨别大部分值与均值的关系，如果是负值，则说明大部分值都大于均值。应用：比如给教师评分这一项中的峰态系数为负值，则说明大部分的评分都是大于均值的，说明大部分人对此教师是满意的
+	3-5 07:13 求峰态系数: df.kurt() 
+	
+	3-21 00:50 df=df.dropna(axis=0,how="any") # 第一个参数axis代表如果有异常值出现要删除行还是列，删除行就是0，删除列就是1;how的值有两种all、any,all代表这一行都是null的时候才把这一行删除，any是只要这一行有一个是null就删除
+	
+	生成正态分布：
+	import scipy.stats as ss
+	ss.norm #这就是正态分布的对象
+	ss.norm.stats(moments="mvsk") #m v s k分别是均值 方差 偏态系数 峰态系数
+	ss.norm.pdf(0.0) #.pdf()是输入x返回y的值，此处是取得x=0.0处的y的值
+	ss.norm.ppf(0.9) #参数是0-1之间的，此处0.9，表示正态分布积分是0.9的时的x的值(正态分布的负无穷到正无穷的积分为1)，即返回的值是从负无穷到多少的时候，积分是0.9
+	ss.norm.cdf(2) #返回的值表示从负无穷到x=2的时候，累积的概率为多少(即对正态分布从负无穷到2的时候的积分值)。如果两个不同的值相减，就可以求出中间的积分(概率)，例如ss.norm.cdf(2)-ss.norm.cdf(-2)，代表正两倍的标准差-负两倍的标准差的概率
+	ss.norm.rvs(10) #获取10个正态分布的值
+	
+	随机抽样
+	df.sample(n=10) # 代表抽样10个
+	df.sample(frac=0.001) # 代表按百分比抽取，此处为抽取0.1%的数值出来
+	
+	数据分类{
+		定类(类别) - 如民族之间，只能区别两个不同民族，但是无法定义两个名族之间的距离
+		定序(顺序) - 如收入，高收入比中等收入高，中等收入比低收入高，但是无法确定到底高多少，没有一个具体值来衡量和表达
+		定距(间隔) - 定距数据可用界定数据大小的同时，也可以界定差值，但无绝对零点，即乘除法无意义，例如温度，不能说20度是10度的2倍，因为没有一个相对的0点去衡量
+		定比(比率) - 可界定的数据大小，可测定差值，有绝对零点，例如体重、身高等
+	}
+	
+	对比分析{
+		时间：同比和环比 ，同比是今年某月份和去年同一月份的比较，环比是今年某月份与上一月份的比较
+	}
+	
+	分布分析{
+		直接获得概率分布 就是拿一组数据进行排列，就可以得到数据的分布
+		是否是正态分布 判断一组数据是否是正态分布，快速一组数据是否是正态分布的方法：偏态和峰态，如果偏态的绝对值太大就不是正态分布，具体的值根据业务场景而定，如果正态分布的峰态系数定为3，则小于1和大于5的就肯定不是正态分布了；如果正态分布的峰态系数定为0，则小于-2和大于2的就肯定不是正态分布了
+		极大似然 - 相似性。例如一连串数据和正态分布有多像可用极大似然来表示
+	}
+	
+	异常值{
+		上4分位数-下4分位数 = 4分位间距
+		上4分位数 + (1.5-3)*4分位间距 = 上界
+		下4分位数 + (1.5-3)*4分位间距 = 下界
+		上下界之间的值是正常值，在上下界之间的值可以成为异常值了
+		1.5-3是允许形变值，1.5代表允许形变比较小，3代表形变大，值越大代表容许的异常值差异越大
+	} 
+	
+	人力资源的分析{
+		概要{
+			对以下几项进行了分析：
+			satisfaction_level{
+				满意程度的评分
+				1.读取".csv"数据
+				2.读取异常值和去除异常值 - 可能没有录入，或者录错了
+				3.均值 - 求平均分数
+				4.标准差 - 
+				5.最大值 - 评分最高分
+				6.最小值 - 评分最低分
+				7.中位数
+				8.上4分位数
+				9.下4分位数
+				10.偏度
+				11.峰度
+				12.数据的分布-数值的分布情况
+			}
+			
+			last_evaluation{
+				上次的估值
+				1.使用公式过滤异常值/异常数据
+			}
+			
+			number_project{
+				做的项目数量
+				1.平均做的项目数量
+				2.中位数
+				4.做的最多/最少的项目是多少个
+				5.统计做了2、3....个项目的各共有多少人
+				6.统计做了2、3....个项目的人的比例各是多少
+			}
+			
+			average_monthly_hours{
+				平均每月工作多少小时
+				1.均值：整个公司每个员工平均工作多少小时
+				2.最大值/最小值：工作时间最久/最短的是多少小时
+				3.分布：获取工作小时的区间各有多少人，将工作的时长分为若干份，统计在各个工作时长段的人数。例如工作10-20小时的有多少人
+			}
+			
+			time_spend_company{
+				在公司待多长时间了
+				1.在公司待2、3..年的人数各有多少
+				2.平均每个员工在公司待了多少年
+			}
+			
+			Work_accident{
+				是否有工作事故
+				1.有工作事故1、2...件事故的各有多少人
+				2.事故率(即均值)
+			}
+			
+			left{
+				离职的人
+				1.离职的人有多少，没离职的有多少
+			}
+			
+			promotion_last_5years{
+				最近5年是否有晋升
+				1.有多少人晋升了
+				2.有多少人没晋升
+			}
+			
+			department{
+				工作部门
+				1.看整个公司，各个部门人数占整个公司的人数的多少比例
+			}
+			
+			salary{
+				薪资(水平)
+				1.统计低、中、高的收入人群各有多少人
+			}
+			
+			简单对比分析操作{
+				1.进行分组，对比均值
+				2.进行分组，并对比某一项的均值
+				3.进行分组，对比某一项的极差(即自定义对比的方式，此处为极差)
+			}
+		}
+		
+		satisfaction_level的分析{
+			import pandas as pd
+			import numpy as np
+			df=pd.read_csv("./data/HR.csv")
+			
+			异常值分析：
+			判断satisfaction_level列中是否有null：
+			sl_s = df["satisfaction_level"]
+			sl_s.isnull() #列出是否有null值的true或false,true为异常
+			sl_s[sl_s.isnull()] #列出为null值的行
+			df[df["satisfaction_level"].isnull()] #列出为null值的行
+			sl_s=sl_s.dropna() #丢弃掉null值的行
+			sl_s.max() #求最大值
+			sl_s.min() #求最小值
+			
+			获取satisfaction_level列数据的离散化分布:
+			np.histogram(sl_s.value,bins=np.arange(0.0,1.1,0.1)) #sl_s.value就是要切分的值，第二个参数就是把它切分的临界值。此处表示从0.0至1.1之间，间隔为0.1切分数组
+			返回的值的第二个参数，代表分割的点，第一个参数就是分割的点上的值有多少个。例如返回：(array([195,1214,532,974,1688,2146,1973,2074,2220,2004]),array([0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]))代表0的值一共有195个，0.1的值有1214个...
+		}
+		
+		satisfaction_level的分析{
+			le_s=df["last_evaluation"]
+			le_s[le_s>1] #找出le_s列中大于1的值(找出异常值)
+			le_s=le_s[le_s<=1] #去除异常值的另一种方式。把异常值过滤掉
+			
+			根据异常值的公式来过滤异常值：
+			le_s=df["last_evaluation"]
+			q_low=le_s.quantile(q=0.25) #下4分位数
+			q_hight=le_s.quantile(q=0.75) #上4分位数
+			q_interval=q_hight-q_low #求得四分位间距
+			k=1.5 #容许较小的数值差异
+			le_s=le_s[le_s<q_hight+k*q_interval][le_s>q_low-k*q_interval] #过滤异常值并赋值给le_s
+			len(le_s) #获取le_s数值的数量
+		}
+		
+		number_project的分析{
+			np_s=df["number_project"]
+			
+			np_s.value_counts() # np_s.value_counts()是用于统计出现的值的个数。如果值比较少，比如number_project列中的值只有2-7之间的几个整数，则np_s.value_counts()就是统计2、3、4..各出现了几次
+			np_s.value_counts(normalize=True) # 可以得出各个值的出现的比例，此处就是求得做了2、3、4..个项目的人各占了多少比例
+			np_s.value_counts(normalize=True).sort_index() # 可以得出各个值的出现的比例后，根据出现的值的大小进行排序
+		}
+		
+		average_monthly_hours的分析{
+			amh_s=df["average_monthly_hours"]
+			amh_s.value_counts(bins=np.arange(amh_s.min(),amh_s.max()+10,10)) # 将average_monthly_hours列从最小值到最大值分成10个区间，求出数值在各个区间出现的次数
+		}
+		
+		salary的分析{
+			s_s=df["salary"]
+			s_s.where(s_s!="nme").dropna() #找出值为nme填充为null，然后丢弃。过滤掉异常值
+		}
+		
+		简单对比分析{
+			根据指定条件去掉异常值
+			df=df.dropna(axis=0,how="any") #只要一行中有null值，就删掉那一行
+			df=df[df["last_evaluation"]<=1][df["salary"]!="nme"][df["department"]!="sale"] #挑出last_evaluation列不小于1的行的数据，然后挑出salary列不为nme的行的数据,在挑出department列不为sale的行的数据。挑出满足以上三个条件的数据
+			
+			根据部门进行对比分析
+			df.groupby("department").mean() # 先根据部门进行分组，然后算出每个组的均值。算出不同部门的的评分均值、离职均值、晋升均值
+			df.loc[:,["last_evaluation","department"]].groupby("department").mean() # ":"代表所有列，拉出某些列来进行对比分析，此处拉出属性为"last_evaluation","department"的列出来，然后根据department进行分组，然后取得另外一列last_evaluation的均值
+			df.loc[:,["average_monthly_hours","department"]].groupby("department")["average_monthly_hours"].apply(lambda x:x.max-x.min) # 取出"average_monthly_hours","department"列，根据department进行分组，然后对average_monthly_hours进行求极差，求得每个组的工作时长的极差(即工作最长的和工作最短的时间差距)
+		}
+		
+		图形绘制分析{
+		
+			直方图{
+				import pandas as pd
+				import matplotlib.pyplot as plt
+				import seaborn as sns
+				
+				def show_histogram():
+					"""
+					展示直方图
+					"""
+					df = pd.read_csv("./data/HR.csv")
+
+					# 过滤异常数据
+					df = df.dropna(axis=0, how="any")
+					df = df[df["last_evaluation"] <= 1][df["salary"] != "nme"][df["department"] != "sale"]
+
+					# 设置图的样式
+					sns.set_style(style="whitegrid")
+					sns.set_context(context="poster", font_scale=0.8)
+					sns.set_palette(sns.color_palette("RdBu", n_colors=7))
+
+					f = plt.figure()  # figure是画板的意思
+					f.add_subplot(1, 3, 1)  # 代表将图分为1行，3列，此图画在从左到右从上到下的第1个
+					sns.distplot(df["satisfaction_level"], bins=10)  # 将会显示直方图和分布曲线。将satisfaction_level列分成10份，然后通过直方图显示每一份的数量
+					# sns.distplot(df["satisfaction_level"], bins=10, kde=False)  # 如果kde=False，就不会画出分布曲线了
+					# sns.distplot(df["satisfaction_level"], bins=10, hist=False)  # 如果hist=False，就不会画出直方图了
+
+					f.add_subplot(1, 3, 2)  # 代表将图分为1行，3列，此图画在从左到右从上到下的第2个
+					sns.distplot(df["last_evaluation"], bins=10)
+
+					f.add_subplot(1, 3, 3)  # 代表将图分为1行，3列，此图画在从左到右从上到下的第3个
+					sns.distplot(df["average_monthly_hours"], bins=10)
+
+					plt.show()
+			}
+			
+			箱线图
+			
+			折线图{
+				随着时间的越来越长，离职率的情况
+			}
+			
+			饼图
+		}
+	}
+	
+	
+}
+
+
 
 
 

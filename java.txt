@@ -3,3 +3,7 @@
 	Scanner input = new Scanner(System.in);
 	int inputNumber = input.nextInt();
 }
+
+查看java的版本和多少位数{
+	cmd → java -version 如果有64-Bit等字眼就是64位，否则默认为32位
+}

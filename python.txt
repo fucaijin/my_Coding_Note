@@ -310,6 +310,12 @@ pyqt5{
 	3.输入flask.__version__
 }
 
+pip{
+	pip list  #列出所有安装的库
+	pip list --outdated #列出所有过期的库
+	pip install --upgrade 库名 # 使用pip更新库
+}
+
 pip安装太慢/被墙/不稳定{
 	解决pip安装时速度慢的问题
 
@@ -1209,7 +1215,6 @@ scrapy{
 		ls_f=base64.b64encode(f.read()) #读取文件内容，转换为base64编码
 		f.close()
 	}
-  
 }
 
 在for循环中拿到索引index{
@@ -1222,7 +1227,6 @@ scrapy{
 		l = [2,7,11,15]
 		for index,value in enumerate(l):
 		print index,value
-			
 }
 
 
@@ -1262,8 +1266,6 @@ Python3数据分析与挖掘建模实战 笔记{
 			峰态系数(以正态分布的峰度为0，其他分布的峰度以正态分布为标准)如果为负值，说明数据分布曲线比正态分布平缓。峰度越小，越平缓，说明数值越不聚拢
 		}
 		正态分布与三大分布(t分布, 卡方x分布,F分布)
-		
-		
 	}
 	
 	抽样理论{
@@ -1326,7 +1328,35 @@ Python3数据分析与挖掘建模实战 笔记{
 		下4分位数 + (1.5-3)*4分位间距 = 下界
 		上下界之间的值是正常值，在上下界之间的值可以成为异常值了
 		1.5-3是允许形变值，1.5代表允许形变比较小，3代表形变大，值越大代表容许的异常值差异越大
-	} 
+		
+		异常值的处理方式：
+		识别异常值和重复值：pandas:isnull()/duplicated()
+		1.丢弃 - pandas:dropna()/drop()/drop_duplicated()
+		2.如果异常值多，就考虑替换异常值pandas:fillna() - 集中值(均值、中位数、众数等)指代/边界值(四分位数的值取代超过四分位数的值)指代/插值取代异常值
+		
+		删除指定列的空值(指定列的空值的行):(dataFrame) df.dropna(subset="B") # 删除B列的null值的行，其他列的此行也一起被删除
+		识别重复值:df.duplicated(["A"])  # 重复的位置是True(即同一列里，第二个出现的值是重复值)
+		识别双重重复:df.duplicated(["A","B"])  # 会比较同一行内是不是都有重复值，如果同一行都是重复值，才会是True
+		删除重复值:df.drop_duplicated(["A"])  # A列内的重复值的行会被删掉(其他列的此行也一起删除)
+		删除重复行的模式:df.drop_duplicated(["A"],keep="first")  # 此处的keep有三种值，first/last/False，first是保留第一个，last是保留最后一个，False代表删除所有重复值
+		
+		用指定值取代异常值:df.fillna("b*")  # 如果有null值，则取代为b*
+		用均值取代异常值:df.fillna(df["E"].mean())  # 将E列的均值取代E列的null值(df["E"].mean()求均值的时候是已经自动忽略了异常值，因此此处是安全运行不会发生错误的)
+		用差值(两者相减就是差值)取代异常值:df["E"].interpolate()  # interpolate只能用于Series(一维数组？),因此必须指定列。如果null值是最后一位的话，那么差值就等于前一位
+		用差值:pd.Series([1,None,4,5,20]).interpolate() # 如果null是在中间，则取相邻两个值的平均值[1,2.5,4,5,20]
+		用差值:pd.Series([None,2,4,5,20]).interpolate() # 如果null是在第一个，则取第二个数[2,2,4,5,20]
+		指定差值的计算方法df["E"].interpolate(method="spline",order=3)  # 指定为三次样条插值
+		
+		使用四分位数确定上下界的方法过滤异常值。过滤掉D列可能过小或过大的值
+			upper_q=df["D"].quantile(0.75)
+			lower_q=df["D"].quantile(0.25)
+			q_int=upper_q-lower_q
+			k=1.5
+			df[df["D"]>lower_q-k*q_int][df["D"]<upper_q+k*q_int]
+		
+		直接指定异常值的行进行删除:df.drop()
+		根据指定的规则删除异常值:df[[True if item.startswith("f") else False for item in list(df["F"].values)]]  # 删除F列中值为f开头的行(其他列的此行也会被删除)
+	}
 	
 	人力资源的分析{
 		概要{
@@ -1405,6 +1435,10 @@ Python3数据分析与挖掘建模实战 笔记{
 				1.进行分组，对比均值
 				2.进行分组，并对比某一项的均值
 				3.进行分组，对比某一项的极差(即自定义对比的方式，此处为极差)
+			}
+			
+			交叉分析方法{
+				分析离职率与工作年限、事故率之间三者的关系。
 			}
 		}
 		
@@ -1517,16 +1551,199 @@ Python3数据分析与挖掘建模实战 笔记{
 			
 			饼图
 		}
+		
+		卡方检验{
+			用来检测两个属性的联系强度，例如可以用来分析化妆是否和性别有关系
+			联想：某个指标(例如交易量/某些报告)是否和汇率有关系
+		}
+		
+		相关系数{
+			相关系数(-1到+1)可以代表了两种数据的相关性(正相关/反相关)。趋于0，则表示二者无相关关系
+			Pearson相关系数
+			spearman相关系数 - 和具体数值相关不大，只和数值的排名有关。应用于相对比较的情况
+		}
+		
+		线性回归{
+			因变量与自变量是线性关系就叫线性回归
+			最小二乘法
+		}
+		
+		交叉分析方法{
+			更严谨的分析了离职率与事故量、工作年限之间的关系。分析出同样的事故量不同的工作年限的离职率，与不同的事故量，不同的工作年限的离职率，并进行对比。
+		}
+		
+		分组与钻取{
+		}
+		
+		相关分析{
+			分析是否成正相关或者负相关，相关性有多少
+			
+			熵越大说明系统越不稳定，说明随机性越大
+			熵的计算
+			条件熵的计算
+			熵增益的计算
+			熵增益率的计算
+			
+			离散属性的相关性计算
+				
+			基尼系数的计算
+			联想到：恩格尔系数
+		}
+		
+		※因子分析{
+		}
+		
+		HR表的特征预处理{
+			df=pd.read_csv("./data/HR.csv")
+			
+			# 1.清洗数据
+			df=df.dropna(subset=["satisfaction_level","last_evaluation"])
+			df=df[df["satisfaction_level"]<=1][df["salary"]!="nme"]
+			
+			# 2.得到标注
+			label=df["left"]
+			df=df.drop["left".axis=1]  #删除left列
+			
+			# 3.特征选择(选择要分析哪些特征。根据探索性数据分析的图，根据皮尔逊相关系数，来判断每个属性与我们所要分析属性的相关性，然后去掉那些相关性小的属性，再进行分析)
+			
+			# 4.特征处理(satisfaction_level原始数据为0-1之间，但是没有0/1。可以使用三种处理方式1.不处理2.缩放到0至1(MinMaxScaler) 3.StandarScaler(标准化的格式，将数值转化为均值为0，方差为1的格式，也可以叫做标准差为1))
+				# MinMaxScaler处理方式
+			MinMaxScaler().fit_transform(df["satisfaction_level"].values.reshape(-1,1)).reshape(1,-1)[0]  # 先将行的格式转化为列的格式，转化完成后再转回行的格式。第一个reshape(-1,1)是将数据转为1列，-1代表行数自动计算。reshape(1,-1)代表转为1行，列自动计算。转化完成后是一个数组，因此要取第[0]个
+				# StandarScaler处理方式
+			StandardScaler().fit_transform(df["satisfaction_level"].values.reshape(-1,1)).reshape(1,-1)[0]
+			
+				# 离散值(department/salary这两个属性)的处理方式：将其数值化1.lableEncodeing  2.OneHotEncoding
+			LabelEncoder().fit_transform(df["department"])
+				# 为了避免离散属性salary直接数值化会根据字母来排序，建立一个map d=dict([("low",0),("medium",1),("hight",2)])  d.get(s,0)
+			[map_salary(s) for s in df["salary"]] 遍历salary的值，将这个值传入map_salary()方法，将每个salary的值都转换成0、1、2	
+			
+			pd.get_dummies(df,columns=["salary"])
+			
+			# 降维:PCA降维/LDA(使用类(LinearDiscriminantAnalysis(n_components=ld_n)))降维。此处使用PCA
+			PCA(n_components=ld_n).fit_transform(df.values)
+			
+				
+			
+			# 5.
+			
+		}
 	}
 	
+	特征选择{
+	}
 	
+	特征变换{
+		对指化:如果特征(数据)差异过于明显或不明显，需要进行对数/指数化，将数据转换为方便分析比较的形式。例如汇率太小了，可以通过指数化方式来放大。例如收入1亿和1000差异也太大了，可以通过对数化来处理。
+		离散化(分箱):将连续的变量分成几段(分阶级，例如把成绩分成及格和不及格)，数据离散化的三种方法 - 等频(等深)/等距(等宽)/自因变量优化(可以用于分割汇率的上涨阶段/下跌阶段)。  深度:数的个数  宽度:数的区间 。 分箱后可以用均值/边界值来代表每个值。等深分箱pd.qcut(list,q=3)将数组分为3份，然后每一份内的值都取一样的值。或者直接用某些值代替:pd.qcut(list,q=3,labels=["low","medium","high"])。  等宽分箱:pd.cut(list,q=3)将数组分为3份。或者更直观观察pd.cut(list,q=3,labels=["low","medium","high"])
+		归一化与标准化{
+			将数据转换为0-1之间的值，即MinMaxScaler，将数据拉伸/压缩为0-1。
+			归一化=(数值-min)/(max-min)。即如果数值是最小值，则映射成0，如果是最大值则映射成1。
+			标准化:将数据缩放到均值为0，标准差为1的尺度上。标准化Z-score = (一个特征的每个数 - 特征的均值) / 标准差 。意义:可以提现一个数据与该特征下其他数据的差距关系。(例如同样的180身高，如果全班60人只有5个180的，其他的都160，和有30人都是180的感觉就是不一样)。 
+			归一化:sklearn.preprocessing.MinMaxScaler().fit_transform(np.array([1,4,10,15,21]).reshape(-1,1))  reshape(-1,1)是将数组变换成多少行多少列。
+			标准化:StandarScaler().fit_transform(np.array([1,1,1,1,0,0,0,0]).reshape(-1,1))  StandarScaler().fit_transform(np.array([1,0,0,0,0,0,0,0]).reshape(-1,1))
+		}
+		数值化{
+			将非数值数据转化为数值数据
+			数据的类型:定类、定序、定距、定比
+			定序的处理:标签化处理，例如可以将 Down/Up转化为0/1   Low/Medium/Hight → 0/1/2  保证了数据的相对大小不变
+			定类的处理:独热，将特征进行扩维处理。例如颜色R/G/B → [1,0,0]/[0,1,0]/[0,0,1]
+		}
+		正规化(规范化){
+			L1=向量的分量/绝对值的和(就是每个数值/所有数的绝对值的和)。例如向量(1,1,3,-1,2)的规范化是 当前数值/所有数的绝对值的和  即→ (1/8,1/8,3/8,-1/8,2/8)
+			L2=每个数值/(所有元素平方之和，然后开根号)。例如向量(1,1,3,-1,2)  → (1/4,1/4,3/4,-1/4,2/4)   1的平方 + 1的平方 + 3的平方 + -1的平方 + 2的平方 = 16 开平方根 = 4
+		}
+		
+		特征降维{
+			特征降维(PCA)步骤:
+			1.求特征协方差矩阵
+			2.求协方差的特征值和特征向量
+			3.将特征值按照从大到小的顺序排序，选择其中最大的k个
+			4.将样本点投影到选取的特征向量上
+			
+			LDA降维:线型判别式分析 - 核心思想:投影变换后同一标注内的距离尽可能小，不同标注间距离尽可能大
+			LDA降维代码演示，并将其作为分类器 - fisher_classifier分类器
+		}
+		
+		特征衍生{
+			通过已有特征生成新的特征
+			
+			方法:
+			1.加减乘除(例如两个时间相减，生成时间差)
+			2.求导/高阶求导
+			3.人工归纳
+		}
+	}
+	
+	分类{
+		KNN{
+			欧式距离
+			曼哈顿距离
+			闵可夫斯基距离
+			
+			模型的存储与导入使用:
+			from sklearn.externals import joblib
+			joblib.dump(knn_clf,"knn_clf")  # 存储模型
+			knn_clf=joblib.load("knn_clf")  # 导入模型
+		}
+		
+		朴素贝叶斯{
+			from sklearn.naive_bayes import GaussianNB,BeroulliNB
+		}
+		
+		决策树{
+			from sklearn.naive_bayes import DecisonTreeClassifier
+			信息增益-ID3
+			
+			信息增益率-C4.5
+			
+			Gini系数-
+			
+			决策树绘图工具 - Graphviz www.graphviz.org/download/
+		}
+		
+		支持向量机(SVM){
+			from sklearn.svm import SVC
+		}
+	}
 }
 
 
+for i = 1 to m:
+    temp = 0
+	for j = 1 to n:
+		temp += wj * xj(i)
+	z(i) = temp + b
+	# 绿色代码可以向量化成下面的形式。
+	z(i) = np.dot(w.t, x(i)) + b
+	
+	a(i) =σ(z(i)) = 1 / (1 + e-z(i))
+	J += -(y(i)*log(a(i)) + (1-y(i))*log(1-a(i)))
+	dz(i) = a(i) – y(i)
+	for j = 1 to n:
+		dwj += xj(i) * dz(i)
+	# 蓝色for循环可以向量化成下面的形式。
+	dw += x(i) * dz(i)
+	
+	db += dz(i)
+J = J/m, db = db / m,
+for j = 1 to n:
+	dwj = dwj / m
 
 
 
+	
 
+	
+	
+for i = 1 to m:
+	z(i) = np.dot(w.t, x(i)) + b
+	a(i) =σ(z(i)) = 1 / (1 + e-z(i))
+	J += -(y(i)*log(a(i)) + (1-y(i))*log(1-a(i)))
+	dz(i) = a(i) – y(i)
+	dw += x(i) * dz(i)
+	db += dz(i)
+J = J/m, db = db / m,
+dw = dw / m
 
 
 

@@ -1,1 +1,0 @@
-°²×° pip : sudo apt install python-pip -y

@@ -2965,6 +2965,19 @@ shap用法详解{
 				android:dashGap="dimension" />  //虚线的间隔  
 		</shape>  
 	}
+
+	画圆形背景/text背景圆形{
+		<?xml version="1.0" encoding="utf-8"?>
+		<shape xmlns:android="http://schemas.android.com/apk/res/android"
+		 android:shape="oval"
+		 android:useLevel="false">
+		 <solid android:color="#00FF00" />
+		 <stroke android:width="1dip" android:color="#000000" />
+		 <sizes
+		  android:width="15dp"
+		  android:height="15dp" />
+		</shape>
+	}
 }
 
 imageView{

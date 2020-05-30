@@ -59,8 +59,9 @@
 		8.1.4C++
 		8.1.5MySQL
 		8.1.6HTML+CSS+JavaScript
-		8.1.6Android开发
-		8.1.6Swift
+		8.1.7Android开发
+		8.1.8Swift语言
+		8.1.9Go语言
 	8.2基础课程
 		8.2.1计算机基础
 		8.2.2数据结构与算法

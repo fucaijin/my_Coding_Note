@@ -3388,3 +3388,35 @@ uri转成路径Path{
 }
 
 end!
+
+
+
+gradle下载很慢{
+	更改build.gradle的配置
+	buildscript {
+	    repositories {
+	//        mavenCentral()
+	//        jcenter()
+	//        google()
+		maven { url 'https://plugins.gradle.org/m2/' }
+		maven { url 'http://maven.aliyun.com/nexus/content/repositories/google' }
+		maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+		maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter'}
+	    }
+	    dependencies {
+		classpath 'com.android.tools.build:gradle:3.0.1'
+	    }
+	}
+
+	allprojects {
+	    repositories {
+	//        mavenCentral()
+	//        jcenter()
+	//        google()
+		maven { url 'https://plugins.gradle.org/m2/' }
+		maven { url 'http://maven.aliyun.com/nexus/content/repositories/google' }
+		maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+		maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter'}
+	    }
+	}
+}
